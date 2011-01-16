@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>POI Input Form</title>
+  
+<script type="text/javascript">
+function testForm() {
+    var values = $('#form').serialize();
+    alert( values );
+}
+
+function submitForm() {
+    var values = $('#form').serializeArray();
+
+    // convert array -> object
+    var json = {};
+    for (i in values) {
+        json[values[i].name] = values[i].value;
+    }
+    var encoded = new OpenLayers.Format.JSON().write( json, false );
+    //alert( "JSON: " + encoded );
+    
+    $.ajax({
+        url: encodeURIComponent('data/Atlas-Inbox/POI/poi.json'),
+        type: 'POST',
+        data: encoded,
+        processData: false,
+        success: function( data ) {
+            //$('.result').html( data );
+            alert( 'Vielen Dank.\nWir werden die Daten so schnell als möglich prüfen und aufnehmen.' );
+            $('#dialog').dialog( 'close' );
+        },
+        error: function( request, textStatus, errorThrown ) {
+            //$('.result').html( data );
+            alert( 'Es ist ein Problem aufgetreten.\nMeldung: ' + request.responseText );
+        }
+    });
+}
+
+function initForm() {
+    var submitEnabled = false;
+    var keypressed = function( ev ) {
+        //alert(" keypress event: " + ev.keyCode + ", name:" + $("#name_input").val().length );
+        //console.log("  -->" + event.keyCode );
+        submitEnabled = $("#name_input").val().length >= 3
+                && $("#street_input").val().length >= 3
+                && $("#city_input").val().length >= 3
+                && $("#postcode_input").val().length >= 5
+                && $("#number_input").val().length > 0;
+
+        if (submitEnabled) {
+            $("#submit_btn").removeAttr( 'disabled' );
+        } else {
+            $("#submit_btn").attr( 'disabled', true );
+        }            
+    };
+    $('#name_input').keyup( keypressed );
+    $('#postcode_input').keyup( keypressed );
+    $('#city_input').keyup( keypressed );
+    $('#street_input').keyup( keypressed );
+    $('#number_input').keyup( keypressed );
+}
+initForm();
+</script>  
+</head>
+
+<body>
+
+<form id="form" action="echo.php" method="post"> 
+<table class="ui-layout-content ui-widget">
+  <tr><td colspan="3">
+    <p>Erfassen Sie ein neues Objekt mit Adresse.</p>
+    <p style="font-size: small">Neue Einträge werden von uns geprüft und dann freigegeben. Für Rückfragen hinterlassen Sie uns im Bemerkungsfeld gerne Ihre EMail-Adresse.</p>
+  </td></tr>
+  <!--  -->
+  <tr>
+    <td><b>Name</b></td>
+    <td><input id="name_input" value="LRA""name="name" type="text" title="Vollständiger, öffentlich bekannter Name des Objektes" size="35" /></td>
+    <td></td>
+  </tr>
+  <tr><td colspan="3"><hr/></td></tr>
+  <!--  -->
+  <tr>
+    <td><b>PLZ/Ort</b></td>
+    <td>
+       <input id="postcode_input" value="09599" name="plz" type="text" title="PLZ des Ortes wie in der postalischen Adresse" size="10" />
+  <!--  -->
+       <input id="city_input" value="Freiberg" name="ort" type="text" title="Der Name des Ortes wie in der postalischen Adresse" size="20" />
+    </td>
+    <td></td>
+  </tr>
+  <!--  -->
+  <tr>
+    <td><b>Straße/Nummer</b></td>
+    <td>
+       <input id="street_input" value="Frauensteiner Straße" name="strasse" type="text" title="Straßenname wie in der postalischen Adresse" size="20" />
+       <input id="number_input" value="43" name="hnr" type="text" title="Hausnummer wie in der postalischen Adresse" size="10" />
+    </td>
+    <td></td>
+  </tr>
+  <tr><td colspan="3"><hr/></td></tr>
+  <!--  -->
+  <tr>
+    <td>Web</td>
+    <td><input id="web_input" name="web" type="text" title="Eine Homepage falls vorhanden." size="35" /></td>
+    <td></td>
+  </tr>
+  <!--  -->
+  <tr>
+    <td>EMail</td>
+    <td><input id="email_input" name="email" type="text" title="Eine EMail-Adresse falls vorhanden." size="35" /></td>
+    <td></td>
+  </tr>
+  <!--  -->
+  <tr>
+    <td>Telefon</td>
+    <td><input id="tel_input" name="tel" type="text" title="Eine Telefonnummer falls vorhanden." size="35" /></td>
+    <td></td>
+  </tr>
+  <tr><td colspan="3"><hr/></td></tr>
+
+  <!--  -->
+  <tr>
+    <td>Bemerkungen</td>
+    <td><textarea id="note_textarea" name="bemerkung" title="Ihre zusätzlichen Bemerkungen" cols="33" rows="3" /></td>
+    <td></td>
+  </tr>
+
+  <!-- Submit  -->
+  <!--tr><td colspan="3">
+    <input type="submit" value="Abschicken" /> 
+  </td></tr-->
+
+</table>
+</form>
+
+<!--a href="#" onClick="testForm()">
+  <img alt="" src="images/add_obj.gif" style="vertical-align:middle;"/>
+  Test form
+</a-->
+
+<input id="submit_btn" type="submit" value="Abschicken" disabled="disabled" onClick="submitForm()"/> 
+
+</body>
+</html>

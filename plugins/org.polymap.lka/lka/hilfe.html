@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>Suchtausdrücke</h1>
+<h3>Einfache Beispiele:</h3>
+<p>
+  <ul>
+    <li><b><tt>Markt</tt></b> : sucht Einträge mit der Zeichenkette 'Markt'</li>
+    <li><b><tt>"Markt"</tt></b> : sucht ebenfalls die Zeichenkette 'Markt'</li>
+    <li><b><tt>"am Markt"</tt></b> : sucht die Zeichenkette 'am Markt'</li>
+    <li><b><tt>am Markt</tt></b> : sucht Einträge, welche die Zeichenketten 'am' <b>UND</b> 'Markt' enthalten; gefunden wird also auch 'Markt am Sonntag'</li>
+  </ul>
+</p>
+<h3>Mehrere Suchbegriffe:</h3>
+Wie im letzten Beispiel zu sehen können auch mehrere Begriffe gesucht werden. Wird keine spezielle Verkettung angegeben,
+dann werden Einträge gefunden, welche beide Suchbegriffe enthalten.
+<p>
+  <ul>
+    <li><b><tt>am AND Markt</tt></b> : sucht ebenfalls nach den Zeichenketten 'am' <b>UND</b> 'Markt'</li>
+    <li><b><tt>am OR Markt</tt></b> : sucht Einträge, welche die Zeichenketten 'am' <b>ODER</b> 'Markt' enthalten</li>
+  </ul>
+</p>
+<h3>Platzhalten:</h3>
+In den Suchbegriffen können die Platzhalter "*" und "?" verwendet werden. "*" steht für mehrere Zeichen. "?" steht für ein einzelnes Zeichen.
+<p>
+  <ul>
+    <li><b><tt>Markt*</tt></b> : findet 'Markt<em>platz</em>', 'Markt<em>strasse</em>' etc</li>
+    <li><b><tt>M?rkt</tt></b> : findet 'Markt' und 'Morkt'... tolles Beispiel! :)</li>
+  </ul>
+</p>
+Wird nur ein Suchbegriff ohne Platzhalter eingegeben, dann wird <b>automatisch</b> ein "*" angefügt.
+<h3>Ähnliche Wörter:</h3>
+Es können auch ungenau geschriebene oder ähnliche Wörter gesucht werden.
+<p>
+  <ul>
+    <li><b><tt>hain~</tt></b> : findet 'Am Hohen Rain', 'Dr.-Heinrich-Hahn-Straße' etc</li>
+  </ul>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<poi-type-collection>
+  <poi-type name="kindergarten" label="Kindergarten">
+    <attribute-group name="main" order="1">
+	  <attribute  name="address" type="address" label="Adresse">
+	  	     <validator type="NotEmpty"/>
+	  </attribute>
+
+	  <attribute  name="name" type="single_line_text" length="40" label="Name">
+	  	     <validator type="NotEmpty"/>
+	  </attribute>
+    </attribute-group>
+    <attribute-group name="zeiten"  order="2">
+	  <attribute  name="betreuungszeiten" type="multi_line_text" label="Betreuungszeiten"  description="In welchen Zeiten kann betreut werden?" >
+	    <validator type="NotEmpty" />
+	    <validator type="Regex" value=".*von.*bis.*" failtext="Betreuungszeiten bitte mit von und bis "/>
+	  </attribute>
+
+	  <attribute  name="sprechnszeiten" type="multi_line_text" label="Sprechzeiten">
+	    <validator type="NotEmpty" />
+	    <validator type="Regex" value=".*von.*bis.*" failtext="Sprechzeiten bitte mit von und bis "/>
+	  </attribute>
+    </attribute-group>
+    <attribute-group name="misc"  order="3">
+	  <attribute  name="evangelisch" type="boolean" label="Evangelisch">
+	  </attribute>
+
+	  <attribute   name="kommentar" type="multi_line_text" label="Kommentar">
+	  </attribute>
+    </attribute-group>
+  </poi-type>
+  
+  <poi-type name="schlule" label="Schule">
+    <attribute-group name="main"  order="1">
+	  <attribute name="address" type="address" label="Adresse">
+	  	     <validator type="NotEmpty"/>
+	  </attribute>
+
+	  <attribute name="name" type="single_line_text" length="40">
+	  	     <validator type="NotEmpty"/>
+	  </attribute>
+    </attribute-group>
+    <attribute-group name="zeiten"  order="2">
+	  <attribute name="sprechnszeiten" type="multi_line_text"  label="Sprechzeiten">
+	    <validator type="NotEmpty" />
+	    <validator type="Regex" value=".*von.*bis.*" failtext="Sprechzeiten bitte mit von und bis "/>
+	  </attribute>
+    </attribute-group>
+    <attribute-group name="misc"  order="3">
+	  <attribute name="kommentar" type="multi_line_text" label="Kommentar">
+	  </attribute>
+    </attribute-group>
+
+  </poi-type>
+
+  <poi-type name="bushaltestelle" label="Bushaltestelle">
+    <attribute-group name="main"  order="1">
+	  <attribute name="name" type="single_line_text" length="40" label="Name">
+	  	     <validator type="NotEmpty"/>
+	  </attribute>
+    </attribute-group>
+    <attribute-group name="misc"  order="2">
+
+	  <attribute name="kommentar" type="multi_line_text" label="Kommentar">
+	  </attribute>
+    </attribute-group>
+  </poi-type>
+</poi-type-collection>

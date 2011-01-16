@@ -1,0 +1,329 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+
+<xhtml:html xmlns:xhtml="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner">
+      >
+    <xhtml:head>
+        <xhtml:title>Datenerfassung</xhtml:title>
+		
+        <xhtml:style type="text/css">
+            @namespace xforms url("http://www.w3.org/2002/xforms");
+            @namespace xxforms url("http://orbeon.org/oxf/xml/xforms");
+            
+			.body-style {
+			  //color: black;
+			  background-color: #deedf7;
+			  font-size: 100.00%;
+			  font-family: Helvetica,Arial,sans-serif;
+			  margin: 0;
+			  padding: 0;
+			  min-width: 10em; /* Mindestbreite verhindert Umbruch und Anzeigefehler in modernen Browsern */
+		      overflow-x: hidden; /* horiz. scrollbalken unterdruecken */
+		      overflow-y: visible;
+			}
+			
+			h1 {
+			  font-size: 1.0em;
+			  margin: 0 0 0.7em; padding: 0.3em;
+			  text-align: center;
+			  //background-color: #fed;
+			  border: none;
+			}
+
+            //.xforms-label { font-weight: bold; }
+
+            .xforms-input input { width: 8em; margin-bottom: 2px; }
+            .xforms-select1 { margin-bottom: 2px; }
+            .xforms-select1 input { margin-bottom: 2px; }
+            #strasse-autocomplete, #plz-autocomplete, #ort-autocomplete { margin-bottom: 2px; }
+
+            //.adress-table { margin: 2px; padding: 2px; border: none; background-color: #fce5b6 }
+            .adress-table { margin: 2px; padding: 2px; border: none; }
+            .adress-table .td { min-width: 10em; padding: 0.5em }
+
+/*
+            .books-action-table { margin-bottom: 1em }
+            .books-action-table td { white-space: nowrap; vertical-align: middle; padding-right: 1em }
+            .books-action-table .xforms-submit img { vertical-align: middle }
+            .books-action-table .xforms-trigger img, .books-action-table .xforms-submit img { margin-right: 5px; vertical-align: middle }
+            .books-action-table .xforms-trigger span, .books-action-table .xforms-submit span { vertical-align: middle }
+            .books-action-table a:hover { text-decoration: none }
+ */         
+			
+        </xhtml:style>
+        
+        <xforms:model>
+            <xforms:instance id="poi">
+                <poi xmlns="">
+                    <Name/>
+                    <Ort/>
+                    <PLZ/>
+                    <Strasse/>
+                    <HNr/>
+                    <Erfasst/>
+                    <URL/>
+                    <Tel/>
+                    <EMail/>
+                    <Kategorie/>
+                    <Schlagworte/>
+                </poi>
+            </xforms:instance>
+            <xforms:instance id="addresses">
+                <addresses xmlns="">
+                    <address>
+                        <Strasse></Strasse>
+                        <Ort></Ort>
+                        <PLZ></PLZ>
+                        <HNr></HNr>
+                    </address>
+                </addresses>
+            </xforms:instance>
+            <xforms:instance id="search-address">
+                <search-address xmlns=""> 
+                    <Strasse></Strasse>
+                    <Ort></Ort>
+                    <PLZ></PLZ>
+                    <HNr></HNr>
+                </search-address>
+            </xforms:instance>
+            
+            <xforms:bind nodeset="/poi">
+                <xforms:bind nodeset="Name" required="true()"/>
+            </xforms:bind>
+            
+            <xforms:submission id="save-submission" 
+                    ref="instance('poi')" 
+                    resource="http://localhost:10080/lka/data/atlas_inbox/poi/poi.xml" 
+                    method="put" 
+                    replace="none">
+                <!-- xforms:message ev:event="DOMActivate">submitting...</xforms:message-->
+                <xforms:message ev:event="xforms-submit-error">Fehler beim Speichern des Objektes. (<xforms:output value="event('error-type')"/>)</xforms:message>
+            </xforms:submission>
+
+            <xforms:submission id="update-addresses" 
+                    ref="instance('search-address')" 
+                    targetref="instance('addresses')"
+                    resource="http://localhost:10080/lka/data/addresses/address.xml" 
+                    method="post" 
+                    replace="instance">
+            </xforms:submission>
+            
+            <!-- xforms:send submission="update-addresses" ev:event="xforms-ready"/-->
+        </xforms:model>
+    </xhtml:head>
+
+
+	<xhtml:body class="body-style">
+    	<xhtml:span>
+        	<xhtml:h1>Erfassen Sie einen neuen, interessanten Ort.</xhtml:h1>
+		</xhtml:span>
+        
+		<xhtml:span>
+        	<xforms:group ref="/poi">
+				<table class="adress-table">
+			  		<tr>
+			    		<td><xforms:label for="poi-kategorie">Kategorie</xforms:label></td>
+			    		<td></td>
+			    		<td>
+				            <xforms:select1 id="poi-kategorie" ref="Kategorie" appearance="minimal">
+				                <xforms:hint>Die Kategorie fasst Objekte unter einem Oberbegriff zusammen.</xforms:hint>
+				                <xforms:item>
+				                    <xforms:label>Grundschule</xforms:label>
+				                    <xforms:value>Grundschule</xforms:value>
+				                </xforms:item>
+				                <xforms:item>
+				                    <xforms:label>Oberschule</xforms:label>
+				                    <xforms:value>Oberschule</xforms:value>
+				                </xforms:item>
+				            </xforms:select1>
+					    </td>
+				  	</tr>
+
+					<tr>
+						<td><xforms:label for="poi-name">Name</xforms:label></td>
+						<td></td>
+						<td>
+				            <xforms:input id="poi-name" ref="Name" incremental="true">
+				                <xforms:hint>Vollständiger, öffentlich bekannter Name des Objektes. Institutionelle Eigennamen wie "Sonnenblume" bitte mit Anführungszeichen.</xforms:hint>
+				                <xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+				                <xforms:help>
+				                	<div>
+				                		<p>Beispiele:</p>
+				                		<ul>
+				                			<li>Amt für Geodäsie Freiberg</li>
+				                			<li>Kindergarten "Schlaumäuse"</li>
+				                		</ul>
+				                	</div>
+				                </xforms:help>
+				            </xforms:input>
+				            
+						</td>
+					</tr>
+
+					<tr>
+						<td>Straße*</td>
+						<td></td>
+						<td>
+				            <fr:autocomplete ref="Strasse" id="strasse-autocomplete" dynamic-itemset="true">
+				                <xforms:hint>Vollständiger Strassennamen ohne Abkürzungen.</xforms:hint>
+				                <xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+				                <xforms:itemset nodeset="instance('addresses')/address">
+				                    <xforms:label ref="Strasse"/>
+				                    <xforms:value ref="Strasse"/>
+				                </xforms:itemset>
+				
+				                <!-- React to user searching -->
+				                <xforms:action ev:event="fr-search-changed">
+				                    <xxforms:variable name="search-value" select="event('fr-search-value')"/>
+				                    <xxforms:variable name="make-suggestion" select="string-length($search-value) > 2"/>
+				                    <xforms:setvalue ref="instance('search-address')/Strasse" value="$search-value" />
+				                    <xforms:setvalue ref="instance('poi')/Strasse" value="$search-value" />
+				                    <xforms:action if="$make-suggestion">
+				                        <!-- xforms:message ev:event="DOMActivate">submission...</xforms:message-->
+				                        <!-- Update itemset -->
+				                        <xforms:send submission="update-addresses"/>
+				                    </xforms:action>
+				                    <xforms:action if="not($make-suggestion)">
+				                        <!-- xforms:message ev:event="DOMActivate"></xforms:message-->
+				                        <!-- Delete itemset -->
+				                        <!-- xforms:delete nodeset="instance('addresses')/address"/-->
+				                    </xforms:action>
+				                </xforms:action>
+				            </fr:autocomplete>
+						</td>
+					</tr>
+
+					<tr>
+						<td><xforms:label for="poi-hnr">HNr</xforms:label></td>
+						<td></td>
+						<td>
+							<xforms:input id="poi-hnr" ref="HNr" incremental="true">
+                				<xforms:hint>Die Hausnummer als Ganzzahl. Hausnummernzusätze ohne Leerzeichen wie folgt: 7b oder 7/1.</xforms:hint>
+                				<xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+                				<xforms:help><div><p>Beispiele:</p><ul><li>7b</li><li>7b-7c</li></ul></div></xforms:help>
+            				</xforms:input>
+						</td>
+					</tr>
+
+					<tr>
+						<td>PLZ*</td>
+						<td></td>
+						<td>
+						    <fr:autocomplete ref="PLZ" id="plz-autocomplete" dynamic-itemset="true">
+				                <xforms:hint>PLZ des Ortes wie in der postalischen Adresse</xforms:hint>
+				                <xforms:alert>Das ist kein Pflichtfeld</xforms:alert>
+				                <xforms:help><div><p>Beispiele:</p><ul><li>...</li><li>...</li></ul></div></xforms:help>
+
+				                <xforms:itemset nodeset="instance('addresses')/address">
+				                    <xforms:label ref="PLZ"/>
+				                    <xforms:value ref="PLZ"/>
+				                </xforms:itemset>
+				
+				                <!-- React to user searching -->
+				                <xforms:action ev:event="fr-search-changed">
+				                    <xxforms:variable name="search-value" select="event('fr-search-value')"/>
+				                    <xxforms:variable name="make-suggestion" select="string-length($search-value) > 1"/>
+				                    <xforms:setvalue ref="instance('search-address')/PLZ" value="$search-value" />
+				                    <xforms:setvalue ref="instance('poi')/PLZ" value="$search-value" />
+				                    <xforms:action if="$make-suggestion">
+				                        <!-- xforms:message ev:event="DOMActivate">submission...</xforms:message-->
+				                        <!-- Update itemset -->
+				                        <xforms:send submission="update-addresses"/>
+				                    </xforms:action>
+				                    <xforms:action if="not($make-suggestion)">
+				                        <!-- xforms:message ev:event="DOMActivate"></xforms:message-->
+				                        <!-- Delete itemset -->
+				                        <xforms:delete nodeset="instance('search-address')"/>
+				                    </xforms:action>
+				                </xforms:action>
+				            </fr:autocomplete>
+						</td>
+					</tr>
+
+					<tr>
+						<td>Ort*</td>
+						<td></td>
+						<td>
+				            <fr:autocomplete ref="Ort" id="ort-autocomplete" dynamic-itemset="true">
+				                <xforms:hint>Der Name des Ortes wie in der postalischen Adresse. Bitte ohne Ortsteil- oder Gemarkungszusätze.</xforms:hint>
+				                <xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+				                <xforms:help><div><p>Beispiele:</p><ul><li>...</li><li>...</li></ul></div></xforms:help>
+				                <xforms:itemset >
+				                    <xforms:label ref="distinct-values(instance('addresses')/address/Ort)"/>
+				                    <xforms:value ref="distinct-values(instance('addresses')/address/Ort)"/>
+				                </xforms:itemset>
+				
+				                <!-- React to user searching -->
+				                <xforms:action ev:event="fr-search-changed">
+				                    <xxforms:variable name="search-value" select="event('fr-search-value')"/>
+				                    <xxforms:variable name="make-suggestion" select="string-length($search-value) > 2"/>
+				                    <xforms:setvalue ref="instance('search-address')/Ort" value="$search-value" />
+				                    <xforms:setvalue ref="instance('poi')/Ort" value="$search-value" />
+				                    <xforms:action if="$make-suggestion">
+				                        <!-- xforms:message ev:event="DOMActivate">submission...</xforms:message-->
+				                        <!-- Update itemset -->
+				                        <xforms:send submission="update-addresses"/>
+				                    </xforms:action>
+				                    <xforms:action if="not($make-suggestion)">
+				                        <!-- xforms:message ev:event="DOMActivate"></xforms:message-->
+				                        <!-- Delete itemset -->
+				                        <!-- xforms:delete nodeset="instance('addresses')/address"/-->
+				                    </xforms:action>
+				                </xforms:action>
+				            </fr:autocomplete>
+						</td>
+					</tr>
+
+					<tr>
+						<td><xforms:label for="poi-web">Web</xforms:label></td>
+						<td></td>
+						<td>
+				            <xforms:input id="poi-web" ref="URL" incremental="false">
+				                <xforms:hint>Eine Homepage falls vorhanden. Bitte mit dem Protokollvermerk "http", also beispielsweise: http://www.landkreis-mittelsachsen.de</xforms:hint>
+				                <xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+				                <xforms:help><div><p>Beispiele:</p><ul><li>http://www.polymap.de/</li><li>http://www.google.de/</li></ul></div></xforms:help>
+				            </xforms:input>
+						</td>
+					</tr>
+
+					<tr>
+						<td><xforms:label for="poi-email">EMail</xforms:label></td>
+						<td></td>
+						<td>
+				            <xforms:input id="poi-email" ref="EMail" incremental="false">
+				                <xforms:hint>Eine EMail-Adresse falls vorhanden.</xforms:hint>
+				                <xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+				                <xforms:help><div><p>Beispiele:</p><ul><li>uwe.weigel@landkreis-mittelsachsen.de</li><li>oma@zuhause.de</li></ul></div></xforms:help>
+				            </xforms:input>
+						</td>
+					</tr>
+
+					<tr>
+						<td><xforms:label for="poi-telefon">Telefon</xforms:label></td>
+						<td></td>
+						<td>
+				            <xforms:input id="poi-telefon" ref="Tel" incremental="false">
+				                <xforms:hint>Die Telefonnummer. Bitte mit der Ländervorwahl für Deutschland und ohne Leer- oder Sonderzeichen, beispielsweise: +4937317993442</xforms:hint>
+				                <xforms:alert>Das ist ein Pflichtfeld</xforms:alert>
+				                <xforms:help><div><p>Beispiele:</p><ul><li>+49123456789</li><li>+4937317993442</li></ul></div></xforms:help>
+				            </xforms:input>
+						</td>
+					</tr>
+
+				</table>
+
+          </xforms:group>
+
+          <xforms:submit submission="save-submission"><xforms:label>Abschicken</xforms:label></xforms:submit>
+
+        </xhtml:span>
+        
+        <xhtml:p>
+            <xforms:output value="if (normalize-space(/poi/Name) = '') then '' else concat('Name: ', /poi/Name, '!')"/>
+        </xhtml:p>
+    </xhtml:body>
+</xhtml:html>

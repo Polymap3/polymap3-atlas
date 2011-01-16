@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="eu.hydrologis.jgrass.csv2shape.operation">
+      <operation
+            class="org.polymap.geocoder.CsvOperation"
+            icon="lka/dd_arrow.gif"
+            label="Addresssuche"
+            tooltip="Hoch-/Rechtswert aus Adresse ermitteln">
+      </operation>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="org.polymap.geocoder"
+            name="Geocoder">
+      </category>
+      <view
+            category="org.polymap.geocoder"
+            class="org.polymap.geocoder.tasks.TasksView"
+            icon="icons/task.gif"
+            id="org.polymap.geocoder.tasks.TasksView"
+            name="%views_tasksName">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   <extension
+         point="org.polymap.core.qi4j.moduleAssemblers">
+      <assembler
+            class="org.polymap.geocoder.tasks.qi4j.TaskRepositoryAssembler">
+      </assembler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            description="Funktionen des Geocoders (Adresssuche)"
+            id="org.polymap.lka.geocoder.actionSet"
+            label="Geocoder"
+            visible="true">
+         <action
+               class="org.polymap.geocoder.tasks.ShowTasksViewAction"
+               icon="icons/task.gif"
+               id="org.polymap.lka.geocoder.showTasksView"
+               label="Aufgaben anzeigen"
+               style="toggle"
+               toolbarPath="geocoder">
+         </action>
+      </actionSet>
+   </extension>
+     
+</plugin>

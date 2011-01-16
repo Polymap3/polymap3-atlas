@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-3.0.1.jar" sourcepath="packages/lucene-3.0.1-src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="http://lucene.apache.org/java/3_0_1/api/core"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/georss-rome-0.9.8.jar" sourcepath="packages/georss-rome-src-0.9.8.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/rome-0.9.jar" sourcepath="packages/rome-1.0-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://rome.dev.java.net/apidocs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/qdparser-1.1.0.jar" sourcepath="packages/qdparser-1.1.0-sources.jar"/>
+	<classpathentry kind="output" path="build/eclipse"/>
+</classpath>

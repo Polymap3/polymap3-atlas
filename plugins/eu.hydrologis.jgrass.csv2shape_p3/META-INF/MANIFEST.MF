@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Csv2shape Plug-in
+Bundle-SymbolicName: eu.hydrologis.jgrass.csv2shape;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: eu.hydrologis.jgrass.csv2shape.Csv2ShapePlugin
+Bundle-Vendor: HydroloGIS s.r.l.
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.rwt.widgets.upload;bundle-version="1.0.0",
+ net.refractions.udig.ui;bundle-version="1.2.0",
+ net.refractions.udig.catalog;bundle-version="1.2.0",
+ org.polymap.core;bundle-version="3.0.0",
+ org.polymap.core.libs;bundle-version="3.0.0",
+ eu.hydrologis.jgrass.libs;bundle-version="1.0.0",
+ eu.hydrologis.udig.catalog.jgrass;bundle-version="1.0.0",
+ net.refractions.udig.catalog.shp;bundle-version="1.2.0"
+Eclipse-LazyStart: true
+Bundle-ClassPath: lib/SuperCSV-1.52.jar,
+ .
+Export-Package: eu.hydrologis.jgrass.csv2shape,
+ eu.hydrologis.jgrass.csv2shape.importwizard,
+ org.supercsv.cellprocessor,
+ org.supercsv.cellprocessor.constraint,
+ org.supercsv.cellprocessor.ift,
+ org.supercsv.exception,
+ org.supercsv.io,
+ org.supercsv.prefs,
+ org.supercsv.util

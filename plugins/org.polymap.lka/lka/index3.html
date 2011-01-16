@@ -1,0 +1,360 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Mittelsachsen-Atlas (Beta)</title>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<meta name="keywords" content="Geoportal, Geokatalog, Mittelsachsen-Atlas, Mittelsachsenatlas, Mittelsachsen, Atlas, GDI, Geodaten, Geodatenkatalog, POI, Inspire, Landkreis Mittelsachsen">
+<meta name="description" content="Geoportal, Geokatalog, Mittelsachsen-Atlas, Mittelsachsenatlas, Mittelsachsen, Atlas, GDI, Geodaten, Geodatenkatalog, POI, Inspire, Landkreis Mittelsachsen"> 
+<meta name="author" content="Landratsamt Mittelsachsen Uwe Weigel">
+<meta name="publisher" content="Landratsamt Mittelsachsen Uwe Weigel">
+<meta name="copyright" content="Landratsamt Mittelsachsen 2010">
+<meta name="Language" content="German, de, deutsch, at, ch">
+<meta name="robots" content="index,follow">
+<meta name="revisit-after" content="3 days">
+<!--meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache"-->
+<meta name="resource-type" content="document">
+<meta http-equiv="expires" content="0">
+<meta name="Audience" content="Alle">
+
+<meta name="rating" content="general">
+<meta name="objecttype" content="journal">
+<meta name="distribution" content="global">
+<meta name="google-site-verification" content="wO2E4wsDozJPldOXcSXk5ZyAcftRV26QT04wLPK1U1k"/>
+<link rel="shortcut icon" href="images/favicon.ico">
+
+<!-- jQuery -->
+<script language="javascript" src="lib/jquery-1.4.2.min.js" type="text/javascript"></script>
+<script language="javascript" src="lib/urlEncode.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.getUrlParam.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery-ui-1.8.custom.min.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.dd.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.layout-1.2.0.js" type="text/javascript"></script>
+
+<!-- OpenLayers -->
+<script src="openlayers/full/OpenLayers.js" type="text/javascript"></script>
+<script src="openlayers/full/popup.js" type="text/javascript"></script>
+<script src="openlayers/full/tooltips.js" type="text/javascript"></script>
+
+<!-- CSS -->
+<!--link rel="stylesheet" type="text/css" href="css/cupertino2/jquery-ui-1.8.custom.css" /-->
+<!--link rel="stylesheet" type="text/css" href="css/pepper-grinder/jquery-ui-1.8.custom.css" /-->
+<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.4.custom.css" />
+<!--link rel="stylesheet" type="text/css" href="css/redmond/jquery-ui-1.8.custom.css" /-->
+<!--link rel="stylesheet" type="text/css" href="css/ui-lightness2/jquery-ui-1.8.custom.css" /-->
+<link rel="stylesheet" type="text/css" href="css/dd.css" />
+
+<!-- Atlas JavaScript/CSS -->
+<script src="lka.js" type="text/javascript"></script>
+<script src="index3.layout.js" type="text/javascript"></script>
+
+<!-- link rel="stylesheet" type="text/css" href="style.css" /-->
+<link rel="stylesheet" type="text/css" href="index3.layout.css" />
+
+<!-- Local config -->
+<script type="text/javascript">
+
+var hillEnabled = false;
+function toggleHill() {
+    satelite_wms.setVisibility( false );
+    streets_wms.setVisibility( true );
+    $('#streets_link').css( "background", "red" );
+};
+
+var satelliteEnabled = false;
+function toggleSatellite() {
+    if (satelliteEnabled) {
+        dop.setVisibility( false );
+        mapnik.setOpacity( 1 );
+        $('#satelite_link').css( "border", "2px solid transparent" );
+        $('#map').css( "background", "#F1EEE8" );
+        satelliteEnabled = false;
+    }
+    else {
+        dop.setVisibility( true );
+        mapnik.setVisibility( false );
+        mapnik.setZIndex( 500 );
+        dop.setZIndex( 300 );
+        mapnik.setOpacity( 0.5 );
+        $('#satelite_link').css( "border", "2px solid red" );
+        satelliteEnabled = true;
+    }
+};
+
+function toggleMeasure() {
+    if (measure.active) {
+        measure.deactivate()
+        $("#measure_link").css( "border", "2px solid transparent" );
+    }
+    else {
+        measure.activate();
+        $("#measure_link").css( "border", "2px solid red" );
+    }
+};
+
+function search() {
+    var searchStr = $("#search_field").val();
+    contexts[result_index].search( searchStr );
+};
+
+function initLocal() {
+    /*setTimeout( 
+            function() {
+                myLayout.close( "east" );
+            }, 750 );*/
+    onFeaturesLoaded = function( context, features ) {
+        myLayout.open( "east" );
+    }
+            
+    $('#map').css( "background", "#F1EEE8" );
+};
+</script>
+</head>
+
+<body onload="initLocal(); initMap(); init(); initMeasure(); init_layout();">
+
+<!-- Layout North -->
+<!--div class="ui-layout-north" onmouseover="myLayout.allowOverflow('north')" onmouseout="myLayout.resetOverflow(this)"-->
+<div class="ui-layout-north">
+    <!-- Top Menu -->
+    <div id="topmenue" class="ui-widget-content ui-widget"
+        style="height:22; margin-top:3; border:none; border-bottom:1px solid #bbb">
+        
+        <table cellspacing="1" class="ui-widget-content ui-widget" style="float:left; border:none;">
+            <tr>
+                <td>
+                    Projekt
+                </td><td>|</td>
+                
+                <td>
+                    <a href="http://81.201.152.249/geonetwork/srv/de/main.home" title="GeoKatalog">GeoKatalog</a>
+                </td><td>|</td>
+
+                <td>
+                    GeoPortal
+                </td><td>|</td>
+
+                <td>
+                    <a href="http://www.mittelsachsen-atlas.de/downloads">Downloads</a>
+                </td>
+            </tr>
+        </table>
+        
+        <table cellspacing="1" class="ui-widget-content ui-widget" style="float:right; border:none;">
+            <tr>
+                <td>
+                    © Landkreis Mittelsachsen
+                </td><td>|</td>
+
+                <td>
+                    <a href="#" onClick="show_dialog('Hilfe', 'nutzungsbedingungen.html' );">Nutzungsbedingungen</a>
+                </td><td>|</td>
+
+                <td>
+                    <a href="#" onClick="show_dialog('Hilfe', 'hilfe.html' );">Hilfe</a>
+                </td><td>|</td>
+
+                <td>
+                    <a href="#" onClick="show_dialog('Kontakt', 'kontakt.html');">Kontakt</a>
+                </td><td>|</td>
+
+                <td>
+                    <a href="#" onClick="show_dialog('Impressum', 'impressum.html');">Impressum</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <!-- Logo -->
+    <div style="position:absolute; padding:0pt; margin:0pt;">
+        <img src="images/mittelsachsen-atlas.png" id="logo" alt="logo" width="280" height="125"/>
+    </div>
+    
+    <!-- Search Form -->
+    <div style="position:absolute; left:300px; padding:35px 0px 30px 0px; margin:0px;">
+        <img id="search_img" src="images/marker_red.png" 
+            style="margin:1px 0px 0px 0px; padding:0px 0px 0px 0px;"/>
+        <input title="Sucheingabe" id="search_field" name="q" size="40" maxlength="150" init="true" class="lst ui-autocomplete-input ui-widget" />
+        <input type="submit" value="Suche" title="mittelsachsen-atlas-suche" class="ui-widget-content ui-widget-header ui-widget" 
+            style="padding:0px; margin:0px; width:150px; height:31px; border: 1px solid #bbb;" onclick="search();"/>
+
+        <!-- input type="text" id="search_field" size="40" style="zIndex:10000;"/-->
+        <!--input type="submit" value="Suchen" onclick="search();"-->
+        <!-- div id="text_under_search">Entdecke Orte in Mittelsachsen.</div-->
+    </div>
+</div>
+
+<!-- Layout East -->
+<div id="tabs" class="ui-layout-east" style="visibility:hidden;">
+    <!--div id="tabs" style="height: 100%;"-->
+        <ul style="border-top:none; border-right:none; border-left:none;">
+            <li><a href="#result_body0" style="border: none;"><img
+                src="images/marker_red.png" width="24" height="14" style="border: none;" /></a></li>
+            <li><a href="#result_body1"><img src="images/marker_green.png"
+                width="24" height="14" style="border: none;" /></a></li>
+            <li><a href="#result_body2"><img src="images/marker_yellow.png"
+                width="24" height="14" style="border: none;" /></a></li>
+            <li><a href="#result_body3"><img src="images/marker_blue.png"
+                width="24" height="14" style="border: none;" /></a></li>
+        </ul>
+        <div id="result_body0" class="ui-layout-content">
+            <p>An dieser Stelle erscheinen die Ergebnisse der Suchkategorie "rot".</p>
+            <p>
+            Die Ergebnisse von mehreren, unterschiedlichen Suchanfragen können unterschiedlichen
+            Kategorien zugeordnet werden. So kann ein individuellen Themenprofil
+            erstellt werden.
+            </p>
+            <p>
+            Diese Themenprofile können als Bookmark gespeichert werden oder als Link
+            an andere Nutzer verschickt werden. Probieren Sie die Beispiele.
+            </p>
+        </div>
+        <div id="result_body1" class="ui-layout-content">
+            <p>An dieser Stelle erscheinen die Ergebnisse der Suchkategorie "grün".</p>
+            <p>
+            Die Ergebnisse von mehreren, unterschiedlichen Suchanfragen können unterschiedlichen
+            Kategorien zugeordnet werden. So kann ein individuellen Themenprofil
+            erstellt werden.
+            </p>
+            <p>
+            Diese Themenprofile können als Bookmark gespeichert werden oder als Link
+            an andere Nutzer verschickt werden. Probieren Sie die Beispiele.
+            </p>
+        </div>
+        <div id="result_body2" class="ui-layout-content">
+            <p>Keine Suche f&uuml;r gelb -&gt; keine Treffer</p>
+        </div>
+        <div id="result_body3" class="ui-layout-content">
+            <p>Keine Suche f&uuml;r blau -&gt; keine Treffer</p>
+        </div>
+    <!--/div-->
+</div>
+
+<!-- Layout Center -->
+<!-- overflow-xxx is for IE to hide vertical scrollbar -->
+<div class="ui-layout-center" style="visibility:hidden; padding:0px; overflow:visible; overflow-x:auto; overflow-y:hidden;">
+    
+    <!-- Toolbar -->
+    <div id="toolbar" class="ui-widget-header ui-widget-content ui-helper-reset"
+         style="position:absolute; width:100%; z-index:10000; height:31px; border-top:none; border-left:none; border-right:none">
+
+      <!--table style="float:left;" cellspacing="1" align="center" cellpadding="0">
+          <tr>
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; width:100; padding:3; text-align:center; border:none;">
+                  <a id="streets_link" href="#" onClick="enableStreets()">Karte</a>
+              </td>
+
+              <td>|</td>
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; width:100; padding:3; text-align:center; border:none;">
+                  <a id="satelite_link" href="#" onClick="enableSatelite()">Karte</a>
+              </td>
+          </tr>
+      </table-->
+      
+      <table style="float:right;" cellspacing="1" align="center" cellpadding="0">
+          <tr>
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; width:90; padding:3; text-align:center; border:none;">
+                  <a id="satelite_link" href="#" onClick="toggleSatellite()">Luftbild</a>
+              </td>
+
+              <td>|</td>
+              
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="print_link" href="drucken.html" target="_blank">
+                  <img alt="" src="images/print.png" style="vertical-align:middle;"/>
+                  Drucken
+                </a>
+              </td>
+              <td>|</td>
+              
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="georss_link" href="#">
+                  <img alt="" src="images/feed.png" style="vertical-align:middle;"/>
+                  GeoRSS
+                </a>
+              </td>
+              <td>|</td>
+              
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="kml_link" href="#">
+                  <img alt="" src="images/kml.png" style="vertical-align:middle;"/>
+                  KML/Google
+                </a>
+              </td>
+              
+              <td>|</td>
+
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="bookmark_link" href="#">
+                  <img alt="" src="images/fav.png" style="vertical-align:middle;"/>
+                  Bookmark
+                </a>
+              </td>
+              
+              <td>|</td>
+
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="link_link" href="#" onClick="showLinkDialog();">
+                  <img alt="" src="images/link.png" style="vertical-align:middle;"/>
+                  Link
+                </a>
+              </td>
+              
+              <td>|</td>
+
+              <!--td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="print_link" href="#">
+                  <img alt="" src="images/print.png" style="vertical-align:middle;"/>
+                  Drucken
+                </a>
+              </td>
+              <td>|</td-->
+
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="measure_link" href="#" onClick="toggleMeasure();">
+                  <img alt="" src="images/measure.png" style="vertical-align:middle;"/>
+                  Messen
+                </a>
+              </td>
+              <td>|</td>
+
+              <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; padding:3; text-align:center; border:none;">
+                <a id="poi_link" href="#" onClick="showPoiDialog();">
+                  <img alt="" src="images/add_obj.gif" style="vertical-align:middle;"/>
+                  Neu
+                </a>
+              </td>
+          </tr>
+      </table>
+    </div>
+    
+    <!-- Map -->
+    <div id="map" style="zIndex:9000;"></div>
+</div>
+
+
+<!-- This div is used as the content of the dialog boxes for help, contact, etc. -->
+<div id="dialog"/>
+
+<!--  -->
+<div id="link_dialog" class="ui-layout-content ui-widget" style="visibility:hidden;">
+  <table class="ui-layout-content ui-widget">
+    <tr><td>Der Link umfasst auch die aktuellen Suchergebnisse. Bei Aufruf über den Link wird die Suche automatisch ausgeführt und angezeigt.</td></tr>
+    <tr><td><hr /></td></tr>
+    <tr><td>Link Zum Speichern oder per EMail verschicken:</td></tr>
+    <tr>
+      <td>
+        <input id="link_input" title="Link" name="q" size="35" maxlength="150" />
+      </td>
+    </tr>
+    <tr><td>HTML zum Einbetten in eigene Seiten:</td></tr>
+    <tr>
+      <td>
+        <input id="html_link_input" title="HTML" name="q" size="35" maxlength="250" />
+      </td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>

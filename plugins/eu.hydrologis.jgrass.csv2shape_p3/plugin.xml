@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="eu.hydrologis.jgrass.csv2shape.operation" name="CSV Operation" schema="schema/eu.hydrologis.jgrass.csv2shape.operation.exsd"/>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <wizard
+            category="eu.hydrologis.jgrass.ui.featureimportcategory"
+            class="eu.hydrologis.jgrass.csv2shape.importwizard.CsvImportWizard"
+            icon="icons/prop_ps.gif"
+            id="eu.hydrologis.jgrass.csv2shape.importwizard.CsvImportWizard"
+            name="CSV import">
+         <description>
+            Import a file in the CSV format from the local file system into the workspace.
+         </description>
+      </wizard>
+   </extension>
+   <extension
+         point="net.refractions.udig.ui.operation">
+      <operation
+            categoryId="eu.hydrologis.jgrass.operation.vectoroprations.category"
+            class="eu.hydrologis.jgrass.csv2shape.export.Shape2CVSExportOperation"
+            enablesFor="1"
+            id="eu.hydrologis.jgrass.csv2shape.export.operation"
+            name="Shapefile to CSV export"
+            targetClass="org.geotools.data.FeatureSource">
+      </operation>
+   </extension>
+
+</plugin>

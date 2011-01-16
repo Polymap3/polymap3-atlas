@@ -1,0 +1,24 @@
+body {
+    font-family: Arial, Sans-Serif;
+    font-size: 1.1em;
+    color: #ffffff;
+}
+
+hr {
+    border: none;
+    border-top: dashed 1px #999;
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+    height: 1px;
+}
+
+.notizfeld {
+	text-align: right;
+}
+.fontstyle {
+	font-family: Arial, Sans-Serif;
+	font-size: small;
+}
+.position {
+	text-align: center;
+}

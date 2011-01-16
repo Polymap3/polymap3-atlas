@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JGrass Plug-in
+Bundle-SymbolicName: eu.hydrologis.udig.catalog.jgrass;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: eu.hydrologis.udig.catalog.internal.jgrass.JGrassPlugin
+Bundle-Vendor: HydroloGIS
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ net.refractions.udig.core,
+ net.refractions.udig.catalog,
+ net.refractions.udig.catalog.ui,
+ eu.hydrologis.jgrass.libs;visibility:=reexport,
+ org.polymap.core;bundle-version="3.0.0",
+ org.polymap.core.libs;bundle-version="3.0.0",
+ net.refractions.udig.ui;bundle-version="1.2.0"
+Eclipse-LazyStart: true
+Export-Package: eu.hydrologis.udig.catalog.internal.jgrass,
+ eu.hydrologis.udig.catalog.internal.jgrass.ui,
+ eu.hydrologis.udig.catalog.utils

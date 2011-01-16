@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="net.refractions.udig.project.ui.tool">
+      <category
+            id="eu.hydrologis.jgrass.tools.category"
+            name="JGrass Tools Category">
+      </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="eu.hydrologis.jgrass.tools.category"
+            label="JGrass Tools"
+            visible="true">
+      </actionSet>
+   </extension>
+</plugin>

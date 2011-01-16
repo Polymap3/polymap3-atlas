@@ -1,0 +1,180 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Landkreisatlas Mittelsachsen (Beta)</title>
+
+<!-- 3. party javascript -->
+<script language="javascript" src="lib/jquery-1.4.2.min.js" type="text/javascript"></script>
+<script language="javascript" src="lib/urlEncode.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jFav_v1.0.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.getUrlParam.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery-ui-1.8.custom.min.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.dd.js" type="text/javascript"></script>
+
+<script src="openlayers/full/OpenLayers.js" type="text/javascript"></script>
+<script src="openlayers/full/popup.js" type="text/javascript"></script>
+
+<!-- 3. party css -->
+<link rel="stylesheet" type="text/css" href="css/cupertino2/jquery-ui-1.8.custom.css" />
+<!--link rel="stylesheet" type="text/css" href="css/pepper-grinder/jquery-ui-1.8.custom.css" /-->
+<!--link rel="stylesheet" type="text/css" href="css/redmond/jquery-ui-1.8.custom.css" /-->
+<!--link rel="stylesheet" type="text/css" href="css/ui-lightness2/jquery-ui-1.8.custom.css" /-->
+<link rel="stylesheet" type="text/css" href="css/dd.css" />
+
+<!-- own js/css -->
+<script src="lka.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+<!-- Local javascript -->
+<script type="text/javascript">
+function enableStreets() {
+    satelite_wms.setVisibility( false );
+    streets_wms.setVisibility( true );
+    $('#streets_link').css( "background", "red" );
+}
+function enableSatelite() {
+    streets_wms.setVisibility( false );
+    satelite_wms.setVisibility( true );
+    $('#satelite_link').css( "background", "red" );
+}
+</script>
+
+</head>
+<body onload="init();">
+
+
+<div id="search_container">
+	<div id="top_links" class="ui-widget-header">
+		<div id="top_links_left">
+			<a href="http://www.landkreis-mittelsachsen.de/">Landkreis Mittelsachsen</a>
+			|
+			<a href="http://www.polymap.de/joomla/index.php/en/news/53-landkreisatlas-mittelsachsen">Projekt</a>
+		</div>
+	
+		<div id="top_links_right">
+			<nobr>
+				<a href="#" onClick="show_help();">Hilfe</a>
+			</nobr>
+		</div>
+	</div> 
+
+	<!--  top links -->
+	<div id="search_content_logo">
+		<img src="images/lka_logo.png"
+	    id="logo" alt="logo"/>
+	</div>
+	   
+<div id="search_content">
+
+<!--select id="search_select" style="width:70px;" name="search_select" onchange="search_changed();" >
+    <option value="1" title="images/marker_red.png" ></option>
+    <option value="2" title="images/marker_green.png" ></option>
+    <option value="3" title="images/marker_yellow.png"></option>
+    <option value="4" title="images/marker_blue.png" ><option>
+</select--> 
+<img id="search_img" src="images/marker_red.png" width="25" height="22"/>
+
+<input type="text" id="search_field" size="40" style="zIndex:10000;"/>
+
+<input type="submit" value="Suchen" onclick="search();">
+    
+<div id="text_under_search">Entdecke Orte in Mittelsachsen.</div>
+</div>
+
+</div>
+
+
+</div>
+<div id="map_and_results">
+
+<div id="results_container">
+
+<!--div id="results_top" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget ui-widget-content ui-corner-all">
+  <a href="#">Bookmark</a>
+</div-->
+
+
+<!-- div id="edit_poi_div" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget ui-widget-content ui-corner-all">
+  <a href="#" onClick="edit_poi_start('request=type_select');"><img src="images/add_obj.gif"/>Ort hinzuf&uuml;gen</a>
+</div-->
+
+
+<div id="tabs" style="height:100%;">
+    <ul>
+      <li><a href="#result_body0" style="border:none;"><img src="images/marker_red.png" width="24" height="14" style="border:none;" /></a></li>
+      <li><a href="#result_body1"><img src="images/marker_green.png" width="24" height="14" style="border:none;" /></a></li>
+      <li><a href="#result_body2"><img src="images/marker_yellow.png" width="24" height="14" style="border:none;" /></a></li>
+      <li><a href="#result_body3"><img src="images/marker_blue.png" width="24" height="14" style="border:none;" /></a></li>
+    </ul>
+    <div id="result_body0" style="overflow:auto;height:100%;">
+      <p>Keine Suche f&uuml;r rot -&gt; keine Treffer</p>
+    </div>
+    <div id="result_body1" style="overflow:auto;height:100%;">
+      <p>Keine Suche f&uuml;r gr&uuml;n -&gt; keine Treffer</p>
+    </div>
+    <div id="result_body2" style="overflow:auto;height:100%;">
+      <p>Keine Suche f&uuml;r gelb -&gt; keine Treffer</p>
+    </div>
+    <div id="result_body3" style="overflow:auto;height:100%;">
+      <p>Keine Suche f&uuml;r blau -&gt; keine Treffer</p>
+    </div>
+</div>
+</div>
+
+<div id="map_container">
+  
+  <div id="map_top" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+    <a id="bookmark_link" href="#"><img src="images/toc_book.gif"/>Bookmark</a>
+    <a href="#"><img src="images/print_tsk.gif"/>Drucken</a>
+    <a id="kml_link" href="#"><img src="images/kml.gif"/>KML</a>
+    <a id="georss_link" href="#"><img src="images/rss.png"/>GeoRSS</a>
+    <!-- a id="streets_link" href="#" onClick="enableStreets()">[Karte]</a>
+    <a id="satelite_link" href="#" onClick="enableSatelite()">[Luftbild]</a-->
+  </div>
+  
+  <div id="map"></div>
+</div>
+
+
+</div>
+
+<!-- div id="help">
+
+<h1>Suchausdrücke</h1>
+<h3>Einfache Beispiele:</h3>
+<p>
+  <ul>
+    <li><b><tt>Markt</tt></b> : sucht Einträge mit der Zeichenkette 'Markt'</li>
+    <li><b><tt>"Markt"</tt></b> : sucht ebenfalls die Zeichenkette 'Markt'</li>
+    <li><b><tt>"am Markt"</tt></b> : sucht die Zeichenkette 'am Markt'</li>
+    <li><b><tt>am Markt</tt></b> : sucht Einträge, welche die Zeichenketten 'am' <b>UND</b> 'Markt' enthalten; gefunden wird also auch 'Markt am Sonntag'</li>
+  </ul>
+</p>
+<h3>Mehrere Suchbegriffe:</h3>
+Wie im letzten Beispiel zu sehen können auch mehrere Begriffe gesucht werden. Wird keine spezielle Verkettung angegeben,
+dann werden Einträge gefunden, welche beide Suchbegriffe enthalten.
+<p>
+  <ul>
+    <li><b><tt>am AND Markt</tt></b> : sucht ebenfalls nach den Zeichenketten 'am' <b>UND</b> 'Markt'</li>
+    <li><b><tt>am OR Markt</tt></b> : sucht Einträge, welche die Zeichenketten 'am' <b>ODER</b> 'Markt' enthalten</li>
+  </ul>
+</p>
+<h3>Platzhalten:</h3>
+In den Suchbegriffen können die Platzhalter "*" und "?" verwendet werden. "*" steht für mehrere Zeichen. "?" steht für ein einzelnes Zeichen.
+<p>
+  <ul>
+    <li><b><tt>Markt*</tt></b> : findet 'Markt<em>platz</em>', 'Markt<em>strasse</em>' etc</li>
+    <li><b><tt>M?rkt</tt></b> : findet 'Markt' und 'Morkt'... tolles Beispiel! :)</li>
+  </ul>
+</p>
+Wird nur ein Suchbegriff ohne Platzhalter eingegeben, dann wird <b>automatisch</b> ein "*" angefügt.
+<h3>Ähnliche Wörter:</h3>
+Es können auch ungenau geschriebene oder ähnliche Wörter gesucht werden.
+<p>
+  <ul>
+    <li><b><tt>hain~</tt></b> : findet 'Am Hohen Rain', 'Dr.-Heinrich-Hahn-Straße' etc</li>
+  </ul>
+</p>
+</div-->
+
+</body>
+</html>
