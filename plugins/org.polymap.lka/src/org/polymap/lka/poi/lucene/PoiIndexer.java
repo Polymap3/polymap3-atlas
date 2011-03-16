@@ -32,6 +32,13 @@ import java.util.TreeMap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureImpl;
+import org.geotools.geojson.geom.GeometryJSON;
+import org.opengis.feature.Property;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -54,14 +61,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.geotools.referencing.CRS;
-import org.json.JSONObject;
-import org.opengis.feature.Property;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Geometry;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
@@ -75,6 +76,7 @@ import org.polymap.core.workbench.PolymapWorkbench;
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.lka.LKAPlugin;
+import org.polymap.lka.poi.SearchServlet;
 
 /**
  * Lucene based search and index methods.
@@ -93,6 +95,8 @@ class PoiIndexer {
     public static final String FIELD_DESCRIPTION = "description";
 
     public static final String FIELD_GEOM = "_geom_";
+
+    public static final String FIELD_SRS = "_srs_";
 
     public static final String FIELD_KEYWORDS = "_keywords_";
 
@@ -114,7 +118,7 @@ class PoiIndexer {
 
     private GlobalModelChangeListener modelListener;
 
-
+    
     /**
      * 
      * @param indexDir The directory to store the index into; null specifies
@@ -288,7 +292,13 @@ class PoiIndexer {
 
                 PipelineFeatureSource fs = PipelineFeatureSource.forLayer( layer, false );
 
-                log.info( "    found FeatureSource: " + fs );
+                // SRS
+                CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
+                String dataSRS = dataCRS != null
+                        ? SearchServlet.toSRS( dataCRS )
+                        : layer.getCRSCode();
+
+                log.info( "    found FeatureSource: " + fs + ", SRS=" + dataSRS );
                 FeatureCollection fc = fs.getFeatures();
                 Iterator it = fc.iterator();
                 
@@ -297,6 +307,8 @@ class PoiIndexer {
                     int indexed = 0;
                     String layerKeywords = layer.getKeywords() != null ? StringUtils.join( layer.getKeywords(), " " ) : "";
 
+                    GeometryJSON jsonEncoder = new GeometryJSON( 4 );
+                    
                     while (it.hasNext()) {
                         try {
                             SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
@@ -312,19 +324,32 @@ class PoiIndexer {
                                 if (prop.getValue() == null) {
                                     continue;
                                 }
-                                // Point
-                                else if (prop.getValue().getClass().equals( Point.class )) {
-                                    Point point = (Point)prop.getValue();
-                                    CoordinateReferenceSystem pointCRS = feature.getDefaultGeometryProperty().getDescriptor().getCoordinateReferenceSystem();
-                                    String srs = CRS.toSRS( pointCRS );
-                                    srs = srs.equalsIgnoreCase( "GCS_WGS_1984" ) ? "EPSG:4326" : srs;
-                                    JSONObject json = new JSONObject()
-                                            .put( "x", point.getX() )
-                                            .put( "y", point.getY() )
-                                            .put( "srs", srs );
-                                    doc.add( new Field( FIELD_GEOM, json.toString(),
+                                // Geometry
+                                else if (Geometry.class.isAssignableFrom( prop.getValue().getClass() ) ) {
+                                    Geometry geom = (Geometry)prop.getValue();
+                                    StringWriter out = new StringWriter( 1024 );
+                                    jsonEncoder.write( geom, out );
+                                    log.info( "    GEOM: " + geom );
+                                    log.info( "    JSON: " + out.toString() );
+                                    doc.add( new Field( FIELD_GEOM, out.toString(),
+                                            Field.Store.YES, Field.Index.NO ) );
+                                    
+                                    doc.add( new Field( FIELD_SRS, dataSRS,
                                             Field.Store.YES, Field.Index.NO ) );
                                 }
+//                                // Point
+//                                else if (prop.getValue().getClass().equals( Point.class )) {
+//                                    Point point = (Point)prop.getValue();
+//                                    CoordinateReferenceSystem pointCRS = feature.getDefaultGeometryProperty().getDescriptor().getCoordinateReferenceSystem();
+//                                    String srs = CRS.toSRS( pointCRS );
+//                                    srs = srs.equalsIgnoreCase( "GCS_WGS_1984" ) ? "EPSG:4326" : srs;
+//                                    JSONObject json = new JSONObject()
+//                                            .put( "x", point.getX() )
+//                                            .put( "y", point.getY() )
+//                                            .put( "srs", srs );
+//                                    doc.add( new Field( FIELD_GEOM, json.toString(),
+//                                            Field.Store.YES, Field.Index.NO ) );
+//                                }
                                 // address fields
                                 else if (ArrayUtils.contains( AddressIndexer.PROP_CITY, propName )) {
                                     address.setCity( prop.getValue().toString() );
@@ -360,7 +385,7 @@ class PoiIndexer {
                             }
                             
                             keywords.append( layerKeywords );
-                            log.debug( "    keywords: " + keywords.toString() );
+                            //log.debug( "    keywords: " + keywords.toString() );
                             doc.add( new Field( FIELD_KEYWORDS, keywords.toString(),
                                     Field.Store.NO, Field.Index.ANALYZED ) );
 

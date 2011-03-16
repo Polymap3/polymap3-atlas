@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 import org.polymap.geocoder.Address;
 import org.polymap.lka.poi.SearchResult;
@@ -104,6 +104,8 @@ public class AddressSearcher
     throws Exception {
         List<Address> addresses = geocoder.find( term, maxResults );
 
+        GeometryFactory gf = new GeometryFactory();
+        
         // avoid record with same city/street
         Map<String,SearchResult> result = new HashMap( maxResults );
         for (Address address : addresses) {
@@ -111,8 +113,8 @@ public class AddressSearcher
             SearchResult record = new SearchResult( address.getScore(), title );
             record.setAddress( address );
             
-            Point point = address.getPoint();
-            record.setPosition( point.getX(), point.getY(), AddressIndexer.SRS );
+            record.setGeom( address.getPoint() );
+            record.setSRS( address.getSRS() );
             
             result.put( title, record );
         }

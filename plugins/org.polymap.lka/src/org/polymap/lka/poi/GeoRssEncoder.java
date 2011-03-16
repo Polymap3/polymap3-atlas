@@ -33,11 +33,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.StringWriter;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.document.Document;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
@@ -50,6 +45,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.document.Document;
+
 import com.sun.syndication.feed.WireFeed;
 import com.sun.syndication.feed.module.georss.GeoRSSModule;
 import com.sun.syndication.feed.module.georss.SimpleModuleImpl;
@@ -61,7 +62,7 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndFeedImpl;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedOutput;
-import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
@@ -95,12 +96,19 @@ public class GeoRssEncoder
     
     private String                      baseURL;
     
+    private String                      title;
+    
+    private String                      description;          
+    
 
     public GeoRssEncoder( OutputStream out, CoordinateReferenceSystem worldCRS,
-            String baseURL ) throws IOException {
+            String baseURL, String title, String description ) throws IOException {
         super( out );
+        assert baseURL != null;
         this.worldCRS = worldCRS;
         this.baseURL = baseURL;
+        this.title = title;
+        this.description = description;
     }
 
     
@@ -150,9 +158,9 @@ public class GeoRssEncoder
         SyndFeed feed = new SyndFeedImpl();
         feed.setFeedType( "rss_2.0" );
 
-        feed.setTitle( "Mittelsachsen-Atlas" );
-        feed.setLink( "http://www.mittelsachsen-atlas.de/" );
-        feed.setDescription( "Daten von mittelsachsen-atlas.de" );
+        feed.setTitle( title != null ? title : "POLYMAP3|Atlas" );
+        feed.setLink( baseURL );
+        feed.setDescription( description != null ? description : "" );
 
         feed.setEntries( feedEntries );
         WireFeed wiredFeed = feed.createWireFeed();
@@ -209,10 +217,10 @@ public class GeoRssEncoder
                 }
             }
         }
-        SyndContentImpl description = new SyndContentImpl();
-        description.setType( "text/html" );
-        description.setValue( buf.toString() );
-        entry.setDescription( description );
+        SyndContentImpl descr = new SyndContentImpl();
+        descr.setType( "text/html" );
+        descr.setValue( buf.toString() );
+        entry.setDescription( descr );
 
         GeoRSSModule module = new SimpleModuleImpl();
         //GeometryAttribute geom = feature.getDefaultGeometryProperty();
@@ -257,22 +265,16 @@ public class GeoRssEncoder
                     .append( "</em></p>" );
         }
 
-        // position
-        CoordinateReferenceSystem featureCRS = CRS.decode( obj.getPosition().srs );
+        // geometry
+        CoordinateReferenceSystem featureCRS = CRS.decode( obj.getSRS() );
         if (!featureCRS.equals( dataCRS )) {
             transform = CRS.findMathTransform( featureCRS, worldCRS, true );
             dataCRS = featureCRS;
         }
-        double x = obj.getPosition().x;
-        double y = obj.getPosition().y;
-        // FIXME EPSG:900913 offset
-        if (obj.getPosition().srs.equals( "EPSG:31468" )) {
-            x = obj.getPosition().x - 113;
-            y = obj.getPosition().y - 200;
-        }
-        Point point = gf.createPoint( new Coordinate( x, y ) );
-        point = transform != null ? (Point)JTS.transform( point, transform ) : point;
-        log.debug( "    transformed: " + point );
+        Geometry geom = obj.getGeom();
+        geom = transform != null ? JTS.transform( geom, transform ) : geom;
+        log.debug( "    transformed: " + geom );
+        Point point = geom.getCentroid();
         Position pos = new Position( point.getY(), point.getX() );
         
         // description
@@ -296,10 +298,10 @@ public class GeoRssEncoder
                 buf.append( "</nobr><br/>" );
             }
         }
-        SyndContentImpl description = new SyndContentImpl();
-        description.setType( "text/html" );
-        description.setValue( buf.toString() );
-        entry.setDescription(description);
+        SyndContentImpl descr = new SyndContentImpl();
+        descr.setType( "text/html" );
+        descr.setValue( buf.toString() );
+        entry.setDescription(descr);
 
         GeoRSSModule module = new SimpleModuleImpl();
         //GeometryAttribute geom = feature.getDefaultGeometryProperty();

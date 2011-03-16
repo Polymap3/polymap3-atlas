@@ -33,6 +33,16 @@ import java.util.Set;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import org.geotools.data.FeatureSource;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureImpl;
+import org.geotools.geojson.geom.GeometryJSON;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.commons.collections.MultiHashMap;
 import org.apache.commons.collections.MultiMap;
@@ -58,17 +68,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
-import org.geotools.data.FeatureSource;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import org.polymap.core.data.pipeline.PipelineIncubationException;
@@ -81,6 +82,7 @@ import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.workbench.PolymapWorkbench;
 import org.polymap.geocoder.Address;
 import org.polymap.lka.LKAPlugin;
+import org.polymap.lka.poi.SearchServlet;
 
 /**
  * Lucene based search and indexing engine.
@@ -93,8 +95,6 @@ import org.polymap.lka.LKAPlugin;
 public class AddressIndexer {
     
     private static final Log  log = LogFactory.getLog( AddressIndexer.class );
-    
-    public static final String  SRS = "EPSG:31468";
     
     public static final String[] PROP_STREET = { "street", "strasse", "straße" };
 
@@ -111,6 +111,8 @@ public class AddressIndexer {
     public static final String[] PROP_POSTALCODE = { "postalcode", "code", "zip", "zipcode", "plz" };
     
     public static final String FIELD_GEOM = "_geom_";
+
+    public static final String FIELD_SRS = "_srs_";
 
     public static final String FIELD_KEYWORDS = "_keywords_";
 
@@ -263,6 +265,7 @@ public class AddressIndexer {
             Address a = (Address)addresses.iterator().next();
             Address street = new Address( a.getStreet(), null, a.getPostalCode(), a.getCity(), a.getCountry() );
             street.setPoint( a.getPoint() );
+            street.setSRS( a.getSRS() );
             result.add( street );
         }
         return result;
@@ -313,15 +316,19 @@ public class AddressIndexer {
             Collection addresses = (Collection)numbersMap.get( key );
             
             Geometry hull = null;
+            String srs = null;
             for (Object obj : addresses) {
                 hull = hull == null 
                         ? ((Address)obj).getPoint()
                         : hull.union( ((Address)obj).getPoint() );
+                srs = ((Address)obj).getSRS();
             }
             
             Address a = (Address)addresses.iterator().next();
             Address city = new Address( null, null, a.getPostalCode(), a.getCity(), a.getCountry() );
             city.setPoint( hull.getCentroid() );
+            city.setSRS( srs );
+
             result.add( city );
         }
         return result;
@@ -453,7 +460,11 @@ public class AddressIndexer {
         IndexWriter iwriter = new IndexWriter( directory, analyzer, true, new IndexWriter.MaxFieldLength( 25000 ) );
 
         for (FeatureSource fs : provider.findFeatureSources()) {
-            log.info( "    found FeatureSource: " + fs );
+            // SRS
+            CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
+            String dataSRS = SearchServlet.toSRS( dataCRS );
+
+            log.info( "    found FeatureSource: " + fs + ", SRS: " + dataSRS );
             FeatureCollection fc = fs.getFeatures();
             Iterator it = fc.iterator();
             
@@ -477,6 +488,9 @@ public class AddressIndexer {
                         city = prop.getValue().toString();
                         keywords.append( prop.getValue().toString() ).append( ' ' );
                     }
+                    else {
+                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_CITY ) );
+                    }
                     prop = findProp( feature, PROP_CITY_X );
                     if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
                         cityExt = prop.getValue().toString();
@@ -493,9 +507,15 @@ public class AddressIndexer {
                         doc.add( new Field( FIELD_STREET, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
                         keywords.append( prop.getValue().toString() ).append( ' ' );
                     }
+                    else {
+                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_STREET ) );
+                    }
                     prop = findProp( feature, PROP_NUMBER );
                     if (prop != null && prop.getValue() != null) {
                         number = prop.getValue().toString();
+                    }
+                    else {
+                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_NUMBER ) );
                     }
                     prop = findProp( feature, PROP_NUMBER_X );
                     if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
@@ -506,6 +526,9 @@ public class AddressIndexer {
                         String propValue = prop.getValue().toString();
                         doc.add( new Field( FIELD_POSTALCODE, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
                         keywords.append( prop.getValue().toString() ).append( ' ' );
+                    }
+                    else {
+                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_POSTALCODE ) );
                     }
 
                     // cityFull
@@ -520,8 +543,13 @@ public class AddressIndexer {
                     
                     // point
                     Point point = (Point)feature.getDefaultGeometry();
-                    JSONObject json = new JSONObject().put( "x", point.getX() ).put( "y", point.getY() );
-                    doc.add( new Field( FIELD_GEOM, json.toString(), Field.Store.YES, Field.Index.NO ) );
+                    StringWriter out = new StringWriter( 128 );
+                    new GeometryJSON().write( point, out );
+                    doc.add( new Field( FIELD_GEOM, out.toString(),
+                            Field.Store.YES, Field.Index.NO ) );
+                    
+                    doc.add( new Field( FIELD_SRS, dataSRS,
+                            Field.Store.YES, Field.Index.NO ) );
 
                     doc.add( new Field( FIELD_KEYWORDS, keywords.toString(), Field.Store.NO, Field.Index.ANALYZED ) );
                     
@@ -583,15 +611,9 @@ public class AddressIndexer {
         //log.info( "score: " + scoreDoc.score );
         address.setScore( scoreDoc.score );
 
-        try {
-            JSONObject json = new JSONObject( doc.get( FIELD_GEOM ) );
-            Coordinate coord = new Coordinate( json.getDouble( "x" ), json.getDouble( "y" ) );
-            GeometryFactory geomFactory = new GeometryFactory();
-            address.setPoint( geomFactory.createPoint( coord ) );
-        }
-        catch (JSONException e) {
-            throw new RuntimeException( "unexpected:", e );
-        }
+        Geometry point = new GeometryJSON().read( new StringReader( doc.get( FIELD_GEOM ) ) );
+        address.setPoint( (Point)point );
+        address.setSRS( doc.get( FIELD_SRS ) );
         return address;
     }
     

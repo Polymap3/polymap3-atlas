@@ -25,6 +25,8 @@ package org.polymap.lka.poi;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.polymap.geocoder.Address;
 
 /**
@@ -43,7 +45,9 @@ public class SearchResult {
    
     private Address             address;
     
-    private Position            position;
+    private Geometry            geom;
+    
+    private String              srs;
     
     private Map<String,String>  fields = new HashMap();
     
@@ -115,38 +119,21 @@ public class SearchResult {
         }
     }
 
-    public void setPosition( double x, double y, String srs ) {
-        assert srs != null;
-        position = new Position( x, y, 0, srs );
+    public void setGeom( Geometry geom ) {
+        assert geom != null;
+        this.geom = geom;
     }
     
-    public Position getPosition() {
-        return position;
+    public Geometry getGeom() {
+        return geom;
     }
 
-
-    /**
-     * The point position of a {@link SearchResult} record. 
-     *
-     * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
-     */
-    class Position {
-        
-        public double       x, y, z;
-        
-        public String       srs;
-
-
-        public Position( double x, double y, double z, String srs ) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.srs = srs;
-        }
-
-        public String toString() {
-            return "Position [x=" + x + ", y=" + y + ", srs=" + srs + "]";
-        }
-        
+    public String getSRS() {
+        return srs;
     }
+    
+    public void setSRS( String srs ) {
+        this.srs = srs;
+    }
+
 }

@@ -33,13 +33,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geotools.referencing.CRS;
 import org.json.JSONArray;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This servlet handles search and autocomplete requests. It provides data
@@ -109,16 +110,13 @@ public class SearchServlet
             }
 	   	}
 	   	
-	   	// content request (GeoRSS/KML) *******************
+	   	// content request (GeoRSS/KML/GeoJSON) ***********
 	   	else if (request.getParameter( "search" ) != null) {
             String searchStr = request.getParameter( "search" );
             searchStr = URLDecoder.decode( searchStr, "UTF-8" );
             log.info( "    searchStr= " + searchStr );
             String outputType = request.getParameter( "outputType" );
-            // FIXME figure the real client URL (without reverse proxies)
-            //String baseURL = StringUtils.substringBeforeLast( request.getRequestURL().toString(), "/" ) + "/index.html";
-            String baseURL = "http://mittelsachsen-atlas.de/index3.html";
-            log.info( "    baseURL: " + baseURL );
+
             int maxResults = request.getParameter( "maxResults" ) != null
                     ? Integer.parseInt( request.getParameter( "maxResults" ) )
                     : DEFAULT_MAX_SEARCH_RESULTS;
@@ -128,19 +126,35 @@ public class SearchServlet
             if (srsParam != null) {
                 try {
                     worldCRS = CRS.decode( srsParam );
-                } catch (Exception e) {
+                } 
+                catch (Exception e) {
                     worldCRS =  DEFAULT_WORLD_CRS;
                 }
             }
+            log.debug( "worldCRS: " + worldCRS );
 
+            // XXX do this encoding via fast, simple, scaleable pipeline and
+            // (existing) processors
             try {
                 ObjectOutput out = null;
                 if ("KML".equalsIgnoreCase( outputType )) {
                     out = new KMLEncoder( response.getOutputStream(), CRS.decode( "EPSG:900913" ) );
                     response.setContentType( "application/vnd.google-earth.kml+xml" );
                 }
+                else if ("JSON".equalsIgnoreCase( outputType )) {
+                    response.setContentType( "application/json; charset=UTF-8" );
+                    response.setCharacterEncoding( "UTF-8" );
+                    out = new GeoJsonEncoder( response.getOutputStream(), worldCRS );
+                }
                 else {
-                    out = new GeoRssEncoder( response.getOutputStream(), worldCRS, baseURL );
+                    // FIXME figure the real client URL (without reverse proxies)
+                    //String baseURL = StringUtils.substringBeforeLast( request.getRequestURL().toString(), "/" ) + "/index.html";
+                    String baseURL = (String)System.getProperties().get( "org.polymap.atlas.feed.url" );
+                    log.info( "    baseURL: " + baseURL );                    
+                    String title = (String)System.getProperties().get( "org.polymap.atlas.feed.title" );
+                    String description = (String)System.getProperties().get( "org.polymap.atlas.feed.description" );
+                    
+                    out = new GeoRssEncoder( response.getOutputStream(), worldCRS, baseURL, title, description );
                     response.setContentType( "application/rss+xml" );
                 }
 
@@ -155,7 +169,22 @@ public class SearchServlet
             }
 	   	}
  	}
-   
+
+    
+    public static String toSRS( CoordinateReferenceSystem crs ) {
+        // from http://lists.wald.intevation.org/pipermail/schmitzm-commits/2009-July/000228.html
+        // If we can determine the EPSG code for this, let's save it as
+        // "EPSG:12345" to the file.
+        if (!crs.getIdentifiers().isEmpty()) {
+            Object next = crs.getIdentifiers().iterator().next();
+            if (next instanceof Identifier) {
+                Identifier identifier = (Identifier) next;
+                return identifier.toString();
+            }
+        }
+        throw new RuntimeException( "No SRS found for CRS: " + crs );
+    }
+
 }
 
 

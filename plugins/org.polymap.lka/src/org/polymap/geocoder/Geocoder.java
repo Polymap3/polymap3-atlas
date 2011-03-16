@@ -42,7 +42,6 @@ public abstract class Geocoder {
     /**
      *
      * @param addressString
-     * @return
      * @throws Exception
      */
     public abstract List<Address> find( String addressString, int maxResults )
@@ -52,7 +51,6 @@ public abstract class Geocoder {
      *
      * @param fragment
      * @param maxResults 
-     * @return
      * @throws Exception
      */
     public abstract List<Address> find( Address fragment, int maxResults )

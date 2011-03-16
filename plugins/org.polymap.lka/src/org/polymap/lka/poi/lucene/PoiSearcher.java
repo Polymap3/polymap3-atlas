@@ -26,12 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.io.File;
+import java.io.StringReader;
+
+import org.geotools.geojson.geom.GeometryJSON;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.ScoreDoc;
-import org.json.JSONObject;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import org.eclipse.core.runtime.IPath;
 
@@ -74,7 +78,9 @@ public class PoiSearcher
     public List<SearchResult> search( String term, int maxResults )
     throws Exception {
         ScoreDoc[] scoreDocs = indexer.search( term, maxResults );
-
+        
+        GeometryJSON jsonDecoder = new GeometryJSON();
+        
         List<SearchResult> result = new ArrayList( maxResults );
         for (ScoreDoc scoreDoc : scoreDocs) {
             Document doc = indexer.getDocument( scoreDoc );
@@ -87,15 +93,19 @@ public class PoiSearcher
                 title = doc.get( PoiIndexer.FIELD_TITLE.toUpperCase() );
             }
             if (title == null) {
-                title = "ohne Namen";
+                title = "(ohne Namen)";
             }
             SearchResult record = new SearchResult( scoreDoc.score, title );
             
             for (Fieldable field : doc.getFields()) {
                 // geom
                 if (field.name().equals( PoiIndexer.FIELD_GEOM )) {
-                    JSONObject json = new JSONObject( field.stringValue() );
-                    record.setPosition( json.getDouble( "x" ), json.getDouble( "y" ), json.getString( "srs" ) );
+                    Geometry geom = jsonDecoder.read( new StringReader( field.stringValue() ) );
+                    record.setGeom( geom );
+                }
+                // srs
+                else if (field.name().equals( PoiIndexer.FIELD_SRS )) {
+                    record.setSRS( field.stringValue() );
                 }
                 // title
                 else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_TITLE )) {

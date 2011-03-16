@@ -54,6 +54,8 @@ public class Address
     
     private Point           point;
     
+    private String          srs;
+
     private float           score = -1;
 
 
@@ -178,4 +180,13 @@ public class Address
         json.put( "number", number );
         return json.toString();
     }
+
+    public void setSRS( String srs ) {
+        this.srs = srs;
+    }
+
+    public String getSRS() {
+        return srs;
+    }
+    
 }

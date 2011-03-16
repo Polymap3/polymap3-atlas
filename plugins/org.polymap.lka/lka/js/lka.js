@@ -1,7 +1,7 @@
 /*
  * polymap.org
- * Copyright 2009, Polymap GmbH, and individual contributors as indicated
- * by the @authors tag.
+ * Copyright 2009, Falko Bräutigam, and individual contributors as
+ * indicated by the @authors tag.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -12,13 +12,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- * $Id$
  */
 
 /** The configuration of the 'streets' WMS. */
@@ -39,11 +32,6 @@ var search_field_config = {
         search_url : 'search',
         base_url : 'index3.html'
 };
-/** XForms configuration */
-var xforms_config = {
-        iframe_url : window.location.protocol + '//' + window.location.host + '/orbeon/xforms-sandbox/run?',
-        form_url : 'http://localhost:7072/lka/poi_form.xhtml'
-};
 
 /** Array of SearchContext instances. */
 var contexts = null;
@@ -53,6 +41,7 @@ var result_index = 0;
 
 /** The map and the layers. */
 map = null;
+mapCRS = "EPSG:900913";
 dop = null;
 mapnik = null;
 hillshade = null;
@@ -268,7 +257,7 @@ function SearchContext( index, markerImage ) {
             //search_str = $.URLEncode( search_str );
             //search_str = jQuery.param( search_str, true );
             this.searchStr = encodeURIComponent( this.searchStr );
-            this.searchURL = search_field_config.search_url + "?search=" + this.searchStr;
+            this.searchURL = search_field_config.search_url + "?search=" + this.searchStr + "&outputType=JSON&srs=" + mapCRS;
 
             updateLinks();
             
@@ -294,7 +283,7 @@ function SearchContext( index, markerImage ) {
 
             this.layer = new OpenLayers.Layer.GML( "Suchergebnis",
                 this.searchURL, { 
-                format: OpenLayers.Format.GeoRSS,
+                format: OpenLayers.Format.GeoJSON,
                 styleMap: styleMap,
                 attribution: '<a href="http://www.landkreis-mittelsachsen.de/">Landkreis Mittelsachsen</a>'
             });

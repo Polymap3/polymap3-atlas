@@ -31,9 +31,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.document.Document;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -53,12 +50,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.document.Document;
+
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
 
 import org.polymap.core.data.pipeline.PipelineProcessor;
-import org.polymap.lka.poi.SearchResult.Position;
 
 /**
  * This stream encodes {@link SimpleFeature} and {@link Document} objects into
@@ -181,37 +181,42 @@ public class KMLEncoder
     protected void encodeSearchResult( SearchResult obj ) 
     throws FactoryException, JSONException, MismatchedDimensionException, TransformException {
 
-        Position pos = obj.getPosition();
-        log.debug( "    src coords: " + pos );
-        dataCRS = CRS.decode( pos.srs );
+        Geometry geom = obj.getGeom();
+        log.debug( "    src coords: " + geom );
+        dataCRS = CRS.decode( obj.getSRS() );
         boolean lenient = true; // allow for some error due to different datums
         transform = CRS.findMathTransform( dataCRS, worldCRS, lenient );
         //log.info( "Transform: " + transform );
+        geom = transform != null ? JTS.transform( geom, transform ) : geom;
         
         // type
-        if (featuresType == null) {
-            SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();
-            tb.setName( typeName );
-            tb.add( "geometry", Point.class, worldCRS );
-            tb.add( "name", String.class );
-            tb.add( "description", String.class );
-            featuresType = tb.buildFeatureType();
+        SimpleFeatureTypeBuilder ftb = new SimpleFeatureTypeBuilder();
+        ftb.setName( typeName );
+        ftb.add( "geometry", obj.getGeom().getClass(), worldCRS );
+
+        ftb.add( "title", String.class );
+        for (String field : obj.getFieldNames()) {
+            log.debug( "    field: " + field );
+            
+            String value = obj.getField( field );
+            if (value != null && value.length() > 0) {
+                ftb.add( StringUtils.capitalize( field ), String.class );
+            }
         }
+        featuresType = ftb.buildFeatureType();
 
         // feature
         SimpleFeatureBuilder fb = new SimpleFeatureBuilder( featuresType );
-        fb.set( "name", obj.getTitle() );
-        fb.set( "description", "Description." );
 
-        Point point = gf.createPoint( new Coordinate( pos.x, pos.y, 0 ) );
-        point = (Point)(transform != null ? JTS.transform( point, transform ) : point);
-        fb.set( "geometry", point );
-        log.debug( "    transformed: " + point );
+        fb.set( "geometry", geom );
         
-//        for (String name : obj.getFieldNames()) {
-//            //log.info( "    field: " + field );
-//            fb.set( name, obj.getField( name ) );
-//        }
+        fb.set( "title", obj.getTitle() );
+        for (String field : obj.getFieldNames()) {
+            String value = obj.getField( field );
+            if (value != null && value.length() > 0) {
+                fb.set( StringUtils.capitalize( field ), value );
+            }
+        }
 
         encodeFeature( fb.buildFeature( null ) );
     }
