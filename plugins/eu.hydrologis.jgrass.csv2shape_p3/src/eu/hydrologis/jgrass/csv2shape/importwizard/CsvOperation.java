@@ -31,7 +31,7 @@ package eu.hydrologis.jgrass.csv2shape.importwizard;
  */
 public interface CsvOperation {
     
-    public static final String      EXTENSION_POINT = "eu.hydrologis.jgrass.csv2shape.operation";
+    public static final String      EXTENSION_POINT = "eu.hydrologis.jgrass.csv2shape.operations";
     
     public void perform( CsvImporter importer )
     throws Exception;

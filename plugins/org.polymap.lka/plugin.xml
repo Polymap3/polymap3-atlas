@@ -2,12 +2,16 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="eu.hydrologis.jgrass.csv2shape.operation">
+         point="eu.hydrologis.jgrass.csv2shape.operations">
       <operation
             class="org.polymap.geocoder.CsvOperation"
-            icon="lka/dd_arrow.gif"
             label="Addresssuche"
             tooltip="Hoch-/Rechtswert aus Adresse ermitteln">
+      </operation>
+      <operation
+            class="org.polymap.geocoder.FlurstueckOperation"
+            label="Flurstücke"
+            tooltip="Hoch/Rechtswert aus Flurstückstabelle ermitteln">
       </operation>
    </extension>
    <extension

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension-point id="eu.hydrologis.jgrass.csv2shape.operation" name="CSV Operation" schema="schema/eu.hydrologis.jgrass.csv2shape.operation.exsd"/>
+   <extension-point id="eu.hydrologis.jgrass.csv2shape.operations" name="CSV Operation" schema="schema/eu.hydrologis.jgrass.csv2shape.operation.exsd"/>
    <extension
          point="org.eclipse.ui.importWizards">
       <wizard
