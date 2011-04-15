@@ -319,7 +319,8 @@ public class CsvImporter {
 
             featureErrors.clear();
             int featureId = 0;
-            monitor.beginTask( "Importing raw data", -1 );
+            monitor.beginTask( "Importing raw data", lines.size() );
+            int count = 0;
             for (String[] line : lines) {
                 monitor.worked( 1 );
                 try {
@@ -348,7 +349,11 @@ public class CsvImporter {
                     }
                     catch (Exception e) {
                         // don't break the entire run
-                        log.warn( "Error while parsing ccordinates. Exception: " + e.toString() );
+                        log.warn( "Error while parsing ccordinates."
+                                + " index=" + count 
+                                + " | xIndex=" + xIndex + ", value=" + line[xIndex] 
+                                + " | yIndex=" + yIndex + ", value=" + line[yIndex] 
+                                + " (" + e.toString() + ")" );
                     }
 
                     int objIndex = 1;
@@ -380,6 +385,7 @@ public class CsvImporter {
                     SimpleFeature feature = builder.buildFeature( 
                             featureType.getTypeName() + "." + featureId );
                     newCollection.add( feature );
+                    count++;
                 }
                 catch (Exception e) {
                     featureErrors.add( featureId );
