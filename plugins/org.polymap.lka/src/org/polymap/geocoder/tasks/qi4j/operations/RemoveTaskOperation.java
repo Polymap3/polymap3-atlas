@@ -33,8 +33,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import org.polymap.core.project.qi4j.operations.AbstractOperation;
-import org.polymap.core.qi4j.OperationBoundsConcern;
+import org.polymap.core.qi4j.event.AbstractOperation;
+import org.polymap.core.qi4j.event.OperationBoundsConcern;
 import org.polymap.geocoder.tasks.ITask;
 import org.polymap.geocoder.tasks.qi4j.TaskRepository;
 

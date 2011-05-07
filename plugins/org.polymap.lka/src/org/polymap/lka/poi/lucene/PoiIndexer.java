@@ -66,9 +66,9 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
-import org.polymap.core.model.GlobalModelChangeEvent;
-import org.polymap.core.model.GlobalModelChangeListener;
-import org.polymap.core.model.GlobalModelChangeEvent.EventType;
+import org.polymap.core.model.event.GlobalModelChangeEvent;
+import org.polymap.core.model.event.GlobalModelChangeListener;
+import org.polymap.core.model.event.GlobalModelChangeEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
@@ -155,7 +155,7 @@ class PoiIndexer {
         // listen to model changes
         modelListener = new GlobalModelChangeListener() {
             public void modelChanged( GlobalModelChangeEvent ev ) {
-                if (ev.getEventType() == EventType.commit) {
+                if (ev.getEventType() == EventType.COMMIT) {
                     try {
                         Set<IMap> maps = new HashSet();
                         for (ILayer layer : PoiIndexer.this.provider.findLayers()) {

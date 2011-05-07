@@ -73,9 +73,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import org.polymap.core.data.pipeline.PipelineIncubationException;
-import org.polymap.core.model.GlobalModelChangeEvent;
-import org.polymap.core.model.GlobalModelChangeListener;
-import org.polymap.core.model.GlobalModelChangeEvent.EventType;
+import org.polymap.core.model.event.GlobalModelChangeEvent;
+import org.polymap.core.model.event.GlobalModelChangeListener;
+import org.polymap.core.model.event.GlobalModelChangeEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
@@ -178,7 +178,7 @@ public class AddressIndexer {
         // listen to model changes
         modelListener = new GlobalModelChangeListener() {
             public void modelChanged( GlobalModelChangeEvent ev ) {
-                if (ev.getEventType() == EventType.commit) {
+                if (ev.getEventType() == EventType.COMMIT) {
                     try {
                         Set<IMap> maps = new HashSet();
                         for (ILayer layer : AddressIndexer.this.provider.findLayers()) {
