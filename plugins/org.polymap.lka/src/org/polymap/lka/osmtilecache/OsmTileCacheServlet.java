@@ -118,8 +118,8 @@ public class OsmTileCacheServlet
                     true,                   // overflow to disk 
                     f.getAbsolutePath(), 
                     false,                  // eternal
-                    3600*24*14,             // timeToLive 
-                    3600*24*14, 
+                    3600*24*7,             // timeToLive 
+                    3600*24*7, 
                     true,                   // diskPersistent
                     30,                    // disk expire thread interval 
                     null,
