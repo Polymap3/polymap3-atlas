@@ -23,7 +23,6 @@
 package org.polymap.geocoder.tasks.qi4j.operations;
 
 import org.qi4j.api.composite.TransientComposite;
-import org.qi4j.api.concern.Concerns;
 import org.qi4j.api.mixin.Mixins;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -33,8 +32,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import org.polymap.core.qi4j.event.AbstractOperation;
-import org.polymap.core.qi4j.event.OperationBoundsConcern;
+import org.polymap.core.qi4j.event.AbstractModelChangeOperation;
 import org.polymap.geocoder.tasks.qi4j.TaskComposite;
 import org.polymap.geocoder.tasks.qi4j.TaskRepository;
 
@@ -45,7 +43,6 @@ import org.polymap.geocoder.tasks.qi4j.TaskRepository;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-@Concerns( OperationBoundsConcern.class )
 @Mixins( NewTaskOperation.Mixin.class )
 public interface NewTaskOperation
         extends IUndoableOperation, TransientComposite {
@@ -61,7 +58,7 @@ public interface NewTaskOperation
      * Implementation. 
      */
     public static abstract class Mixin
-            extends AbstractOperation
+            extends AbstractModelChangeOperation
             implements NewTaskOperation {
         
         private String                      title;

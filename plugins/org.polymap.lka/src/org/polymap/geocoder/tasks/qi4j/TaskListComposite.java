@@ -36,7 +36,7 @@ import org.polymap.core.model.AssocCollection;
 import org.polymap.core.model.Entity;
 import org.polymap.core.model.ModelProperty;
 import org.polymap.core.qi4j.AssocCollectionImpl;
-import org.polymap.core.qi4j.EntityMixin;
+import org.polymap.core.qi4j.QiEntity;
 import org.polymap.geocoder.tasks.ITask;
 
 /**
@@ -48,7 +48,7 @@ import org.polymap.geocoder.tasks.ITask;
  */
 @Mixins( {
     TaskListComposite.Mixin.class, 
-    EntityMixin.class
+    QiEntity.Mixin.class
 } )
 public interface TaskListComposite
         extends Entity, EntityComposite {

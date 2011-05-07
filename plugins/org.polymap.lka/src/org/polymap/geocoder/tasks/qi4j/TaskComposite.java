@@ -34,7 +34,7 @@ import org.qi4j.api.injection.scope.This;
 import org.qi4j.api.mixin.Mixins;
 import org.qi4j.api.property.Property;
 
-import org.polymap.core.qi4j.EntityMixin;
+import org.polymap.core.qi4j.QiEntity;
 import org.polymap.geocoder.tasks.ITask;
 
 /**
@@ -46,7 +46,7 @@ import org.polymap.geocoder.tasks.ITask;
  */
 @Mixins( {
     TaskComposite.Mixin.class, 
-    EntityMixin.class
+    QiEntity.Mixin.class
 } )
 public interface TaskComposite
         extends ITask, EntityComposite {

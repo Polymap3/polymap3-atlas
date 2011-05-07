@@ -161,7 +161,7 @@ public class TaskRepository
         
         public void revert( OperationSupport os ) {
             log.debug( "..." );
-            discardChanges();
+            revertChanges();
         }
 
     }
