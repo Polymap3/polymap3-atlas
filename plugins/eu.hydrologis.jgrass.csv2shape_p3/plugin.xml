@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.ui.importWizards">
       <wizard
-            category="eu.hydrologis.jgrass.ui.featureimportcategory"
+            category="net.refractions.udig.catalog.ui_p3.dataImportCategory"
             class="eu.hydrologis.jgrass.csv2shape.importwizard.CsvImportWizard"
             icon="icons/prop_ps.gif"
             id="eu.hydrologis.jgrass.csv2shape.importwizard.CsvImportWizard"

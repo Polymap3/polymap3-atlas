@@ -25,7 +25,7 @@ public class LKAPlugin extends Plugin {
 	// The shared instance
 	private static LKAPlugin       plugin;
 	
-    private boolean                started;
+    private static boolean         started;
     
     
 	/**
@@ -42,7 +42,7 @@ public class LKAPlugin extends Plugin {
 	    context.addBundleListener( new BundleListener() {
 	        public void bundleChanged( BundleEvent ev ) {
 
-	            if (!started && (HttpService.class!=null)) {
+	            if (!started && HttpService.class != null) {
 
 	                //log.info("bundle event" + ev.getType() + " " + ev.getBundle() );
 	                // if (ev.getType() == BundleEvent.STARTED && ev.getBundle().equals( getBundle() )) {

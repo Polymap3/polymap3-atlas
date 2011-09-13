@@ -31,12 +31,10 @@ import org.apache.commons.logging.LogFactory;
 
 import org.eclipse.rwt.internal.service.ContextProvider;
 
-import org.polymap.core.operation.IOperationSaveListener;
 import org.polymap.core.operation.OperationSupport;
 import org.polymap.core.qi4j.Qi4jPlugin;
 import org.polymap.core.qi4j.QiModule;
 import org.polymap.core.qi4j.QiModuleAssembler;
-import org.polymap.core.qi4j.Qi4jPlugin.Session;
 import org.polymap.geocoder.tasks.ITask;
 import org.polymap.geocoder.tasks.ITaskFilter;
 import org.polymap.geocoder.tasks.ITaskRepository;
@@ -63,17 +61,6 @@ public class TaskRepository
         return (TaskRepository)Qi4jPlugin.Session.instance().module( TaskRepository.class );
     }
 
-
-    /**
-     * The global instance used outside any user session.
-     * 
-     * @return A newly created {@link Session} instance. It is up to the caller
-     *         to store and re-use if necessary.
-     */
-    public static final TaskRepository globalInstance() {
-        return (TaskRepository)Qi4jPlugin.Session.globalInstance().module( TaskRepository.class );
-    }
-    
 
     // instance *******************************************
 
@@ -138,32 +125,5 @@ public class TaskRepository
 //            ((PropertyChangeListener)l).propertyChange( event );
 //        }
 //    }
-    
-    
-    
-    /**
-     * 
-     *
-     */
-    class OperationSaveListener
-    implements IOperationSaveListener {
-
-        public void prepareSave( OperationSupport os )
-        throws Exception {
-            //
-        }
-
-        public void save( OperationSupport os )
-        throws Exception {
-            log.debug( "..." );
-            commitChanges();
-        }
-        
-        public void revert( OperationSupport os ) {
-            log.debug( "..." );
-            revertChanges();
-        }
-
-    }
     
 }

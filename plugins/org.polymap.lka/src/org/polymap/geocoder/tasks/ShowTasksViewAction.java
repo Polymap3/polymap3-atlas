@@ -33,7 +33,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import org.polymap.core.project.ui.DefaultPartListener;
+import org.polymap.core.project.ui.PartListenerAdapter;
 import org.polymap.core.workbench.PolymapWorkbench;
 import org.polymap.lka.LKAPlugin;
 
@@ -46,7 +46,7 @@ import org.polymap.lka.LKAPlugin;
  * @since 3.0
  */
 public class ShowTasksViewAction
-        extends DefaultPartListener
+        extends PartListenerAdapter
         implements IWorkbenchWindowActionDelegate {
 
     private IAction             action;
@@ -88,7 +88,7 @@ public class ShowTasksViewAction
     }
 
     
-    // DefaultPartListener ********************************
+    // PartListenerAdapter ********************************
 
     public void partClosed( IWorkbenchPart part ) {
         if (part.getSite().getId().equals( TasksView.ID )) {

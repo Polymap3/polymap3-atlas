@@ -66,9 +66,10 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
-import org.polymap.core.model.event.GlobalModelChangeEvent;
-import org.polymap.core.model.event.GlobalModelChangeListener;
-import org.polymap.core.model.event.GlobalModelChangeEvent.EventType;
+import org.polymap.core.model.event.IModelHandleable;
+import org.polymap.core.model.event.ModelStoreEvent;
+import org.polymap.core.model.event.IModelStoreListener;
+import org.polymap.core.model.event.ModelStoreEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
@@ -116,7 +117,7 @@ class PoiIndexer {
 
     private boolean           index2file = false;
 
-    private GlobalModelChangeListener modelListener;
+    private IModelStoreListener modelListener;
 
     
     /**
@@ -153,20 +154,20 @@ class PoiIndexer {
         searcher = new IndexSearcher( indexReader ); // read-only=true
         
         // listen to model changes
-        modelListener = new GlobalModelChangeListener() {
-            public void modelChanged( GlobalModelChangeEvent ev ) {
+        modelListener = new IModelStoreListener() {
+            public void modelChanged( ModelStoreEvent ev ) {
                 if (ev.getEventType() == EventType.COMMIT) {
                     try {
                         Set<IMap> maps = new HashSet();
                         for (ILayer layer : PoiIndexer.this.provider.findLayers()) {
-                            if (ev.hasChanged( layer )) {
+                            if (ev.hasChanged( (IModelHandleable)layer )) {
                                 reindex();
                                 return;
                             }
                             maps.add( layer.getMap() );
                         }
                         for (IMap map : maps) {
-                            if (ev.hasChanged( map )) {
+                            if (ev.hasChanged( (IModelHandleable)map )) {
                                 reindex();
                                 return;
                             }
@@ -181,7 +182,7 @@ class PoiIndexer {
                 return true;
             }
         };
-        ProjectRepository.globalInstance().addGlobalModelChangeListener( modelListener );
+        ProjectRepository.globalInstance().addModelStoreListener( modelListener );
     }
 
     
