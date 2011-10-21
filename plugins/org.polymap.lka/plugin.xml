@@ -2,17 +2,17 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="eu.hydrologis.jgrass.csv2shape.operations">
+         point="org.polymap.core.data.csvimport.operations">
       <operation
             class="org.polymap.geocoder.CsvOperation"
             label="Addresssuche"
             tooltip="Hoch-/Rechtswert aus Adresse ermitteln">
       </operation>
-      <operation
+      <!--operation
             class="org.polymap.geocoder.FlurstueckOperation"
             label="Flurstücke"
             tooltip="Hoch/Rechtswert aus Flurstückstabelle ermitteln">
-      </operation>
+      </operation-->
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -35,7 +35,7 @@
       </contexts>
    </extension>
    <extension
-         point="org.polymap.core.qi4j.moduleAssemblers">
+         point="org.polymap.core.model.moduleAssemblers">
       <assembler
             class="org.polymap.geocoder.tasks.qi4j.TaskRepositoryAssembler">
       </assembler>
@@ -56,6 +56,14 @@
                toolbarPath="geocoder">
          </action>
       </actionSet>
+   </extension>
+   <extension
+         point="org.polymap.core.data.featureOperations">
+      <featureOperation
+            class="org.polymap.lka.TestGraphOperation"
+            id="org.polymap.lka.TestGraphOperation"
+            label="Graph bauen">
+      </featureOperation>
    </extension>
      
 </plugin>

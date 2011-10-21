@@ -35,6 +35,8 @@ import org.qi4j.api.mixin.Mixins;
 import org.qi4j.api.property.Property;
 
 import org.polymap.core.qi4j.QiEntity;
+import org.polymap.core.qi4j.event.ModelChangeSupport;
+
 import org.polymap.geocoder.tasks.ITask;
 
 /**
@@ -45,11 +47,12 @@ import org.polymap.geocoder.tasks.ITask;
  * @since 3.0
  */
 @Mixins( {
-    TaskComposite.Mixin.class, 
+    TaskComposite.Mixin.class,
+    ModelChangeSupport.Mixin.class,
     QiEntity.Mixin.class
 } )
 public interface TaskComposite
-        extends ITask, EntityComposite {
+        extends ITask, ModelChangeSupport, EntityComposite {
 
     @Optional
     @UseDefaults

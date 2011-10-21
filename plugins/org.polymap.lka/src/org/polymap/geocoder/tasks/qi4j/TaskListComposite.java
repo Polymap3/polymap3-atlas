@@ -33,10 +33,11 @@ import org.qi4j.api.injection.scope.This;
 import org.qi4j.api.mixin.Mixins;
 
 import org.polymap.core.model.AssocCollection;
-import org.polymap.core.model.Entity;
 import org.polymap.core.model.ModelProperty;
 import org.polymap.core.qi4j.AssocCollectionImpl;
 import org.polymap.core.qi4j.QiEntity;
+import org.polymap.core.qi4j.event.ModelChangeSupport;
+
 import org.polymap.geocoder.tasks.ITask;
 
 /**
@@ -48,10 +49,11 @@ import org.polymap.geocoder.tasks.ITask;
  */
 @Mixins( {
     TaskListComposite.Mixin.class, 
+    ModelChangeSupport.Mixin.class,
     QiEntity.Mixin.class
 } )
 public interface TaskListComposite
-        extends Entity, EntityComposite {
+        extends QiEntity, ModelChangeSupport, EntityComposite {
 
     public static final String      PROP_TASKS = "tasks";
 

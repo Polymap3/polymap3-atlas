@@ -9,6 +9,10 @@ import org.osgi.service.http.HttpService;
 
 import org.eclipse.core.runtime.Plugin;
 
+import org.polymap.core.runtime.DefaultSessionContext;
+import org.polymap.core.runtime.DefaultSessionContextProvider;
+import org.polymap.core.runtime.SessionContext;
+
 import org.polymap.lka.osmtilecache.OsmTileCacheServlet;
 import org.polymap.lka.poi.SearchServlet;
 
@@ -23,39 +27,62 @@ public class LKAPlugin extends Plugin {
 	public static final String PLUGIN_ID = "org.polymap.lka";
 
 	// The shared instance
-	private static LKAPlugin       plugin;
+	private static LKAPlugin        plugin;
 	
-    private static boolean         started;
+    private static boolean          started;
     
+    /** The session context shared by the servlets. */
+    private DefaultSessionContext   serviceContext;
     
-	/**
-	 * The constructor
-	 */
+    public DefaultSessionContextProvider contextProvider;
+
+    
 	public LKAPlugin() {
 	}
 
 
-	public void start(final BundleContext context) throws Exception {
-	    super.start(context);
+	public void mapServiceContext() {
+        contextProvider.mapContext( serviceContext.getSessionKey(), true );    
+    }
 
-	    // start HttpServiceRegistry
+    
+    public void unmapServiceContext() {
+        contextProvider.unmapContext();
+    }
+    
+
+	public void start( final BundleContext context ) 
+	throws Exception {
+	    super.start( context );
+
+	    // serviceContext
+        serviceContext = new DefaultSessionContext( "lka-services" );
+        contextProvider = new DefaultSessionContextProvider() {
+            protected DefaultSessionContext newContext( String sessionKey ) {
+                return serviceContext;
+            }
+        };
+        SessionContext.addProvider( contextProvider );
+
+	    // register servlets
 	    context.addBundleListener( new BundleListener() {
 	        public void bundleChanged( BundleEvent ev ) {
 
 	            if (!started && HttpService.class != null) {
+                    // do it first to prevent reentrant calls
+	                started = true;
 
 	                //log.info("bundle event" + ev.getType() + " " + ev.getBundle() );
 	                // if (ev.getType() == BundleEvent.STARTED && ev.getBundle().equals( getBundle() )) {
 
 
 	                HttpService httpService;
-	                // BundleContext context=
-	                // CorePlugin.getDefault().getBundle().getBundleContext();
 	                ServiceReference[] httpReferences = null;
 	                try {
 	                    httpReferences = context.getServiceReferences( HttpService.class.getName(), null );
 	                } 
 	                catch (InvalidSyntaxException e) {
+	                    started = false;
 	                    e.printStackTrace();
 	                }
 
@@ -74,7 +101,6 @@ public class LKAPlugin extends Plugin {
                             //httpService.registerServlet( "/lka/poi", new PoiTypeProviderServlet(), null, null );
 
                             httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet(), null, null );
-                            started = true;
                         }
                         catch (Exception e) {
                             // TODO Auto-generated catch block
@@ -93,7 +119,8 @@ public class LKAPlugin extends Plugin {
 	}
 
 
-	public void stop(BundleContext context) throws Exception {
+	public void stop( BundleContext context )
+	throws Exception {
 		plugin = null;
 		super.stop(context);
 	}

@@ -42,6 +42,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.polymap.lka.LKAPlugin;
+
 /**
  * This servlet handles search and autocomplete requests. It provides data
  * as GeoRSS or KML.
@@ -75,10 +77,16 @@ public class SearchServlet
     
 
     public SearchServlet()
-            throws Exception {
+    throws Exception {
         super();
-        log.info( "Initializing SearchServlet ..." );
-        dispatcher = new SearchDispatcher();
+        try {
+            log.info( "Initializing SearchServlet ..." );
+            LKAPlugin.getDefault().mapServiceContext();
+            dispatcher = new SearchDispatcher();
+        }
+        finally {
+            LKAPlugin.getDefault().unmapServiceContext();
+        }
     }
 
 
@@ -168,6 +176,7 @@ public class SearchServlet
                 log.error( e.getLocalizedMessage(), e );
             }
 	   	}
+	   	response.flushBuffer();
  	}
 
     

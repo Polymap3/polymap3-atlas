@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.vividsolutions.jts.geom.Point;
 
-import eu.hydrologis.jgrass.csv2shape.importwizard.CsvImporter;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
@@ -51,6 +50,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
+import org.polymap.core.data.ui.csvimport.CsvImporter;
 import org.polymap.core.operation.OperationSupport;
 import org.polymap.core.runtime.Polymap;
 import org.polymap.geocoder.lucene.AddressIndexer;
@@ -66,7 +66,7 @@ import org.polymap.geocoder.tasks.qi4j.operations.NewTaskOperation;
  * @since 3.0
  */
 public class CsvOperation
-        implements eu.hydrologis.jgrass.csv2shape.importwizard.CsvOperation {
+        implements org.polymap.core.data.ui.csvimport.CsvOperation {
 
     private static final Log  log = LogFactory.getLog( CsvOperation.class );
 

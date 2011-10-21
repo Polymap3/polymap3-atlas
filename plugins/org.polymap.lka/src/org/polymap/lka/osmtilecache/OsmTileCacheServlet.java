@@ -22,11 +22,8 @@
  */
 package org.polymap.lka.osmtilecache;
 
-import java.util.Date;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -173,8 +170,10 @@ public class OsmTileCacheServlet
         String targetPath = request.getPathInfo();
 
         // response
-        response.setDateHeader( "Expires", new Date().getTime() + expires );
-        response.setHeader( "Server", "POLYMAP3 OSM Cache" );
+        // see http://www.mnot.net/cache_docs/
+        response.setDateHeader( "Expires", System.currentTimeMillis() + 100000000 );
+        response.setHeader( "Cache-Control", "max-age=3600, must-revalidate" );
+        response.setHeader( "Server", "POLYMAP3-OSM-Cache" );
 
         // check cache
         String cacheKey = targetBaseURL + "_" + targetPath;
@@ -244,7 +243,7 @@ public class OsmTileCacheServlet
         
         // encode PNG
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        ImageIO.write( (RenderedImage)bimage, "png", bout );
+        ImageIO.write( bimage, "png", bout );
 
 //        PngEncoder pngEncoder = new PngEncoder( result, true, null, 9 );
 //        pngEncoder.encode( bout );
