@@ -59,9 +59,11 @@ public class SearchServlet
 
     private static final Log  log = LogFactory.getLog( SearchServlet.class );
 
-    public static final int             DEFAULT_MAX_SEARCH_RESULTS = 300;
+    public static final int DEFAULT_MAX_SEARCH_RESULTS = 300;
 
-    public static CoordinateReferenceSystem DEFAULT_WORLD_CRS;
+    public static final CoordinateReferenceSystem DEFAULT_WORLD_CRS;
+
+    public static final CoordinateReferenceSystem WGS84;
 
     private SearchDispatcher            dispatcher;
     
@@ -69,6 +71,7 @@ public class SearchServlet
     static {
         try {
             DEFAULT_WORLD_CRS = CRS.decode( "EPSG:900913" );
+            WGS84 = CRS.decode( "EPSG:4326" );
         }
         catch (Exception e) {
             throw new RuntimeException( e );
@@ -181,10 +184,13 @@ public class SearchServlet
 
     
     public static String toSRS( CoordinateReferenceSystem crs ) {
+        if (crs.toString().indexOf( "GCS_WGS_1984" ) > -1) {
+            return "EPSG:4326";
+        }
         // from http://lists.wald.intevation.org/pipermail/schmitzm-commits/2009-July/000228.html
         // If we can determine the EPSG code for this, let's save it as
         // "EPSG:12345" to the file.
-        if (!crs.getIdentifiers().isEmpty()) {
+        else if (!crs.getIdentifiers().isEmpty()) {
             Object next = crs.getIdentifiers().iterator().next();
             if (next instanceof Identifier) {
                 Identifier identifier = (Identifier) next;

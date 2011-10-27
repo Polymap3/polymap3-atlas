@@ -1,7 +1,6 @@
 /*
  * polymap.org
- * Copyright 2011, Falko Br‰utigam, and individual contributors as
- * indicated by the @authors tag. All rights reserved.
+ * Copyright 2011, Falko Br√§utigam. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -27,7 +26,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     /** The OpenLayers.Map we are working for. */
     this.map = map;
     
-    this.attribution = '';
+    this.attribution = 'Daten von <a href=\"http://landkreis-mittelsachsen.de\">Landratsamt Mittelsachsen</a>';
 
     /** The index of this context. */
     this.index = index;
@@ -121,13 +120,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 'strokeWidth': 2,
                 'strokeColor': this.geomColor,
                 fillOpacity: 0.7,
-                fillColor: this.geomColor,
-                fillOpacity: 0.25
+                fillColor: '#a0a0a0'
             });
             var selectStyle = new OpenLayers.Style({
                 'strokeWidth': 3,
-                fillOpacity: 1,
-                fillOpacity: 0.4
+                fillOpacity: 1
             });
             var styleMap = new OpenLayers.StyleMap({
                 'default': defaultStyle,
@@ -136,9 +133,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             this.layer = new OpenLayers.Layer.GML( "Suchergebnis",
                 this.searchURL, { 
                 format: OpenLayers.Format.GeoJSON,
-                styleMap: styleMap,
-                attribution: this.attribution
+                styleMap: styleMap
+                //projection: new OpenLayers.Projection( "EPSG:25833" )
             });
+            this.layer.attribution = this.attribution;
             this.map.addLayer( this.layer );
  
 //          // hover feature
@@ -243,7 +241,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 
         if (this.layer.features.length > 0) {
             this.map.zoomToExtent( this.layer.getDataExtent() );
-            onFeaturesLoaded( this.layer.features );
+            //onFeaturesLoaded( this.layer.features );
             this.activate();
         }
     };
@@ -255,25 +253,32 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         var result_html = "";
         // address
         if (feature.data.address != null) {
-            var address = JSON.parse( feature.data.address );
+            var address = new OpenLayers.Format.JSON().read( feature.data.address );
     
-            if (address.street != null) {
-                result_html += "<span class=\"resultAddress\" style=\"font-size:smaller;\">";
+            if (address != null && address.street != null) {
+                result_html += "<p class=\"resultAddress\">";
                 result_html += address.street + " " + address.number + "<br/>";
                 result_html += address.postalCode + " " + address.city;
-                result_html += "</span><br/>";
+                result_html += "</p>";
             }
         }
 
         // fields
-        result_html += "<span class=\"resultFields\" style=\"font-size:smaller;\">";
+        result_html += "<p class=\"resultFields\">";
         jQuery.each( feature.data, function(name, value) {
             if (name != "title" && name != "address") {
+                var valueHtml = value;
+                if (value.indexOf( "http://") == 0) {
+                   valueHtml = "<a href=\"" + value + "\" target=\"_blank\">" + value.substring( 7 ) + "</a>";
+                }
+                else if (value.indexOf( "www.") == 0) {
+                   valueHtml = "<a href=\"http://" + value + "\" target=\"_blank\">" + value + "</a>";
+                }
                 result_html += "<b>" + name.capitalize() + "</b>";
-                result_html += ": " + value + "<br/>";
+                result_html += ": " + valueHtml + "<br/>";
             }
         });
-        result_html += "</span>";
+        result_html += "</p>";
         return result_html;
     };
     

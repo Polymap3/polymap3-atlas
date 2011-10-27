@@ -22,8 +22,5 @@ Bundle-ClassPath: .,
  lib/georss-rome-0.9.8.jar,
  lib/jdom-1.0.jar,
  lib/rome-0.9.jar,
- lib/qdparser-1.1.0.jar,
- lib/gt-geojson.jar,
- lib/json_simple-1.1.jar,
- lib/json-lib-2.2.3-jdk15.jar
+ lib/qdparser-1.1.0.jar
 Bundle-Localization: plugin

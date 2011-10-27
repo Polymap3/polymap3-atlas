@@ -1,6 +1,6 @@
 /*
  * polymap.org
- * Copyright 2011, Falko Br‰utigam, and individual contributors as
+ * Copyright 2011, Falko Br√§utigam, and individual contributors as
  * indicated by the @authors tag. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
@@ -65,7 +65,7 @@ function MeasureMode( map, elm ) {
 //            }
 //        }
         
-        $('#dialog').html( "Gesamtl‰nge: <b>" + measure + "</b>" );
+        $('#dialog').html( "Gesamtl√§nge: <b>" + measure + "</b>" );
         $('#dialog').dialog({ width:250 , height: 100 , title:"Ergebnis" });
 
 //      var anchor = {
@@ -113,7 +113,7 @@ function MeasureMode( map, elm ) {
     this.control = new OpenLayers.Control.Measure(
             OpenLayers.Handler.Path, {
                 persist: true,
-                geodesic: true,
+                //geodesic: true,
                 handlerOptions: {
                     layerOptions: {styleMap: styleMap}
                 }

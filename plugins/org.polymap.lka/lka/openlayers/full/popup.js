@@ -110,7 +110,7 @@ OpenLayers.Popup.prototype = {
             oBtnClose.style.position="absolute";
             oBtnClose.style.height= 14 + "px";
             oBtnClose.style.width= 14 + "px";
-            oBtnClose.title="Schlieﬂen";
+            oBtnClose.title="Schliessen";
             oBtnClose.href="#";
             this.div.appendChild(oBtnClose);
         

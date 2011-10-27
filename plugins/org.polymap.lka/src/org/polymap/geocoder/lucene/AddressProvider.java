@@ -74,7 +74,7 @@ public class AddressProvider {
      * Find the "adresses" map in the global domain.
      */
     List<ILayer> findLayers() {
-        IMap rootMap = ProjectRepository.globalInstance().getRootMap();
+        IMap rootMap = ProjectRepository.instance().getRootMap();
         
         for (IMap map : rootMap.getMaps()) {
             if (map.getLabel().equalsIgnoreCase( "addresses" )

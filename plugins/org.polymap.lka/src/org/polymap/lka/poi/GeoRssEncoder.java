@@ -45,7 +45,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -212,7 +211,7 @@ public class GeoRssEncoder
                 String value = prop.getValue().toString();
                 if (value != null && value.length() > 0) {
                     buf.append( "<b>" ).append( prop.getName() ).append( "</b>" );
-                    buf.append( ": " ).append( StringEscapeUtils.escapeHtml( value ) );
+                    buf.append( ": " ).append( escapeHtml( value ) );
                     buf.append( "<br/>" );
                 }
             }
@@ -243,8 +242,8 @@ public class GeoRssEncoder
 
         // entry
         SyndEntryImpl entry = new SyndEntryImpl();
-        entry.setTitle( StringEscapeUtils.escapeHtml( obj.getTitle() ) );
-        entry.setLink( StringEscapeUtils.escapeHtml( baseURL + "?search=" + obj.getTitle() ) );
+        entry.setTitle( escapeHtml( obj.getTitle() ) );
+        entry.setLink( escapeHtml( baseURL + "?search=" + obj.getTitle() ) );
         entry.setPublishedDate( new Date() );
 
         // address
@@ -256,12 +255,12 @@ public class GeoRssEncoder
                     ? StringUtils.substringAfterLast( address.getPostalCode(), "-" )
                     : address.getPostalCode();
             
-            addressBuf.append( "<p><em>" ).append( StringEscapeUtils.escapeHtml( address.getStreet() ) )
-                    .append( " " ).append( StringEscapeUtils.escapeHtml( address.getNumber() ) )
+            addressBuf.append( "<p><em>" ).append( escapeHtml( address.getStreet() ) )
+                    .append( " " ).append( escapeHtml( address.getNumber() ) )
                     .append( "<br/>" )
                     // remove country code from postal code
-                    .append( StringEscapeUtils.escapeHtml( postalCode ) )
-                    .append( " " ).append( StringEscapeUtils.escapeHtml( address.getCity() ) )
+                    .append( escapeHtml( postalCode ) )
+                    .append( " " ).append( escapeHtml( address.getCity() ) )
                     .append( "</em></p>" );
         }
 
@@ -284,16 +283,16 @@ public class GeoRssEncoder
             log.debug( "    field: " + field );
             String value = obj.getField( field );
             if (value != null && value.length() > 0) {
-                buf.append( "<nobr><b>" ).append( StringEscapeUtils.escapeHtml( StringUtils.capitalize( field ) ) ).append( "</b>" );
+                buf.append( "<nobr><b>" ).append( escapeHtml( StringUtils.capitalize( field ) ) ).append( "</b>" );
                 // URL?
                 if (value.contains( "www." ) || value.contains( ".de" ) || value.contains( ".com" ) || value.contains( "http://" )) {
                     buf.append( ": " )
                         .append( "<a href=\"" ).append( value ).append( "\" target=\"atlas_content\">" ) 
-                        .append( StringEscapeUtils.escapeHtml( value ) )
+                        .append( escapeHtml( value ) )
                         .append( "</a>" ); 
                 }
                 else {
-                    buf.append( ": " ).append( StringEscapeUtils.escapeHtml( value ) );
+                    buf.append( ": " ).append( escapeHtml( value ) );
                 }
                 buf.append( "</nobr><br/>" );
             }
@@ -315,6 +314,12 @@ public class GeoRssEncoder
 
         feedEntries.add( entry );
         //log.info( "Feed entry added: " + entry );
+    }
+    
+    
+    protected String escapeHtml( String s ) {
+        return s;
+        //return StringEscapeUtils.escapeHtml( s );
     }
     
 }

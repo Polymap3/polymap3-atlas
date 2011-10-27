@@ -48,7 +48,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
@@ -196,10 +195,11 @@ public class GeoJsonEncoder
         fb.set( "geometry", geom );
         log.debug( "    transformed: " + geom );
         
-        fb.set( "title", JSONObject.escape( obj.getTitle() ) );
+        fb.set( "title", /*JSONObject.escape(*/ obj.getTitle() );
         // address
         if (obj.getAddress() != null) {
-            fb.set( "address", JSONObject.escape( obj.getAddress().toJSON() ) );
+            //fb.set( "address", JSONObject.escape( obj.getAddress().toJSON() ) );
+            fb.set( "address", obj.getAddress().toJSON() );
         }
         // fields
         for (String field : obj.getFieldNames()) {
@@ -208,7 +208,7 @@ public class GeoJsonEncoder
                 // umlauts
                 //value = StringEscapeUtils.escapeHtml( value );
                 // does not seem to be done by gt-geojson
-                value = JSONObject.escape( value );
+                //value = JSONObject.escape( value );
                 fb.set( field, value );
             }
         }
@@ -233,7 +233,7 @@ public class GeoJsonEncoder
             this.fjson = fjson;
             this.crs = crs;
         }
-
+        
         public void writeJSONString( Writer out )
                 throws IOException {
             // this is code is from the 'old' JSONServer

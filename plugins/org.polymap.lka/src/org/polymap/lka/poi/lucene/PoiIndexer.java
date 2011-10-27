@@ -147,10 +147,10 @@ class PoiIndexer {
             reindex();
         }
         
-        log.info( "    creating index reader..." );
+        log.debug( "    creating index reader..." );
         indexReader = IndexReader.open( directory, false ); // read-only=true
         
-        log.info( "    creating index searcher..." );
+        log.debug( "    creating index searcher..." );
         searcher = new IndexSearcher( indexReader ); // read-only=true
         
         // listen to model changes
@@ -182,7 +182,7 @@ class PoiIndexer {
                 return true;
             }
         };
-        ProjectRepository.globalInstance().addModelStoreListener( modelListener );
+        ProjectRepository.instance().addModelStoreListener( modelListener );
     }
 
     
@@ -286,24 +286,25 @@ class PoiIndexer {
 
         IndexWriter iwriter = null;
         try {
-            log.info( "    creating index writer for directory: " + directory + " ..." );
+            log.debug( "    creating index writer for directory: " + directory + " ..." );
             iwriter = new IndexWriter( directory, analyzer, true, new IndexWriter.MaxFieldLength( 25000 ) );
 
             for (ILayer layer : provider.findLayers()) {
+                FeatureCollection fc = null;
+                Iterator it = null;
+                try {                    
+                    PipelineFeatureSource fs = PipelineFeatureSource.forLayer( layer, false );
 
-                PipelineFeatureSource fs = PipelineFeatureSource.forLayer( layer, false );
+                    // SRS
+                    CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
+                    String dataSRS = dataCRS != null
+                    ? SearchServlet.toSRS( dataCRS )
+                            : layer.getCRSCode();
 
-                // SRS
-                CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
-                String dataSRS = dataCRS != null
-                        ? SearchServlet.toSRS( dataCRS )
-                        : layer.getCRSCode();
-
-                log.info( "    found FeatureSource: " + fs + ", SRS=" + dataSRS );
-                FeatureCollection fc = fs.getFeatures();
-                Iterator it = fc.iterator();
+                    log.debug( "    found FeatureSource: " + fs + ", SRS=" + dataSRS );
+                    fc = fs.getFeatures();
+                    it = fc.iterator();
                 
-                try {
                     int size = 0;        
                     int indexed = 0;
                     String layerKeywords = layer.getKeywords() != null ? StringUtils.join( layer.getKeywords(), " " ) : "";
@@ -330,8 +331,8 @@ class PoiIndexer {
                                     Geometry geom = (Geometry)prop.getValue();
                                     StringWriter out = new StringWriter( 1024 );
                                     jsonEncoder.write( geom, out );
-                                    log.info( "    GEOM: " + geom );
-                                    log.info( "    JSON: " + out.toString() );
+                                    log.debug( "    GEOM: " + geom );
+                                    log.debug( "    JSON: " + out.toString() );
                                     doc.add( new Field( FIELD_GEOM, out.toString(),
                                             Field.Store.YES, Field.Index.NO ) );
                                     
@@ -397,17 +398,20 @@ class PoiIndexer {
                             size++;
                         }
                         catch (Exception e) {
-                            log.error( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
+                            log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
                             log.debug( e.getLocalizedMessage(), e );
                         }
                     }
                     log.info( "    document: count=" + size + " indexed=" + indexed );
                 }
                 catch (Exception e) {
-                    log.error( e.getLocalizedMessage(), e );
+                    log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
+                    log.debug( e.getLocalizedMessage(), e );
                 }
                 finally {
-                    fc.close( it );
+                    if (fc != null && it != null) {
+                        fc.close( it );
+                    }
                 }
             }
         }
@@ -416,12 +420,10 @@ class PoiIndexer {
         }
         log.info( "...done." );
 
-        //indexReader.reopen();
-
-        // XXX hack to get index reloaded
         log.info( "    creating index reader..." );
         indexReader = IndexReader.open( directory, false ); // read-only=true
-        log.info( "    creating index searcher..." );
+        
+//        log.info( "    creating index searcher..." );
         searcher = new IndexSearcher( indexReader ); // read-only=true
         log.info( "Index reloaded." );
     }
