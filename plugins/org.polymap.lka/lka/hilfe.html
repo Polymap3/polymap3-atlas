@@ -3,43 +3,223 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Insert title here</title>
+<style type="text/css">
+.style1 {
+	font-family: Rial;
+}
+.style2 {
+	font-family: Arial, Helvetica, Sans-Serif;
+	font-weight: bold;
+}
+.style3 {
+	font-family: Rial;
+	font-size: 12px;
+}
+.style4 {
+	font-family: Arial, Helvetica, Sans-Serif;
+	font-size: 12px;
+}
+.style6 {
+	font-family: Arial, Helvetica, Sans-Serif;
+}
+.style7 {
+	font-size: 12px;
+}
+.style8 {
+	font-family: Arial, Helvetica, Sans-Serif;
+	font-size: 12px;
+	color: #ED1C1C;
+}
+.style14 {
+	font-family: Arial, Helvetica, Sans-Serif;
+	font-size: 14px;
+	color: #2D95C1;
+	background-image: url('grid.png');
+}
+.style15 {
+	font-size: 16px;
+}
+.style16 {
+	font-family: Arial, Helvetica, Sans-Serif;
+	font-size: 12px;
+	font-weight: normal;
+}
+.style19 {
+	font-family: Arial, Helvetica, Sans-Serif;
+	font-size: 12px;
+	font-weight: normal;
+	color: #000000;
+}
+.style20 {
+	color: #000000;
+}
+</style>
 </head>
-<body>
-<h1>Suchtausdrücke</h1>
-<h3>Einfache Beispiele:</h3>
+<body style="margin-top: 0">
+<h1 class="style3">
+    <img alt="mittelsachsen-atlas" class="style2" height="74" longdesc="mittelsachsen-atlas" src="images/mittelsachsen-atlas.png" width="200"></h1>
+<hr>
+<table style="width: 100%; height: 40px">
+	<tr>
+		<td class="style14"><strong>&nbsp; <span class="style15">&gt; Suchausdrücke</span></strong></td>
+	</tr>
+</table>
+<hr>
+<h3 class="style16">Wir verwenden im Mittelsachsen Atlas eine Volltext-Suche. 
+Dadurch ist es Ihnen möglich, <br>sehr einfach durch die bloße Eingabe von 
+sinnvollen Suchbegriffen an Ihren Wunschort zu gelangen. <br>Die Groß- und 
+Kleinschreibung bleibt dabei unbeachtet, Sie können also alles klein schreiben.<br>
+Aktuell können Sie interessante Orte in Mittelsachsen aus folgenden Kategorien finden:<br>
+<br>
+&gt; <span class="style4"> Ausstellungen</span><br>
+&gt; <span class="style4"> Berufsschulen</span><br>
+&gt; <span class="style4"> Horte</span><br>
+&gt; <span class="style4"> Kindergärten</span><br>
+&gt; <span class="style4"> Kulturschulen</span><br>
+&gt; <span class="style4"> Schaubühnen</span><br>
+&gt; <span class="style4"> Soziokultur</span><br>
+&gt; <span class="style4"> Stadt- und Gemeindeverwaltungen</span><br>
+&gt; <span class="style4"> Tagesmütter</span><br>
+&gt; <span class="style4"> Windenergieanlagen</span><br>
+<br>
+<span class="style4">Für spezielle Suchanfragen haben wir zusätzlich noch einige Platzhalter
+eingebaut, deren Wirkungsweise <br>wir Ihnen nachstehend kurz erläutern.<br> 
+</span>
+</h3>
+<hr>
+<h3 class="style19"><strong>Einfache Beispiele</strong></h3>
+<p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> Markt</span></tt><span class="style4"> : sucht Einträge mit der Zeichenkette 'Markt'</span></p>
+<p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> "Markt" 
+</span></tt><span class="style4">: sucht ebenfalls die Zeichenkette 'Markt'</span></p>
+<p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> "am Markt"</span></tt><span class="style4"> : sucht die Zeichenkette 'am Markt'</span></p>
+<p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> am Markt</span></tt><span class="style4"> : sucht Einträge, welche die Zeichenketten 'am' 
+	UND 'Markt' enthalten; <br>&nbsp;&nbsp; gefunden wird also auch 'Markt am Sonntag'</span></p>
+<hr>
+<h3 class="style19"><strong>Mehrere Suchbegriffe</strong></h3>
+<span class="style4">Wie im letzten Beispiel zu sehen können auch mehrere Begriffe gesucht werden. 
+<br>Wird keine spezielle Verkettung angegeben, dann werden Einträge gefunden, 
+<br>welche beide Suchbegriffe enthalten.
+</span>
+  <p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> am AND Markt</span></tt><span class="style4"> : sucht ebenfalls nach den Zeichenketten 'am' 
+	UND 'Markt'</span></p>
+<p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> am OR Markt</span></tt><span class="style4"> : sucht Einträge, welche die Zeichenketten 'am' 
+	ODER 'Markt' enthalten</span></p>
+<hr>
+<h3 class="style19"><strong>Platzhalter</strong></h3>
+<span class="style4">In den Suchbegriffen können die Platzhalter "*" und "?" verwendet werden. "*" steht für mehrere Zeichen. "?" steht für ein einzelnes Zeichen.
+</span>
+  <p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> Markt*</span></tt><span class="style1"><span class="style6"><span class="style7"> : findet 'Markt</span><em><span class="style7">platz</span></em><span class="style7">', 'Markt</span><em><span class="style7">strasse</span></em><span class="style7">' etc</span></span></span></p>
+<p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> M?rkt</span></tt><span class="style4"> : findet 'Markt' und 'Morkt'... tolles Beispiel! :)</span></p>
+<span class="style4">Wird nur ein Suchbegriff ohne Platzhalter eingegeben, dann wird 
+automatisch ein "*" angefügt.
+<br> 
+</span>
+<hr>
+<h3 class="style19"><strong>Ähnliche Wörter</strong></h3>
+<span class="style4">Es können auch ungenau geschriebene oder ähnliche Wörter gesucht werden.
+</span>
+  <p><tt><span class="style4"><span class="style20"><strong>&gt;</strong></span> hain~</span></tt><span class="style4"> : findet 'Am Hohen Rain', 'Dr.-Heinrich-Hahn-Straße' etc</span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<hr>
+<table style="width: 100%; height: 40px">
+	<tr>
+		<td class="style14"><strong>&nbsp; <span class="style15">&gt; Schaltflächen</span></strong></td>
+	</tr>
+</table>
+<hr>
 <p>
-  <ul>
-    <li><b><tt>Markt</tt></b> : sucht Einträge mit der Zeichenkette 'Markt'</li>
-    <li><b><tt>"Markt"</tt></b> : sucht ebenfalls die Zeichenkette 'Markt'</li>
-    <li><b><tt>"am Markt"</tt></b> : sucht die Zeichenkette 'am Markt'</li>
-    <li><b><tt>am Markt</tt></b> : sucht Einträge, welche die Zeichenketten 'am' <b>UND</b> 'Markt' enthalten; gefunden wird also auch 'Markt am Sonntag'</li>
-  </ul>
-</p>
-<h3>Mehrere Suchbegriffe:</h3>
-Wie im letzten Beispiel zu sehen können auch mehrere Begriffe gesucht werden. Wird keine spezielle Verkettung angegeben,
-dann werden Einträge gefunden, welche beide Suchbegriffe enthalten.
+<img alt="mittelsachsen atlas luftbild" height="30" longdesc="mittelsachsen atlas luftbild" src="images/tutorials/Luftbild.png" width="71">
+<span class="style4"><br><br>Mit dieser Schaltfläche können Sie das Luftbild 
+hinzuschalten bzw. abschalten. <br>Eine blaue Markierung unterhalb der 
+Schaltfläche signalisiert, dass diese aktiv ist. </span></p>
+<hr>
 <p>
-  <ul>
-    <li><b><tt>am AND Markt</tt></b> : sucht ebenfalls nach den Zeichenketten 'am' <b>UND</b> 'Markt'</li>
-    <li><b><tt>am OR Markt</tt></b> : sucht Einträge, welche die Zeichenketten 'am' <b>ODER</b> 'Markt' enthalten</li>
-  </ul>
-</p>
-<h3>Platzhalten:</h3>
-In den Suchbegriffen können die Platzhalter "*" und "?" verwendet werden. "*" steht für mehrere Zeichen. "?" steht für ein einzelnes Zeichen.
+<img alt="mittelsachsen atlas geländeprofil" height="32" longdesc="mittelsachsen atlas geländeprofil" src="images/tutorials/Gelaendeprofil.png" width="105"><br><br>
+<span class="style4">Mit dieser Schaltfläche können Sie das Geländeprofil 
+hinzuschalten bzw. abschalten. <br>Eine blaue Markierung unterhalb der 
+Schaltfläche signalisiert, dass diese aktiv ist. </span></p>
+<hr>
 <p>
-  <ul>
-    <li><b><tt>Markt*</tt></b> : findet 'Markt<em>platz</em>', 'Markt<em>strasse</em>' etc</li>
-    <li><b><tt>M?rkt</tt></b> : findet 'Markt' und 'Morkt'... tolles Beispiel! :)</li>
-  </ul>
-</p>
-Wird nur ein Suchbegriff ohne Platzhalter eingegeben, dann wird <b>automatisch</b> ein "*" angefügt.
-<h3>Ähnliche Wörter:</h3>
-Es können auch ungenau geschriebene oder ähnliche Wörter gesucht werden.
+<img alt="mittelsachsen atlas bookmark" height="31" longdesc="mittelsachsen atlas bookmark" src="images/tutorials/Bookmark.png" width="89">
+<span class="style8"></span><br><br>
+<span class="style4">Mit dieser Schaltfläche können Sie die Webseite zu ihren 
+Favoriten bzw. als Lesezeichen im Browser hinzufügen. <br>Dabei bleiben alle 
+Suchergebnisse erhalten.</span></p>
+<hr>
 <p>
-  <ul>
-    <li><b><tt>hain~</tt></b> : findet 'Am Hohen Rain', 'Dr.-Heinrich-Hahn-Straße' etc</li>
-  </ul>
-</p>
+<img alt="mittelsachsen atlas drucken" height="32" longdesc="mittelsachsen atlas drucken" src="images/tutorials/Drucken.png" width="78">
+<span class="style8"><strong>&gt; Diese Funktion steht Ihnen in&nbsp; Kürze zur 
+Verfügung.<br></strong></span><br>
+<span class="style4">Die Funktion &quot;Drucken&quot; bietet Ihnen die Möglichkeit, die 
+aktuelle Ansicht sowie deren Suchergebnisse auszudrucken.<br>Zu dem können Sie 
+Ihrem Ausdruck noch einen Titel oder eine Anmerkunk hinzufügen.</span></p>
+<hr>
+<p>
+<img alt="mittelsachsen atlas georss" height="33" longdesc="mittelsachsen atlas georss" src="images/tutorials/GeoRSS.png" width="79"><br><br>
+<span class="style4">Über die Funktion GeoRSS können Sie Aktualisierungen zu den 
+ausgewählten Orten/Objekten abonieren. <br>So werden Sie stehts über Änderungen zu 
+diesen Daten informiert.</span></p>
+<hr>
+<p>
+<img alt="mittelsachsen atlas kml" height="31" longdesc="mittelsachsen atlas kml" src="images/tutorials/KML.png" width="57"><br><br>
+<span class="style4">Mit der Funktion KML lassen sich Ihre Suchergebnisse (ohne 
+die Hintergrund-Rasterkarten) <br>als Vektor-Daten in das von der Google Inc. kreierte KML Format exportieren. Damit können 
+<br>Sie die Daten hernach in anderen 
+GIS-/GDI-Anwendungen im Rahmen <br>der Nutzungsbedingungen nachnutzen und mit Ihren 
+eigenen Daten verschneiden.</span></p>
+<hr>
+<p>
+<img alt="mittelsachsen atlas link" height="31" longdesc="mittelsachsen atlas link" src="images/tutorials/Link.png" width="56"><br><br>
+<span class="style4">Die Link-Funktion bietet Ihnen die Möglichkeit, die 
+aktuelle Ansicht mit einem gefundenen <br>Ort per eMail an einen Dritten zu senden 
+oder in eigenen Webseiten einzubinden. <br>Der Link kann damit auch sehr gut als 
+&quot;Treffpunkt-Funktion&quot; bezeichnet werden.</span></p>
+<hr>
+<p>
+<img alt="mittelsachsen atlas messen" height="29" longdesc="mittelsachsen atlas messen" src="images/tutorials/Messen.png" width="75"><br><br>
+<span class="style4">Mit der Funktion Messen können Sie eine Strecke zwischen 
+zwei konkreten oder vielen <br>hintereinander liegenden Punkten messen. Durch 
+einen Doppelklick mit der linken <br>Maustaste schließen Sie die jeweilige Messung 
+ab. <br>Das Messergebnis wird Ihnen in einem separaten Fenster angezeigt.<br>Eine 
+blaue Markierung unterhalb der Schaltfläche signalisiert, dass diese aktiv ist.
+</span></p>
+<hr>
+<p>
+<img alt="mittelsachsen atlas ort hinzufügen" height="30" longdesc="mittelsachsen atlas ort hinzufügen" src="images/tutorials/Neu.png" width="56"><span class="style8"></span><br>
+<br>
+<span class="style4">Die Neu-Funktion bietet Ihnen die Möglichkeit uns über 
+interessante Orte in Mittelsachsen, <br>die wir noch nicht im Mittelsachsen Atlas 
+erfasst haben, die Ihnen aber ganz wichtig sind, <br>zu informieren. Bitte geben 
+Sie unbedingt einen Namen und die korrekte Anschrift des <br>Ortes/Objektes (Bsp.: 
+Kindergarten) an. Ihre Daten laden in unseren Redaktionssystem <br>und werden 
+nach einer erfolgreichen Plausibilitätsprüfung in den Atlas-Datenbestand 
+übernommen.</span><br class="style4"><span class="style4">Die Neu-Funktion kann 
+insofern auch für Korrekturen fehlerhaft erfasster Objekte genutzt werden.</span></p>
+
+<hr>
+<p class="style4">
+<img alt="mittelsachsen atlas navi" height="327" longdesc="mittelsachsen atlas navi" src="images/tutorials/Kartennavigation.png" width="53">&nbsp;&nbsp;&nbsp;<br><br>
+Die Navigation innerhalb des Kartenfensters ist der üblicher 
+Internet-Kartenanwendungen <br>nachempfunden. Mit dem Scrollrad Ihrer Maus 
+zoomen Sie in die Karte hinein oder wieder heraus. <br>Halten Sie die linke 
+Maustaste gedrückt, so können Sie die Karte nach belieben in alle 
+<br>Himmelsrichtungen verschieben.Beides ist Ihnen jedoch auch über die 
+Navigationswerkzeuge möglich.&nbsp;&nbsp;</p>
+<hr>
+<p class="style4">
+&nbsp;<img alt="mittelsachsen atlas karte" height="202" longdesc="mittelsachsen atlas karte" src="images/tutorials/Mini-Navigation.png" width="243"><br><br>
+Die Übersichtskarte dient der besseren Orientierung und kann individuell zu- 
+bzw. abgeschaltet werden. <br>Dazu Klicken Sie bitte mit der linken Maustaste 
+auf das Plus- bzw. das Minus-Symbol.</p>
+<hr>
+
+<table style="width: 100%; height: 40px">
+	<tr>
+		<td class="style14"><strong>&nbsp; </strong></td>
+	</tr>
+</table>
+<hr>
 
 </body>
 </html>

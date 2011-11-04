@@ -62,14 +62,19 @@ public class SearchDispatcher
     throws Exception {
         List<String> result = new ArrayList( maxResults );
 
-        // FIXME score results
+        // XXX score results
         for (SearchSPI searcher : searchers) {
-            List<String> records = searcher.autocomplete( term, maxResults );
-            for (String record : records) {
-                // has the record any result anyway?
-                if (StringUtils.containsNone( term, SEPARATOR_CHARS ) || !search( record, 1 ).isEmpty()) {
-                    result.add( record );
+            try {
+                List<String> records = searcher.autocomplete( term, maxResults );
+                for (String record : records) {
+                    // has the record any result anyway?
+                    if (StringUtils.containsNone( term, SEPARATOR_CHARS ) || !search( record, 1 ).isEmpty()) {
+                        result.add( record );
+                    }
                 }
+            }
+            catch (Exception e) {
+                log.warn( "", e );
             }
         }
         return result;
@@ -86,10 +91,15 @@ public class SearchDispatcher
         });
         // searchers
         for (SearchSPI searcher : searchers) {
-            List<SearchResult> records = searcher.search( term, maxResults );
-            for (SearchResult record : records) {
-                results.put( record.getScore(), record );
+            try {
+                List<SearchResult> records = searcher.search( term, maxResults );
+                for (SearchResult record : records) {
+                    results.put( record.getScore(), record );
+                }
             }
+            catch (Exception e) {
+                log.warn( "", e );
+            }            
         }
         
         List<SearchResult> result = new ArrayList( maxResults );

@@ -431,7 +431,8 @@ public class AddressIndexer {
         TermEnum terms = indexReader.terms( new Term( field, addressStr ) );
         try {
             for (int i=0; i<maxResults; i++) {
-                if (!terms.term().text().startsWith( addressStr )) {
+                Term term = terms.term();
+                if (term == null || !term.text().startsWith( addressStr )) {
                     break;
                 }
                 result.add( terms.term().text() );

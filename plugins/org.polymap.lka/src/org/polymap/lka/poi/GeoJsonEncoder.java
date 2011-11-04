@@ -301,8 +301,11 @@ public class GeoJsonEncoder
         
         public void writeJSONString( Writer out ) 
         throws IOException {
+            if (features == null) {
+                return;
+            }
             
-            out.write("[");
+            out.write( "[" );
             
             try {
                 int featureCount = 0;
@@ -327,7 +330,7 @@ public class GeoJsonEncoder
 //                        break;
 //                    }
                     // encode feature
-                    out.write(",");
+                    out.write( "," );
                     fjson.writeFeature( it.next(), out );
                 }
             }
@@ -338,7 +341,7 @@ public class GeoJsonEncoder
                 throw new IOException( e );
             }
 
-            out.write("]");
+            out.write( "]" );
         }
         
 //        /**
