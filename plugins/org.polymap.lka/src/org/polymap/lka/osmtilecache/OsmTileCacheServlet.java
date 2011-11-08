@@ -42,6 +42,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -170,10 +171,23 @@ public class OsmTileCacheServlet
         String targetPath = request.getPathInfo();
 
         // response
+        response.setHeader( "Server", "POLYMAP3-OSM-Cache" );
+
+        // test HTTP 304
+//        String modifiedSince = request.getHeader( "If-Modified-Since" );
+//        if (modifiedSince != null) {
+//            log.info( "MODIFIED SINCE: " + modifiedSince );
+//            response.setStatus( 304 );
+//            response.flushBuffer();
+//            return;
+//        }
+//        response.setDateHeader( "Last-Modified", System.currentTimeMillis() );
+//        response.setHeader( "Etag", "etag" + System.currentTimeMillis() );
+
+        
         // see http://www.mnot.net/cache_docs/
         response.setDateHeader( "Expires", System.currentTimeMillis() + 100000000 );
         response.setHeader( "Cache-Control", "max-age=3600, must-revalidate" );
-        response.setHeader( "Server", "POLYMAP3-OSM-Cache" );
 
         // check cache
         String cacheKey = targetBaseURL + "_" + targetPath;
@@ -203,11 +217,8 @@ public class OsmTileCacheServlet
                 out = response.getOutputStream();
                 InputStream in = get.getResponseBodyAsStream();
                 
-                byte[] buf = new byte[4096];
-                for (int c=in.read( buf ); c>0; c=in.read( buf )) {
-                    //out.write( buf, 0, c );
-                    cached.write( buf, 0, c );
-                }
+                IOUtils.copy( in, out );
+
                 cache.put( new Element( cacheKey, cached.toByteArray() ) );
                 if (++cachePutCount % 100 == 0) {
                     log.info( "Cache put count: " + cachePutCount + " - flushing cache..." );
