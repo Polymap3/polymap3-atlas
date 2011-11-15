@@ -77,7 +77,6 @@ import org.polymap.core.workbench.PolymapWorkbench;
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.lka.LKAPlugin;
-import org.polymap.lka.poi.SearchServlet;
 
 /**
  * Lucene based search and index methods.
@@ -297,9 +296,7 @@ class PoiIndexer {
 
                     // SRS
                     CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
-                    String dataSRS = dataCRS != null
-                    ? SearchServlet.toSRS( dataCRS )
-                            : layer.getCRSCode();
+                    String dataSRS = layer.getCRSCode();
 
                     log.debug( "    found FeatureSource: " + fs + ", SRS=" + dataSRS );
                     fc = fs.getFeatures();
@@ -319,7 +316,7 @@ class PoiIndexer {
                             StringBuffer keywords = new StringBuffer( 1024 );
                             Address address = new Address();
                             for (Property prop : feature.getProperties()) {
-                                String propName = prop.getName().getLocalPart().toLowerCase();
+                                String propName = prop.getName().getLocalPart();
                                 //log.debug( "        prop: " + propName );
 
                                 // no value
@@ -353,19 +350,19 @@ class PoiIndexer {
 //                                            Field.Store.YES, Field.Index.NO ) );
 //                                }
                                 // address fields
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_CITY, propName )) {
+                                else if (ArrayUtils.contains( AddressIndexer.PROP_CITY, propName.toLowerCase() )) {
                                     address.setCity( prop.getValue().toString() );
                                     keywords.append( prop.getValue().toString() ).append( ' ' );
                                 }
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_STREET, propName )) {
+                                else if (ArrayUtils.contains( AddressIndexer.PROP_STREET, propName.toLowerCase() )) {
                                     address.setStreet( prop.getValue().toString() );
                                     keywords.append( prop.getValue().toString() ).append( ' ' );
                                 }
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_POSTALCODE, propName )) {
+                                else if (ArrayUtils.contains( AddressIndexer.PROP_POSTALCODE, propName.toLowerCase() )) {
                                     address.setPostalCode( prop.getValue().toString() );
                                     keywords.append( prop.getValue().toString() ).append( ' ' );
                                 }
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_NUMBER, propName )) {
+                                else if (ArrayUtils.contains( AddressIndexer.PROP_NUMBER, propName.toLowerCase() )) {
                                     address.setNumber( prop.getValue().toString() );
                                     keywords.append( prop.getValue().toString() ).append( ' ' );
                                 }

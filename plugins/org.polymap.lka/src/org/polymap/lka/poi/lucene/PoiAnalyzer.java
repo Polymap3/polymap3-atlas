@@ -39,7 +39,7 @@ import org.apache.lucene.util.Version;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-class PoiAnalyzer
+final class PoiAnalyzer
         extends Analyzer {
 
     private final Version       matchVersion;
@@ -63,7 +63,7 @@ class PoiAnalyzer
      * A WhitespaceTokenizer is a tokenizer that divides text at whitespace.
      * Adjacent sequences of non-Whitespace characters form tokens.
      */
-    class PoiTokenizer
+    final class PoiTokenizer
             extends CharTokenizer {
 
         public PoiTokenizer( Reader in ) {

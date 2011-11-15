@@ -44,7 +44,7 @@ import org.apache.lucene.util.Version;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-class AddressAnalyzer
+final class AddressAnalyzer
         extends Analyzer {
 
     private final Version       matchVersion;
@@ -69,7 +69,7 @@ class AddressAnalyzer
      * A WhitespaceTokenizer is a tokenizer that divides text at whitespace.
      * Adjacent sequences of non-Whitespace characters form tokens.
      */
-    class AddressTokenizer
+    final class AddressTokenizer
             extends CharTokenizer {
 
         public AddressTokenizer( Reader in ) {

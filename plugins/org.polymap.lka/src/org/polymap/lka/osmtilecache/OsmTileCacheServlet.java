@@ -199,8 +199,10 @@ public class OsmTileCacheServlet
                 log.debug( "    markerColor: " + markerColor );
                 cached = transparency( cached, markerColor );
             }
-            response.getOutputStream().write( cached );
-            response.getOutputStream().flush();
+            ServletOutputStream out = response.getOutputStream();
+            out.write( cached );
+            out.flush();
+            response.flushBuffer();
         }
         // go upstream
         else {
@@ -217,7 +219,11 @@ public class OsmTileCacheServlet
                 out = response.getOutputStream();
                 InputStream in = get.getResponseBodyAsStream();
                 
-                IOUtils.copy( in, out );
+//                byte[] buf = new byte[4096];
+//                for (int c=in.read( buf ); c>0; c=in.read( buf )) {
+//                    cached.write( buf, 0, c );
+//                }
+                IOUtils.copy( in, cached );
 
                 cache.put( new Element( cacheKey, cached.toByteArray() ) );
                 if (++cachePutCount % 100 == 0) {
@@ -231,11 +237,10 @@ public class OsmTileCacheServlet
                         ? transparency( cached.toByteArray(), markerColor )
                         : cached.toByteArray();
                 out.write( result );
+                out.flush();
+                response.flushBuffer();
             }
             finally {
-                if (out != null) {
-                    out.flush();
-                }
                 get.releaseConnection();
             }
         }

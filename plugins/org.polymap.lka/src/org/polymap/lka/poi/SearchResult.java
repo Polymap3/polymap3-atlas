@@ -22,8 +22,8 @@
  */
 package org.polymap.lka.poi;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -49,7 +49,8 @@ public class SearchResult {
     
     private String              srs;
     
-    private Map<String,String>  fields = new HashMap();
+    /** Implicitly sort keys. */
+    private Map<String,String>  fields = new TreeMap();
     
     
     /**
@@ -88,10 +89,10 @@ public class SearchResult {
     }
 
     /**
-     * Returns all field names.
+     * Returns all (sorted) field names.
      */
     public Iterable<String> getFieldNames() {
-        return fields.keySet();    
+        return fields.keySet();
     }
     
     /**
