@@ -124,3 +124,31 @@ function MeasureMode( map, elm ) {
     });
 };
 
+
+/**
+ * The tool item to be used in a toolbar to toggle a MeasureMode.
+ */
+var ToggleMeasureItem = ToolItem.extend( {
+    
+    init: function( id, measure ){
+        this._super( id, $.i18n.prop( "tb_measure_label" ), $.i18n.prop( "tb_measure_tip" ) );
+        this.icon = $.i18n.prop( "tb_measure_icon" );
+        this.mode = "toggle";
+        this.measure = measure;
+        this.enabled = false;
+    },
+    
+    onClick: function() {
+        if (this.enabled) {
+            measure.deactivate()
+            this.enabled = false;
+        }
+        else {
+            measure.activate();
+            this.enabled = true;
+        }
+    }
+});
+
+
+

@@ -396,7 +396,9 @@ public class AddressIndexer {
         Query query = null;
         
         // check if search contains special parser chars
-        if (StringUtils.containsNone( addressStr, "*?~:" )) {
+        if (StringUtils.containsNone( addressStr, "*?~:" )
+                && !StringUtils.contains( addressStr, " OR " )
+                && !StringUtils.contains( addressStr, " AND " )) {
             query = new AddressQueryParser( analyzer ).parse( addressStr );
         }
         else {

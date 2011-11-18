@@ -1,8 +1,9 @@
-#Fri Nov 04 19:18:58 CET 2011
+#Fri Nov 18 17:07:09 CET 2011
 eclipse.preferences.version=1
 encoding//lka/bundle=UTF-8
 encoding//lka/bundle/messages_cz.properties=UTF-8
 encoding//lka/bundle/messages_de.properties=UTF-8
+encoding//lka/bundle/trans_de_cz.properties=UTF-8
 encoding//lka/js/atlas.layout.js=UTF-8
 encoding//lka/js/measure.js=UTF-8
 encoding//lka/js/searchcontext.js=UTF-8

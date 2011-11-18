@@ -266,7 +266,9 @@ class PoiIndexer {
 
     
     protected String decorateSearch( String searchStr ) {
-        if (StringUtils.containsNone( searchStr, new char[] { '*', '?', '~' } )) {
+        if (StringUtils.containsNone( searchStr, new char[] { '*', '?', '~' } )
+                && !StringUtils.contains( searchStr, " OR " )
+                && !StringUtils.contains( searchStr, " AND " )) {
             return searchStr + "*";
         }
         return searchStr;

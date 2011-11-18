@@ -26,7 +26,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     /** The OpenLayers.Map we are working for. */
     this.map = map;
     
-    this.attribution = 'Daten von <a href=\"http://landkreis-mittelsachsen.de\">Landratsamt Mittelsachsen</a>';
+    this.attribution = 'Daten von <a href=\"http://polymap.org\">Test</a>';
 
     /** The index of this context. */
     this.index = index;
@@ -50,6 +50,22 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     
     this.searchURL = "#";
     
+    /**
+     * List of functions. Every result field is send through
+     * all enhancers to create the proper HTML. 
+     */
+    this.resultFieldEnhancers = [ enhanceLinkResult ];
+    
+
+    this.enhanceResult = function( str ) {
+        for (var i=0; this.resultFieldEnhancers.length; i++) {
+            var enhanced = this.resultFieldEnhancers[i].call( this, str );
+            if (enhanced != null) {
+                return enhanced;
+            }
+        }
+        return str;
+    };
     
     /**
      * Active this context by updating the GUI elements.
@@ -83,6 +99,15 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     };
     
     /**
+     * Provides a way to enhance search URL before it is send to the server
+     */
+    this.createSearchUrl = function( searchStr ) {
+        return search_field_config.search_url + 
+                "?search=" + this.searchStr + 
+                "&outputType=JSON&srs=" + this.map.getProjection();
+    };
+    
+    /**
      * 
      */
     this.search = function( searchStr ) {
@@ -94,9 +119,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             //search_str = $.URLEncode( search_str );
             //search_str = jQuery.param( search_str, true );
             this.searchStr = encodeURIComponent( this.searchStr );
-            this.searchURL = search_field_config.search_url + 
-                    "?search=" + this.searchStr + 
-                    "&outputType=JSON&srs=" + this.map.getProjection();
+            this.searchURL = this.createSearchUrl( this.searchStr ); 
 
             //onSearch( this );
             
@@ -229,11 +252,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         var close_icon = new OpenLayers.Icon( "images/add_obj.gif" );
 
         var result_html = "";
-        for (i=0; i<this.layer.features.length; i++) {
+        for (var i=0; i<this.layer.features.length; i++) {
             var feature = this.layer.features[i];
             result_html += "<b><a href=\"javascript:onFeatureSelect(" + 
                     this.index + ", '" + feature.id + "');\">" + 
-                    feature.data.title + "</a></b><br/>"; 
+                    this.enhanceResult( feature.data.title ) + "</a></b><br/>"; 
             result_html += this.createFeatureHTML( feature );
             result_html += "<hr/>";
         }
@@ -267,21 +290,14 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         result_html += "<p class=\"resultFields\">";
         jQuery.each( feature.data, function(name, value) {
             if (name != "title" && name != "address") {
-                var valueHtml = value;
-                if (value.indexOf( "http://") == 0) {
-                   valueHtml = "<a href=\"" + value + "\" target=\"_blank\">" + value.substring( 7 ) + "</a>";
-                }
-                else if (value.indexOf( "www.") == 0) {
-                   valueHtml = "<a href=\"http://" + value + "\" target=\"_blank\">" + value + "</a>";
-                }
                 result_html += "<b>" + name.capitalize() + "</b>";
-                result_html += ": " + valueHtml + "<br/>";
+                result_html += ": " + this.enhanceResult( value ) + "<br/>";
             }
         });
         result_html += "</p>";
         return result_html;
     };
-    
+
     /**
      * Callback for 'selectfeature' event.
      * 
@@ -370,6 +386,19 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
  */
 function onFeatureSelect( contextIndex, fid ) {
     contexts[contextIndex].openPopup( fid );
+}
+
+
+/**
+ *
+ */
+function enhanceLinkResult( str ) {
+    if (str.indexOf( "http://") == 0) {
+        valueHtml = "<a href=\"" + str + "\" target=\"_blank\">" + str.substring( 7 ) + "</a>";
+    }
+    else if (str.indexOf( "www.") == 0) {
+        valueHtml = "<a href=\"http://" + str + "\" target=\"_blank\">" + str + "</a>";
+    }
 }
 
 

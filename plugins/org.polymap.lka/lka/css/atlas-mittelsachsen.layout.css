@@ -26,6 +26,11 @@ body {
     font-family: arial,sans-serif;
 }
 
+.ui-icon-georss {
+    background-image: url(images/feed.png);
+    background-repeat: no-repeat;
+}
+
 /*
  * The separator, basically for the result list.
  */
@@ -49,8 +54,8 @@ body {
 }
 
 .ui-widget-content a:hover {
-    text-decoration: none;
-    color: #487BAE;
+    text-decoration: underline;
+    color: #386BBE;
 }
 
 /* Popup and results */
