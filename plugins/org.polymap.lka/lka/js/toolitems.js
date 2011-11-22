@@ -101,12 +101,14 @@ var HtmlDialogToolItem = ToolItem.extend( {
     
     onClick: function() {
         var divElm = this.div;
+        var title = this.getLabel();
         $.ajax({
-            url: htmlUrl,
+            url: this.htmlUrl,
             dataType: "html",
             success: function( data ) {
                 divElm.html( data );
-                divElm.dialog( {width:640 , height:560 , title:title} );
+                divElm.dialog( {modal:true, width:640, height:560, title:title} );
+                //divElm.addClass( 'ui-widget-shadow' );
             }
         });
     }
@@ -285,7 +287,6 @@ var LinkItem = ToolItem.extend( {
     init: function( id ) {
         this._super( id, $.i18n.prop( "tb_link_label" ), $.i18n.prop( "tb_link_tip" ) );
         this.icon = $.i18n.prop( "tb_link_icon" );
-        this.url = "test";
         
         EventManager.subscribe( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
@@ -297,15 +298,15 @@ var LinkItem = ToolItem.extend( {
     },
     
     onSearchCompleted: function( ev ) {
-        this.url = ev.searchURL;
+        this.url = ev.pageURL;
         this.elm.removeAttr( 'disabled' );
     },
     
     onClick: function() {
-//        if (this.url == null) {
-//            alert( $.i18n.prop( "tb_link_disabled" ) );
-//            return;
-//        }
+        if (this.url == null) {
+            alert( $.i18n.prop( "tb_link_disabled" ) );
+            return;
+        }
         var url = this.url;
         var htmlCode = '<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="'
                 + url + '"></iframe>';
@@ -322,18 +323,32 @@ var LinkItem = ToolItem.extend( {
                 divElm.dialog({ width:350, height:240, title:'Link speichern' });
             }
         });
+    }
+});
 
-//        if (searchStr.length > 0) {
-//        $("#link_input").attr( "value", pageURL );
-//        $("#html_link_input").attr( "value", "<iframe width=\"425\" height=\"350\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\" src=\"" + pageURL + "\"></iframe>" );
-//        $("#link_link").attr( "onClick", "showLinkDialog($('#link_dialog'))" );
-//    } else {
-//        $("#link_link").attr( "onClick", "alert(\"Dieser Link ermöglicht das Versenden und Speichern von Suchanfragen. Geben Sie zuerst eine Suchabfrage ein.\")" );
-//    }
-//
-//        div.css( "visibility", "visible" );
-//        div.dialog({ width:350, height:240, title:'Link speichern' });
 
+/**
+ *
+ */
+var SubmitNewItem = ToolItem.extend( {
+    
+    init: function( id ) {
+        this._super( id, $.i18n.prop( "tb_new_label" ), $.i18n.prop( "tb_new_tip" ) );
+        this.icon = $.i18n.prop( "tb_new_icon" );
+        this.url = "test";
+    },
+    
+    onClick: function() {
+        var contentURL = "poi_form.html";
+        var divElm = $( '#dialog' );
+        $.ajax({
+            url: contentURL,
+            dataType: "html",
+            success: function( data ) {
+                divElm.html( data );
+                divElm.dialog({ width:400, height:430 , title:"Einen neuen Ort anlegen" });
+            }
+        });
     }
 });
 

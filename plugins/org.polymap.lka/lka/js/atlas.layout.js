@@ -14,7 +14,7 @@ function init_layout() {
         ,   closable:               true    // pane can open & close
         ,   resizable:              true    // when open, pane can be resized 
         ,   slidable:               true    // when closed, pane can 'slide' open over other panes - closes on mouse-out
-        ,   spacing_open:           4
+        ,   spacing_open:           2
 
         //  some resizing/toggling settings
         ,   north__slidable:        false   // OVERRIDE the pane-default of 'slidable=true'

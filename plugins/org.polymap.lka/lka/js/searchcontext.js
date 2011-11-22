@@ -56,8 +56,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      */
     this.resultFieldEnhancers = [ enhanceLinkResult ];
     
-
-    this.enhanceResult = function( str ) {
+    
+    /**
+     * Called by #createFeatureHTML() to allow field enhancer functions.
+     */
+    this.enhanceResultField = function( str ) {
         for (var i=0; this.resultFieldEnhancers.length; i++) {
             var enhanced = this.resultFieldEnhancers[i].call( this, str );
             if (enhanced != null) {
@@ -256,7 +259,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             var feature = this.layer.features[i];
             result_html += "<b><a href=\"javascript:onFeatureSelect(" + 
                     this.index + ", '" + feature.id + "');\">" + 
-                    this.enhanceResult( feature.data.title ) + "</a></b><br/>"; 
+                    this.enhanceResultField( feature.data.title ) + "</a></b><br/>"; 
             result_html += this.createFeatureHTML( feature );
             result_html += "<hr/>";
         }
@@ -288,10 +291,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 
         // fields
         result_html += "<p class=\"resultFields\">";
+        var searchContext = this;
         jQuery.each( feature.data, function(name, value) {
             if (name != "title" && name != "address") {
                 result_html += "<b>" + name.capitalize() + "</b>";
-                result_html += ": " + this.enhanceResult( value ) + "<br/>";
+                result_html += ": " + searchContext.enhanceResultField( value ) + "<br/>";
             }
         });
         result_html += "</p>";

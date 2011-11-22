@@ -60,6 +60,7 @@ function initForm() {
     $('#city_input').keyup( keypressed );
     $('#street_input').keyup( keypressed );
     $('#number_input').keyup( keypressed );
+    $('#submit_btn').button();
 }
 initForm();
 </script>  
@@ -140,7 +141,7 @@ initForm();
   Test form
 </a-->
 
-<input id="submit_btn" type="submit" value="Abschicken" disabled="disabled" onClick="submitForm()"/> 
+<input id="submit_btn" type="submit" value="Senden" disabled="disabled" onClick="submitForm()"/> 
 
 </body>
 </html>

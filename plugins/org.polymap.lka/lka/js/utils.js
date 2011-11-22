@@ -61,23 +61,6 @@ function show_dialog( div, title, contentURL ) {
     });
 }
 
-function showLinkDialog( div ) {
-    div.css( "visibility", "visible" );
-    div.dialog({ width:350 , height: 240 , title:'Link speichern' });
-}
-
-function showPoiDialog( div ) {
-    var contentURL = "poi_form.html";
-    $.ajax({
-        url: contentURL,
-        dataType: "html",
-        success: function( data ) {
-          div.html( data );
-          div.dialog({ width:400, height:430 , title:"Einen neuen Ort anlegen" });
-        }
-    });
-}
-
 /**
  * 
  */

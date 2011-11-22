@@ -49,6 +49,7 @@ var Topbar = Class.extend( {
         this.elm.addClass( 'ui-widget-content' );
         this.elm.css( "border", "none" );
         this.elm.css( "margin", "3px" );
+        this.elm.css( "background", "none" );
         
         for (var i=0; i<this.leftItems.length; i++) {
             this.createItem( this.elm, this.leftItems[i] );
@@ -56,10 +57,18 @@ var Topbar = Class.extend( {
                 this.elm.append( '<span> | </span>' );
             }
         }
+        for (var i=this.rightItems.length-1; i >= 0; i--) {
+            var itemElm = this.createItem( this.elm, this.rightItems[i] );
+            itemElm.css( 'float', 'right' );
+            if (i < this.rightItems.length - 1) {
+                itemElm.append( '<span> | </span>' );
+            }
+        }
     },
   
     createItem: function( parent, /*ToolItem*/ item ) {
-        parent.append( '<a id="' + item.getId() + '" href="#">' + item.getLabel() + '</a>' );
+        parent.append( '<span id="' + item.getId() + '_outer' + '">' +
+                '<a id="' + item.getId() + '" href="#" title="' + item.getTooltip() + '">' + item.getLabel() + '</a></span>' );
 
         var button = $( '#' + item.getId() );
         
@@ -69,6 +78,7 @@ var Topbar = Class.extend( {
         button.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
 
         item.elementCreated( button );
+        return $( '#' + item.getId() + '_outer' );
     }
   
 });
@@ -90,9 +100,10 @@ var Toolbar = Topbar.extend( {
         this.elm.addClass( 'ui-widget' );
         this.elm.addClass( 'ui-widget-content' );
         this.elm.addClass( 'ui-widget-header' );
-        this.elm.css( "border", "none" );
+        this.elm.addClass( 'ui-corner-top' );
+        //this.elm.css( "border", "none" );
         this.elm.css( "padding", "2px" );
-        //this.elm.css( "height", "25px" );
+        //this.elm.css( "border-bottom", "1px solid #808080" );
         
         // left
         for (var i=0; i<this.leftItems.length; i++) {
@@ -103,6 +114,7 @@ var Toolbar = Topbar.extend( {
 //            if (i < this.leftItems.length - 1) {
 //                this.elm.append( '<span> | </span>' );
 //            }
+            this.leftItems[i].elementCreated( itemElm );
         }
         // right
         for (var i=0; i<this.rightItems.length; i++) {
@@ -111,33 +123,36 @@ var Toolbar = Topbar.extend( {
                     ? this.createToggle( this.elm, item )
                     : this.createButton( this.elm, item );
             itemElm.css( "float", "right" );
+            this.rightItems[i].elementCreated( itemElm );
         }
     },
   
     createButton: function( parent, /*ToolItem*/ item ) {
         parent.append( '<button id="' + item.getId() + '" title="' + item.getTooltip() + '">' );
         var button = $( '#' + item.getId() );
-
-        button.button({ 
-            label: item.getLabel()
-            //icons: {primary: item.icon }
-        });
+        button.button({ label: item.getLabel() });
         button.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
-
-        item.elementCreated( button );
+        if (item.icon != null) {
+            button.css( 'display', 'inline' ).css( 'white-space', 'nowrap' ).css( 'width', '90px' );
+            button.prepend( '<img src="' + item.icon + '" style="float:left; margin:5px;">' );
+        }
         return button;
     },
   
     createToggle: function( parent, item ) {
         parent.append( '<input type="checkbox" id="' + item.getId() + '" title="' + item.getTooltip() + '">'
-                + '<label for="' + item.getId() + '">Toggle</label>');
+                + '<label id="' + item.getId() + "_label" + '" for="' + item.getId() + '">Toggle</label>');
         var checkbox = $( '#' + item.getId() );
+        var label = $( '#' + item.getId() + "_label" );
         checkbox.button({ 
             label: item.getLabel() 
         });
         checkbox.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
-        item.elementCreated( checkbox );
-        return checkbox;
+        if (item.icon != null) {
+            label.css( 'width', '90px' );
+            label.prepend( '<img src="' + item.icon + '" style="float:left; margin:5px;">' );
+        }
+        return label;
 
 //    
 //    <span id="repeat">
