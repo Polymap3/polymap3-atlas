@@ -21,15 +21,6 @@ var ToolItem = Class.extend( {
     MODE_TOGGLE: "toggle",
     MODE_PUSH: "push",
     
-    /** The id of the created DOM element. */
-//    id: null,
-//    
-//    mode: null,
-//    
-//    label: "undefined",
-//
-//    tooltip: "undefined",
-    
     init: function( id, label, tooltip ) {
         this.id = id;
         this.label = label;
@@ -73,8 +64,6 @@ var ToolItem = Class.extend( {
  */
 var LinkToolItem = ToolItem.extend( {
     
-//    url: null,
-    
     init: function( id, label, tooltip, url ) {
         this._super( id, label, tooltip );
         this.url = url;
@@ -84,7 +73,25 @@ var LinkToolItem = ToolItem.extend( {
     onClick: function() {
         window.open( this.url );
     }
-  
+});
+
+
+/**
+ * 
+ */
+var LangSwitcherItem = ToolItem.extend( {
+    
+    init: function( id, icon, tooltip, lang ) {
+        this._super( id, "", tooltip );
+        this.lang = lang;
+        this.icon = icon;
+        return this;
+    },
+    
+    onClick: function() {
+        location.replace( location.protocol + "//" + location.host + location.pathname + "?lang=" + this.lang );
+
+    }
 });
 
 

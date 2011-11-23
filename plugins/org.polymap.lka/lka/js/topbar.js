@@ -20,13 +20,6 @@
  */
 var Topbar = Class.extend( {
     
-//    leftItems: null,
-//    
-//    rightItems: null,
-//    
-//    elm: null,
-    
-    
     init: function( elm ) {
         this.elm = elm;
         this.leftItems = new Array();
@@ -71,6 +64,10 @@ var Topbar = Class.extend( {
                 '<a id="' + item.getId() + '" href="#" title="' + item.getTooltip() + '">' + item.getLabel() + '</a></span>' );
 
         var button = $( '#' + item.getId() );
+
+        if (item.icon != null) {
+            button.prepend( '<img src="' + item.icon + '" style="float:left; margin:0px;">' );
+        }
         
         button.addClass( "ui-widget-content" );
         button.css( "margin", "3px" );
@@ -149,7 +146,7 @@ var Toolbar = Topbar.extend( {
         });
         checkbox.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
         if (item.icon != null) {
-            label.css( 'width', '90px' );
+            label.css( 'white-space', 'nowrap' ).css( 'width', '90px' );
             label.prepend( '<img src="' + item.icon + '" style="float:left; margin:5px;">' );
         }
         return label;
