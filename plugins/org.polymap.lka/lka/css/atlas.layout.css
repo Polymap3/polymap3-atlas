@@ -26,21 +26,77 @@ body {
     font-family: arial,sans-serif;
 }
 
-.ui-icon-georss {
-    background-image: url(images/feed.png);
-    background-repeat: no-repeat;
+/*
+#toolbar {
+    opacity: 1.00;
+    filter: alpha(opacity=100);
+}
+#toolbar:hover {
+    opacity: 1.00; 
+    filter: alpha(opacity=100);
+}*/
+
+#logo_pane {
+    position: absolute; 
+    padding: 5pt; 
+    margin: 0pt; 
 }
 
-/*
- * The separator, basically for the result list.
- */
+#search_pane {
+    position: absolute;
+    left: 300px; 
+    padding: 20px 0px 0px 0px;
+    margin: 0px; 
+}
+
+#search_field {
+    font-size: 138%;
+    /*margin:8px 0px 0px 0px;*/ 
+    /*border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;*/
+    
+    border: 1px solid #ccc;
+    
+    height: 21px;
+    width: 370px;
+    position: absolute;
+    top: 20px;
+    left: 0px;
+         
+    padding: 5px 5px 5px 5px; 
+    background-color: #ffffff; 
+    line-height: 20px;
+    vertical-align: middle; 
+    with: 100%;
+}
+
+#search_btn {
+    width: 100px;
+    height: 32px;
+    position: absolute; 
+    top: 20px; 
+    left: 390px;
+}
+
+.ui-widget { 
+    /*font-family: arial,sans-serif;*/
+    font-size: 12px;
+}
+
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
+    /*font-family: arial,sans-serif;*/
+    font-size: 12px;
+}
+
+/* The separator, basically for the result list. */
 .ui-widget-content hr {
     border: none;
     border-top: solid 1px #2594C0;
     color: #FFFFFF;
     background-color: #FFFFFF;
-    height: 1px;
-    
+    height: 1px;    
 }
 
 .ui-widget-content a {
@@ -58,64 +114,13 @@ body {
     color: #386BBE;
 }
 
+
 /* Popup and results */
 p {
     margin-top: 7px;
     margin-bottom: 7px;
 }
 
-/** Toolbar and dialogs */
-.ui-widget { 
-    font-family: arial,sans-serif;
-    font-size: 12px;
-}
-
-.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
-    font-family: arial,sans-serif;
-    font-size: 12px;
-}
-
-#search_field {
-    font-size: 138%;
-    /*margin:8px 0px 0px 0px;*/ 
-    /*border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #999;
-    border-bottom: 1px solid #999;*/
-    
-    border: 1px solid #ccc;
-    
-    height: 32px;
-    width: 385px;
-    position: absolute;
-    top: 20px;
-    left: 0px;
-         
-    padding: 5px 5px 5px 5px; 
-    background-color: #ffffff; 
-    line-height: 31px;
-    vertical-align: middle; 
-    with: 100%;
-}
-
-#search_btn {
-    width: 100px;
-    height: 32px;
-    position: absolute; 
-    top: 20px; 
-    left: 390px
-}
-
-
-/*
-#toolbar {
-    opacity: 1.00;
-    filter: alpha(opacity=100);
-}
-#toolbar:hover {
-    opacity: 1.00; 
-    filter: alpha(opacity=100);
-}*/
 
 /**********************************************************
  * OpenLayers OVERVIEW
@@ -206,7 +211,7 @@ p {
  */
 .ui-layout-resizer { /* all 'resizer-bars' */
 	background: #ffffff;
-	border: 1px solid #ccc;
+	border: none; /*1px solid #ccc;*/
 	border-width: 0;
 }
 
@@ -316,4 +321,4 @@ p {
 .style_buttontrenner {
 	color: #999999;
 }
-</style>
+

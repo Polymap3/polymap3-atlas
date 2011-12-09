@@ -1,3 +1,4 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>head_title</title>
@@ -43,15 +44,15 @@
 <link rel="stylesheet" type="text/css" href="css/atlas.layout.css" />
 
 <!-- Atlas JavaScript -->
-<script src="js/utils.js" type="application/javascript"></script>
-<script src="js/atlas.layout.js" type="application/javascript"></script>
-<script src="js/inheritance.js" type="application/javascript"></script>
-<script src="js/events.js" type="application/javascript"></script>
-<script src="js/toolitems.js" type="application/javascript"></script>
-<script src="js/topbar.js" type="application/javascript"></script>
-<script src="js/transmap.js" type="application/javascript"></script>
-<script src="js/measure.js" type="application/javascript"></script>
-<script src="js/searchcontext.js" type="application/javascript"></script>
+<script src="js/utils.js" type="text/javascript"></script>
+<script src="js/atlas.layout.js" type="text/javascript"></script>
+<script src="js/inheritance.js" type="text/javascript"></script>
+<script src="js/events.js" type="text/javascript"></script>
+<script src="js/toolitems.js" type="text/javascript"></script>
+<script src="js/topbar.js" type="text/javascript"></script>
+<script src="js/transmap.js" type="text/javascript"></script>
+<script src="js/measure.js" type="text/javascript"></script>
+<script src="js/searchcontext.js" type="text/javascript"></script>
 
 <!-- Local config -->
 <script type="text/javascript">
@@ -170,7 +171,6 @@ function initLocal() {
             $('#search_field').autocomplete( "close" );
         }
     });
-    $('#search_field').focus();
     
     // search button
     $( '#search_btn' ).button({ 
@@ -183,6 +183,13 @@ function initLocal() {
     $(function() {
         $('html').localize();
     });
+
+    // make all divs in north_pane visible after the HTML is localized
+    window.setTimeout( function() {
+        $('#north_pane>div').fadeIn( 1000 );
+        $('#search_field').focus();
+    }, 1000 );
+
 }
 
 
@@ -366,33 +373,25 @@ function initMap() {
 
 <!-- Layout North -->
 <!--div class="ui-layout-north" onmouseover="myLayout.allowOverflow('north')" onmouseout="myLayout.resetOverflow(this)"-->
-<div class="ui-layout-north" style="padding:0px; overflow:visible; overflow-x:auto; overflow-y:hidden;">
+<div id="north_pane" class="ui-layout-north" style="padding:0px; overflow:visible; overflow-x:auto; overflow-y:hidden;">
     <!-- Topbar -->
-    <div id="topbar">
+    <div id="topbar" style="display:none;">
     </div>
 
     <!-- Logo -->
-    <div style="position:absolute; padding:5pt; margin:0pt;">
+    <div id="logo_pane" style="display:none;">
         <a title="logo_title" href="logo_link"> 
         <img style= border:none; src="logo_img" id="logo" alt="logo_img_alt" width="200" height="74"/></a>
     </div>
     
     <!-- Search Form -->
-    <div style="position:absolute; left:300px; padding:20px 0px 0px 0px; margin:0px;">
+    <div id="search_pane" style="display:none;">
         <img style="margin: 1px 0px 0px; padding: 0px; position: absolute; left: -38px; top: 20px;" src="images/marker_red.png" id="search_img">
         
         <input title="Sucheingabe" id="search_field" size="40" maxlength="150" 
             class="ui-autocomplete-input ui-widget" />
         
         <button id="search_btn" value="Suchen" title="Suchen"></button>
-
-        <!-- input type="submit" value="Suchen" title="Suchen" class="ui-widget-content ui-widget-header ui-widget" 
-        style=" padding: 0px; height: 32px; width: 120px;border-top: 1px solid #cccccc;border-left: 1px solid #cccccc;border-right: 1px solid #999999;
-        border-bottom: 1px solid #999999;  margin: 0px;  position: absolute;top: 20px;left: 399px;" onclick="search();"/-->
-
-        <!-- input type="text" id="search_field" size="40" style="zIndex:10000;"/-->
-        <!--input type="submit" value="Suchen" onclick="search();"-->
-        <!-- div id="text_under_search">Entdecke Orte in Mittelsachsen.</div-->
     </div>
 </div>
 
@@ -430,9 +429,13 @@ function initMap() {
 <!-- overflow-xxx is for IE to hide vertical scrollbar -->
 <div class="ui-layout-center" style="visibility:hidden; padding:0px; overflow:visible; overflow-x:auto; overflow-y:hidden; border:none;">
     
-    <div id="toolbar2"></div>
+    <div id="toolbar2" style="z-index:100;"></div>
     
-    <div id="map" style="zIndex:9000; background:#98B5D1"></div>
+    <!--div class="ui-widget-content ui-corner-bottom"
+            style="z-index:10; margin:0px; position:absolute; left:0px; right:0px; top:34px; bottom:0px;"-->
+        <div id="map" class="ui-widget-content ui-corner-bottom"
+                style="position:absolute; left:0px; right:0px; top:34px; bottom:0px; background:#ECEDF5;"></div>
+    <!--  /div-->
 </div>
 
 <!-- This div is used as the content of the dialog boxes for help, contact, etc. -->
