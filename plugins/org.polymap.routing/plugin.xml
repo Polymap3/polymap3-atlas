@@ -9,5 +9,12 @@
             name="pgRouting">
       </page>
    </extension>
-
+   <extension
+         point="org.polymap.core.data.featureOperations">
+      <featureOperation
+            class="org.polymap.routing.gt.TestGraphOperation"
+            id="org.polymap.routing.gt.TestGraphOperation"
+            label="Routing-Graph erstellen">
+      </featureOperation>
+   </extension>
 </plugin>
