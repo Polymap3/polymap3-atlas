@@ -128,10 +128,6 @@ var HtmlDialogToolItem = ToolItem.extend( {
  */
 var ToggleLayerItem = ToolItem.extend( {
     
-//    icon: null,
-//    
-//    layerName: null,
-    
     init: function( id, label, tooltip, icon, map, layerName ){
         this._super( id, label, tooltip );
         this.mode = "toggle";
@@ -142,21 +138,27 @@ var ToggleLayerItem = ToolItem.extend( {
     },
     
     onClick: function() {
-        layer = this.map.getLayersByName( this.layerName )[0];
+        var layer = this.map.getLayersByName( this.layerName )[0];
        
         if (this.enabled) {
             layer.setVisibility( false );
-            //topo_transparent.setVisibility( false );
-            //topo.setVisibility( true );
             this.enabled = false;
         }
         else {
-            //topo_transparent.setVisibility( true );
-            //topo_transparent.setOpacity( 0.50 );
-        
-            //topo.setVisibility( false );
             layer.setVisibility( true );
             this.enabled = true;
+            
+            $('#center_pane').append( '<div id="slider" style="z-index:5000;position:absolute;top:48px;left:250px;right:250px;"></div>' );
+            $('#slider').slider({
+                value: 100,
+                slide: function(ev, ui) {
+                   ev.stopPropagation();
+                   var opacity = ui.value / 100;
+                   layer.setOpacity( opacity );
+                   //ev.preventDefault();
+                   return true;
+                }
+            });
         }
     }
 });
@@ -171,7 +173,7 @@ var BookmarkItem = ToolItem.extend( {
         this._super( id, $.i18n.prop( "tb_bookmark_label" ), $.i18n.prop( "tb_bookmark_tip" ) );
         this.icon = $.i18n.prop( "tb_bookmark_icon" );
         
-        EventManager.subscribe( "searchCompleted", 
+        Atlas.events.bind( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
     },
     
@@ -224,7 +226,7 @@ var GeoRssItem = ToolItem.extend( {
         this._super( id, $.i18n.prop( "tb_georss_label" ), $.i18n.prop( "tb_georss_tip" ) );
         this.icon = $.i18n.prop( "tb_georss_icon" );
         
-        EventManager.subscribe( "searchCompleted", 
+        Atlas.events.bind( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
     },
     
@@ -259,7 +261,7 @@ var KmlItem = ToolItem.extend( {
         this._super( id, $.i18n.prop( "tb_kml_label" ), $.i18n.prop( "tb_kml_tip" ) );
         this.icon = $.i18n.prop( "tb_kml_icon" );
         
-        EventManager.subscribe( "searchCompleted", 
+        Atlas.events.bind( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
     },
     
@@ -295,7 +297,7 @@ var LinkItem = ToolItem.extend( {
         this._super( id, $.i18n.prop( "tb_link_label" ), $.i18n.prop( "tb_link_tip" ) );
         this.icon = $.i18n.prop( "tb_link_icon" );
         
-        EventManager.subscribe( "searchCompleted", 
+        Atlas.events.bind( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
     },
     
@@ -305,7 +307,7 @@ var LinkItem = ToolItem.extend( {
     },
     
     onSearchCompleted: function( ev ) {
-        this.url = ev.pageURL;
+        this.url = pageUrl();  //ev.pageURL;
         this.elm.removeAttr( 'disabled' );
     },
     

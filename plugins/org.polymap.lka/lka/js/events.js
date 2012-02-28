@@ -15,7 +15,7 @@
 
 /***
  * A global event manger used to dispatch events between the components
- * of the UI.
+ * of the Atlas UI.
  * <pre>
  *   // Create a new jQuery.Event object with specified event properties.
  *   var e = jQuery.Event("keydown", { keyCode: 64 });
@@ -27,18 +27,21 @@
  * -> http://stackoverflow.com/questions/2967332/jquery-plugin-for-event-driven-architecture
  * -> http://api.jquery.com/category/events/event-object/
  */
-var EventManager = {
+Events = Class.extend( {
     
-    /** */
-    subscribe: function( eventType, fn ) {
+    /** 
+     * @param eventType {String}
+     * @param fn {Function} 
+     */
+    bind: function( eventType, fn ) {
         $(this).bind( eventType, fn );
     },
     
-    unsubscribe: function( eventType, fn ) {
+    unbind: function( eventType, fn ) {
         $(this).unbind( eventType, fn );
     },
     
-    fire: function( event ) {
+    trigger: function( event ) {
         $(this).trigger( event );
     }
-};
+} );

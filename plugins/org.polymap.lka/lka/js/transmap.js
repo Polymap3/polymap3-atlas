@@ -37,6 +37,20 @@ var TransMap = Class.extend( {
     init: function() {
         this.initTranslations();
         
+        // tweak context functions
+        for (var i=0; i<Atlas.contexts.length; i++) {
+            // translate search URL
+            var self = this;
+            Atlas.contexts[i].createSearchUrl = function( searchStr ) {
+                return Atlas.config.searchUrl + 
+                    "?search=" + self.enhanceSearch( searchStr ) + 
+                    "&outputType=JSON&srs=" + Atlas.map.getProjection();
+            }
+            // translate result
+            Atlas.contexts[i].resultFieldEnhancers.push( function( str ) {
+                return self.enhanceResult( str );
+            });
+        }
         return this;
     },
     

@@ -27,7 +27,7 @@ function init_layout() {
         ,   north__minSize:         118
         ,   west__minSize:          100
         ,   east__spacing_closed:   7
-        ,   east__size:             300
+        ,   east__size:             330
         ,   east__minSize:          200
         ,   east__maxSize:          Math.floor(screen.availWidth / 2) // 1/2 screen width
     });

@@ -1,6 +1,6 @@
 /*
  * polymap.org
- * Copyright 2011, Falko Bräutigam. All rights reserved.
+ * Copyright 2011-2012, Falko Bräutigam. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -74,7 +74,9 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * Active this context by updating the GUI elements.
      */
     this.activate = function() {
-        $('#search_field').val( decodeURIComponent( this.searchStr ) );        
+        $('#search_field')
+            .val( decodeURIComponent( this.searchStr ) );
+            //.css( 'box-shadow', '0 0 3px ' + this.geomColor );        
         $('#search_img').attr( "src", this.markerImage );
 
         if (this.hoverControl != null) {
@@ -105,7 +107,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * Provides a way to enhance search URL before it is send to the server
      */
     this.createSearchUrl = function( searchStr ) {
-        return search_field_config.search_url + 
+        return Atlas.config.searchUrl + 
                 "?search=" + this.searchStr + 
                 "&outputType=JSON&srs=" + this.map.getProjection();
     };
@@ -160,7 +162,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 this.searchURL, { 
                 format: OpenLayers.Format.GeoJSON,
                 styleMap: styleMap
-                //projection: new OpenLayers.Projection( "EPSG:25833" )
             });
             this.layer.attribution = this.attribution;
             this.map.addLayer( this.layer );
@@ -188,39 +189,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             this.selectControl.activate();
             var fs_cb = callback( this.onFeatureSelected, {scope:this} );
             this.layer.events.register( "featureselected", this.layer, fs_cb );
-
-//            var ico = new OpenLayers.Icon( this.markerImage, new OpenLayers.Size(36, 28) );
-//            this.layer = new OpenLayers.Layer.GeoRSS( 'Suchergebnis', this.searchURL, { 
-//                'icon' : ico, 
-//                styleMap : new OpenLayers.StyleMap( {
-//                    // Set the external graphic and background graphic images.
-//                    externalGraphic: "images/marker_yellow.png",
-//                    backgroundGraphic: "images/marker_shadow.png",
-//
-//                    // Makes sure the background graphic is placed correctly relative
-//                    // to the external graphic.
-//                    backgroundXOffset: 0,
-//                    backgroundYOffset: -7,
-//
-//                    // Set the z-indexes of both graphics to make sure the background
-//                    // graphics stay in the background (shadows on top of markers looks
-//                    // odd; let's not do that).
-//                    graphicZIndex: 11,
-//                    backgroundGraphicZIndex: 10,
-//
-//                    pointRadius: 10
-//                } ),
-//                isBaseLayer: false,
-//                rendererOptions: {yOrdering: true}
-////                markerClick: function( ev ) {
-////                    alert( "ev= " + ev );
-////                }
-//            } );
-//            map.addLayer( this.layer );
-
-//            // select markers
-//            map.addControl( new OpenLayers.Control.SelectFeature( search_layer,
-//                    {onSelect: onFeatureSelect, onUnselect: onFeatureUnselect} ) );
 
             var cb = callback( this.onLoad, {scope:this} );
             this.layer.events.register( "loadend", this.layer, cb );
@@ -254,52 +222,72 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     this.onLoad = function() {
         var close_icon = new OpenLayers.Icon( "images/add_obj.gif" );
 
-        var result_html = "";
-        for (var i=0; i<this.layer.features.length; i++) {
-            var feature = this.layer.features[i];
-            result_html += "<b><a href=\"javascript:onFeatureSelect(" + 
-                    this.index + ", '" + feature.id + "');\">" + 
-                    this.enhanceResultField( feature.data.title ) + "</a></b><br/>"; 
-            result_html += this.createFeatureHTML( feature );
-            result_html += "<hr/>";
-        }
-        resultDiv.html( result_html );
+        resultDiv.empty();
+        var self = this;
+        $.each( this.layer.features, function( i, feature ) {
+            var feature = self.layer.features[i];
+            var resultHtml = '<div class="atlas-result" id="feature-' + i + '" style="margin-bottom:2px;" class="ui-corner-all">'
+                    + '<b><a href="#">'
+                    + self.enhanceResultField( feature.data.title ) + '</a></b><br/>' 
+                    + self.createFeatureHTML( feature )
+                    + '</div><hr/>';            
+            resultDiv.append( resultHtml );
+            
+            // click
+            resultDiv.find( '#feature-'+i+' a' ).click( function( ev ) {
+                self.openPopup( feature.id );
+            });
+            
+            // trigger event
+            var ev = jQuery.Event( "searchResultGenerated" );
+            ev.context = this;
+            ev.feature = feature;
+            ev.index = i;
+            ev.div = resultDiv.find( '#feature-'+i );
+            Atlas.events.trigger( ev );
+        });
 
         if (this.layer.features.length > 0) {
             this.map.zoomToExtent( this.layer.getDataExtent() );
-            //onFeaturesLoaded( this.layer.features );
             this.activate();
         }
+        
+        // send UI event
+        var ev = jQuery.Event( "searchCompleted" ); 
+        ev.searchStr = this.searchStr;
+        ev.searchURL = Atlas.config.searchUrl + "?search=" + this.searchStr; 
+        ev.pageURL = pageUrl();
+        Atlas.events.trigger( ev );
     };
 
     /**
      * Creates HTML code for a given feature.
      */
     this.createFeatureHTML = function( feature ) {
-        var result_html = "";
+        var resultHtml = "";
         // address
         if (feature.data.address != null) {
             var address = new OpenLayers.Format.JSON().read( feature.data.address );
     
             if (address != null && address.street != null) {
-                result_html += "<p class=\"resultAddress\">";
-                result_html += address.street + " " + address.number + "<br/>";
-                result_html += address.postalCode + " " + address.city;
-                result_html += "</p>";
+                resultHtml += "<p class=\"atlas-result-address\">";
+                resultHtml += address.street + " " + address.number + "<br/>";
+                resultHtml += address.postalCode + " " + address.city;
+                resultHtml += "</p>";
             }
         }
 
         // fields
-        result_html += "<p class=\"resultFields\">";
-        var searchContext = this;
+        resultHtml += '<p id="feature-field-' + feature.id + '" class="atlas-result-fields">';
+        var self = this;
         jQuery.each( feature.data, function(name, value) {
             if (name != "title" && name != "address") {
-                result_html += "<b>" + name.capitalize() + "</b>";
-                result_html += ": " + searchContext.enhanceResultField( value ) + "<br/>";
+                resultHtml += "<b>" + name.capitalize() + "</b>";
+                resultHtml += ": " + self.enhanceResultField( value ) + "<br/>";
             }
         });
-        result_html += "</p>";
-        return result_html;
+        resultHtml += "</p>";
+        return resultHtml;
     };
 
     /**
@@ -333,7 +321,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         }
         
         // create popup
-        var popup_html = "<b>" + feature.data.title + "</b><br/>" 
+        var popupHtml = '<b>' + feature.data.title + '</b><br/>'
+                + '_____________________________________'
                 + this.createFeatureHTML( feature );
         
         var anchor = {
@@ -343,13 +332,17 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         this.popup = new OpenLayers.Popup.AnchoredBubble( feature.id, 
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size( 400, 400 ),
-                popup_html,
+                popupHtml,
                 anchor, 
                 true   //closeBox
                 );
         feature.popup = this.popup;
         this.popup.feature = feature;
         map.addPopup( this.popup );
+        
+        //$('.resultFields').expandable({title:'...'});
+        //$('.olPopup').css( 'height', '300px' ).css( 'width', '300px' );
+
         return null;
     };
 
@@ -383,14 +376,14 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 
 }
 
-/**
- * This function is called by the generated html/javascript in the result
- * body. It is used by {@link SearchContext#onLoad()} to generate javascript
- * calls inside the generated HTML.
- */
-function onFeatureSelect( contextIndex, fid ) {
-    contexts[contextIndex].openPopup( fid );
-}
+///**
+// * This function is called by the generated html/javascript in the result
+// * body. It is used by {@link SearchContext#onLoad()} to generate javascript
+// * calls inside the generated HTML.
+// */
+//function onFeatureSelect( contextIndex, fid ) {
+//    Atlas.contexts[contextIndex].openPopup( fid );
+//}
 
 
 /**

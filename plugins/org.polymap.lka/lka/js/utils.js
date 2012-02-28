@@ -20,36 +20,6 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-/**
- * Handle URL params for preset searches. 
- */
-function initUrlParams() {
-    var search_str = $(document).getUrlParam( "search" );
-    if (search_str != null) {
-        contexts[0].search( decodeURIComponent( search_str ) );
-    }
-    search_str = $(document).getUrlParam( "search1" );
-    if (search_str != null) {
-        contexts[0].search( decodeURIComponent( search_str ) );
-    }
-    search_str = $(document).getUrlParam( "search2" );
-    if (search_str != null) {
-        contexts[1].search( decodeURIComponent( search_str ) );
-        contexts[1].deactivate();
-    }
-    search_str = $(document).getUrlParam( "search3" );
-    if (search_str != null) {
-        contexts[2].search( decodeURIComponent( search_str ) );
-        contexts[2].deactivate();
-    }
-    search_str = $(document).getUrlParam( "search4" );
-    if (search_str != null) {
-        contexts[3].search( decodeURIComponent( search_str ) );
-        contexts[3].deactivate();
-    }
-    contexts[0].activate();
-}
-
 function show_dialog( div, title, contentURL ) {
     $.ajax({
         url: contentURL,
@@ -86,7 +56,12 @@ function createBookmark( title, url, comment ) {
 /**
  * Generating a callback function bound to an instance.
  * Taken from http://webcache.googleusercontent.com/search?q=cache:boCMVl7cnyEJ:onemarco.com/2008/11/12/callbacks-and-binding-and-callback-arguments-and-references/+javascript+callback+method&cd=4&hl=de&ct=clnk&gl=de&client=firefox-a
- * 
+ * <p/>
+ * Examples:
+ * <pre>
+ *     callback( this.onMeasure, {scope:this}
+ *     callback( this.onMeasure, {scope:this, suppressArgs:false}
+ * </pre>
  * @param {Function}
  *            func the callback function
  * @param {Object}

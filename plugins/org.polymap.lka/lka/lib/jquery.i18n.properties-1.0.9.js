@@ -107,6 +107,10 @@ $.i18n.properties = function(settings) {
 	if(settings.callback){ settings.callback(); }
 };
 
+/**
+ * Alias for <code>$.i18n.prop.</code>
+ */
+$.i18n.get = $.i18n.prop;
 
 /**
  * When configured with mode: 'map', allows access to bundle values by specifying its key.

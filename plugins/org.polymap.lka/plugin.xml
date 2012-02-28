@@ -57,13 +57,4 @@
          </action>
       </actionSet>
    </extension>
-   <extension
-         point="org.polymap.core.data.featureOperations">
-      <featureOperation
-            class="org.polymap.lka.TestGraphOperation"
-            id="org.polymap.lka.TestGraphOperation"
-            label="Graph bauen">
-      </featureOperation>
-   </extension>
-     
 </plugin>

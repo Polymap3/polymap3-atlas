@@ -140,11 +140,11 @@ var ToggleMeasureItem = ToolItem.extend( {
     
     onClick: function() {
         if (this.enabled) {
-            measure.deactivate()
+            this.measure.deactivate()
             this.enabled = false;
         }
         else {
-            measure.activate();
+            this.measure.activate();
             this.enabled = true;
         }
     }

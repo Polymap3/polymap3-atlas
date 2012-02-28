@@ -36,6 +36,9 @@ body {
     filter: alpha(opacity=100);
 }*/
 
+/**********************************************************
+ * Logo, search field, search button
+ */
 #logo_pane {
     position: absolute; 
     padding: 5pt; 
@@ -80,6 +83,34 @@ body {
     left: 390px;
 }
 
+/**********************************************************
+ * Result field, address, routing...
+ */
+.atlas-result-address {
+    color: #606060;
+    font-style: italic;
+}
+.atlas-result-routing {
+    font-size: 10px;
+}
+
+.routing-nearby {
+    /*border: 1px solid #efefef;*/
+}
+
+a.close {
+    width: 14px;
+    height: 14px;
+    background: url(../images/close.gif) no-repeat top left;
+}
+
+a.close:hover {
+    background: url(../images/close-hover.gif) no-repeat top left;
+}
+
+/**********************************************************
+ * jQuery UI elements
+ */
 .ui-widget { 
     /*font-family: arial,sans-serif;*/
     font-size: 12px;
@@ -90,16 +121,23 @@ body {
     font-size: 12px;
 }
 
+.ui-widget input, .ui-widget textarea {
+    border: 1px solid #c0c0c0;
+    background-color: #f0f0f0;
+    padding: 2px; 
+}
+
 /* The separator, basically for the result list. */
 .ui-widget-content hr {
     border: none;
-    border-top: solid 1px #2594C0;
+    border-top: solid 1px #d0d0d0;
     color: #FFFFFF;
     background-color: #FFFFFF;
     height: 1px;    
 }
 
 .ui-widget-content a {
+    color: #3362AD;
     text-decoration: none;
     border: none;
 }
@@ -114,6 +152,17 @@ body {
     color: #386BBE;
 }
 
+.ui-slider {
+    box-shadow: 0px 1px 5px #999;
+    -moz-box-shadow: 0px 1px 5px #999;
+    -webkit-box-shadow: 0px 1px 5px #999;
+}
+
+.ui-slider-handle {
+    border: 2px solid #808080 !important;
+    -moz-box-shadow: 0px 2px 8px #777;
+    -webkit-box-shadow: 0px 2px 6px #999;
+}
 
 /* Popup and results */
 p {
@@ -160,7 +209,7 @@ p {
     position: absolute;
     top: 10px;
     right: 28px;
-    background: url(images/close.gif) no-repeat top left;
+    background: url(../images/close.gif) no-repeat top left;
     margin: 0px;
     font-size: 1px;
     padding: 0px;
@@ -168,7 +217,7 @@ p {
 
 .olPopup a.close:hover
 {
-    background: url(images/close-hover.gif) no-repeat top left;
+    background: url(../images/close-hover.gif) no-repeat top left;
 }
 
 .olPopup .olPopupContent
