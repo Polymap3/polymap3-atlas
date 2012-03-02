@@ -137,19 +137,19 @@ a.close:hover {
 }
 
 .ui-widget-content a {
-    color: #3362AD;
+    color: #315995;
     text-decoration: none;
-    border: none;
-}
-
-.ui-widget-content img {
-    decoration: none;
     border: none;
 }
 
 .ui-widget-content a:hover {
     text-decoration: underline;
     color: #386BBE;
+}
+
+.ui-widget-content img {
+    decoration: none;
+    border: none;
 }
 
 .ui-slider {

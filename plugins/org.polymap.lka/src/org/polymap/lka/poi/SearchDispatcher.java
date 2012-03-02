@@ -66,7 +66,9 @@ public class SearchDispatcher
         for (SearchSPI searcher : searchers) {
             try {
                 List<String> records = searcher.autocomplete( term, maxResults );
-                for (String record : records) {
+                Iterator<String> it = records.iterator();
+                while (it.hasNext() && result.size() <= maxResults) {
+                    String record = it.next();
                     // has the record any result anyway?
                     if (StringUtils.containsNone( term, SEPARATOR_CHARS ) || !search( record, 1 ).isEmpty()) {
                         result.add( record );

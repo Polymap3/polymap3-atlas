@@ -67,3 +67,76 @@
     return Class;
   };
 })();
+
+
+// Test ***************************************************
+
+///**
+// * hallo
+// */
+//var obj = {
+//   
+//   /** Member1! */
+//   member1: 0,
+//   
+//   init: function() {
+//       
+//   }
+//};
+//
+///**
+// * Base class.
+// * 
+// * @returns
+// */
+//function Base() {
+//    /**
+//     * ctor...
+//     */
+//    this.init = function() {
+//        print( "I'm Base!" );
+//    };
+//};
+//var BaseClass = Class.extend( new Base() );
+//
+///**
+// * Test.
+// * 
+// * @return
+// * @base BaseClass
+// */
+//function Test() {
+//    
+//    /**
+//     * Member1!
+//     * @private
+//     */
+//    this.member1 = 0;
+//    
+//    /**
+//     * ctor...
+//     */
+//    this.init = function() {
+//        this._super();
+//        print( "I'm Test!" );
+//        this.member1 = 1;
+//    };
+//    
+//    this.add = function( arg ) {
+//        this.member1 += arg;
+//    };
+//};
+//var TestClass = BaseClass.extend( Test() );
+//
+//
+//var Tertiary = BaseClass.extend( new function TertiaryProto() {
+//
+//    this.init = function() {
+//        this._super();
+//        print( "I'm Tertiary!" );
+//        this.member1 = 2;
+//    };    
+//});
+//
+//var test = new TertiaryProto();
+

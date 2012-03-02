@@ -14,11 +14,38 @@
  */
 
 /**
+ * String standard functions
+ */
+String.prototype.startsWith = function( str ) {
+    return this.match("^"+str) == str;
+};
+
+String.prototype.endsWith = function( str ) {
+    return this.match(str+"$") == str;
+};
+
+String.prototype.trim = function( str ) {
+    return this.replace( /^\s\s*/, '' ).replace( /\s\s*$/, '' );
+};
+
+/**
  * Allows to convert first char to upper case.
  */
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
-}
+};
+
+/**
+ * Replace all occurences of '{x}' in the String with arguments[x].
+ * 
+ * @see http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format/4673436#4673436
+ */
+String.prototype.format = function() {
+    var args = arguments;
+    return this.replace( /{(\d+)}/g, function( match, index ) { 
+        return typeof args[index] != 'undefined' ? args[index] : match;
+    });
+};
 
 function show_dialog( div, title, contentURL ) {
     $.ajax({

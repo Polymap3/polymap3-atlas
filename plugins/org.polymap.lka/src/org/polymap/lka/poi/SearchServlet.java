@@ -105,7 +105,7 @@ public class SearchServlet
 	        try {
 	            JSONArray result = new JSONArray();
 
-	            for (String record : dispatcher.autocomplete( searchStr, 10 )) {
+	            for (String record : dispatcher.autocomplete( searchStr, 7 )) {
 	                //result.put( StringEscapeUtils.escapeHtml( record ) );
 	                result.put( record );
 	            }

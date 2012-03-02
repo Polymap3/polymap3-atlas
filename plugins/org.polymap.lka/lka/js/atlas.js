@@ -20,6 +20,7 @@
  * change/extend default init behaviour. The ctor has a mandatory
  * argument <code>config</code> which defines the configuration of
  * the Atlas environment:
+ * 
  * <pre>
  * {
  *     autocompleteUrl: 'search',
@@ -64,8 +65,8 @@ var AtlasClass = Class.extend( {
      */
     search: function() {
         var searchStr = $("#search_field").val();
-        var searchURL = this.config.searchUrl + "?search=" + searchStr;
-        this.contexts[Atlas.result_index].search( searchStr );
+//        var searchURL = this.config.searchUrl + "?search=" + searchStr;
+        this.contexts[this.result_index].search( searchStr );
     },
     
     /**
@@ -94,7 +95,7 @@ var AtlasClass = Class.extend( {
     initUI: function() {
         var self = this;
         // search context tabs
-        var $tabs = $('#tabs').tabs(); // first tab selected
+        $('#tabs').tabs(); // first tab selected
         $('#tabs').bind( 'tabsselect', function( event, ui ) {
             //ui.tab     // anchor element of the selected (clicked) tab
             //ui.panel   // element, that contains the selected/clicked tab contents
@@ -111,20 +112,18 @@ var AtlasClass = Class.extend( {
             zIndex: 1000,
             delay: 500
         });
-        var self = this;
-        $('#search_field').keypress( function( event ) {
-            if (event.keyCode == 13) {
+        
+        $('#search_field').keypress( function( ev ) {
+            if (ev.keyCode == 13) {
                 self.search();
-                $('#search_field').autocomplete( "close" );
+                $(this).autocomplete( "close" );
             }
         });
 
         // search button
-        $( '#search_btn' ).button({ 
-            label: 'Suchen'
-            //icons: {primary: item.icon }
-        });    
-        $( '#search_btn' ).click( this.search );
+        $('#search_btn')
+            .button( {label: 'Suchen'} )    
+            .click( function( ev ) { self.search(); } );
     },
     
     /**
@@ -197,7 +196,7 @@ var AtlasClass = Class.extend( {
 
         this.map.addLayer( this.mapnik );
         this.map.addLayer( this.dop );
-        this.map.addLayer( this.border );
+//        this.map.addLayer( this.border );
         this.map.zoomToMaxExtent();
 
         this.map.setCenter( new OpenLayers.LonLat( 13.50, 51.00 )

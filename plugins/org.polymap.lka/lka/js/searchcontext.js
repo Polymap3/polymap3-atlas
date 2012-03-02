@@ -16,12 +16,15 @@
 /**
  * The atlas provides multiple search contexts. The user can switch between
  * them.
- * <p>
- * Needs: callback.js, utils.js
+ *
+ * @param map The map we are working for. 
+ * @requires callback.js, utils.js
  */
 function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     
-    this.resultDov = resultDiv;
+    this.resultDiv = resultDiv;
+    
+    this.results = [];
     
     /** The OpenLayers.Map we are working for. */
     this.map = map;
@@ -55,7 +58,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * all enhancers to create the proper HTML. 
      */
     this.resultFieldEnhancers = [ enhanceLinkResult ];
-    
     
     /**
      * Called by #createFeatureHTML() to allow field enhancer functions.
@@ -105,6 +107,9 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     
     /**
      * Provides a way to enhance search URL before it is send to the server
+     * 
+     * @param searchStr
+     * @return
      */
     this.createSearchUrl = function( searchStr ) {
         return Atlas.config.searchUrl + 
@@ -118,16 +123,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     this.search = function( searchStr ) {
         try {
             this.searchStr = searchStr;
-            // all those functions do not work, at least for me
-            //search_str = escape( search_str );
-            //search_str = new OpenLayers.Format.JSON().write( search_str, false );
-            //search_str = $.URLEncode( search_str );
-            //search_str = jQuery.param( search_str, true );
+            // see SearchService for more info
             this.searchStr = encodeURIComponent( this.searchStr );
             this.searchURL = this.createSearchUrl( this.searchStr ); 
 
-            //onSearch( this );
-            
             if (this.layer != null) {
                 this.map.removeLayer( this.layer );
             }
@@ -175,14 +174,14 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 //onSelect: fh_cb
             });
             this.map.addControl( this.hoverControl );
-            this.hoverControl.activate();      
+            this.hoverControl.activate();
             this.layer.events.register( "featurehighlighted", this.layer, fh_cb );
 
             // select feature
             this.selectControl = new OpenLayers.Control.SelectFeature( this.layer, {
                 clickout: true
 //                onSelect: function( ev ) {
-//                    alert( "Selected feature: " + ev.feature.id );
+//                    alert( "Selected feature: " + ev );
 //                }
             });
             this.map.addControl( this.selectControl );
@@ -190,7 +189,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             var fs_cb = callback( this.onFeatureSelected, {scope:this} );
             this.layer.events.register( "featureselected", this.layer, fs_cb );
 
-            var cb = callback( this.onLoad, {scope:this} );
+            var cb = callback( this.onLayerLoaded, {scope:this} );
             this.layer.events.register( "loadend", this.layer, cb );
             this.layer.events.register( "loadcancel", this.layer, cb );
             
@@ -219,10 +218,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * Callback for async loading of the feature layer. Build the popups
      * and zooms the map to the data extent.
      */
-    this.onLoad = function() {
+    this.onLayerLoaded = function() {
         var close_icon = new OpenLayers.Icon( "images/add_obj.gif" );
 
         resultDiv.empty();
+        this.results = new Array( this.layer.features.length );
         var self = this;
         $.each( this.layer.features, function( i, feature ) {
             var feature = self.layer.features[i];
@@ -234,7 +234,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             resultDiv.append( resultHtml );
             
             // click
-            resultDiv.find( '#feature-'+i+' a' ).click( function( ev ) {
+            resultDiv.find( '#feature-'+i+'>b>a' ).click( function( ev ) {
                 self.openPopup( feature.id );
             });
             
@@ -245,6 +245,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             ev.index = i;
             ev.div = resultDiv.find( '#feature-'+i );
             Atlas.events.trigger( ev );
+            
+            self.results[i] = ev;
         });
 
         if (this.layer.features.length > 0) {
@@ -298,6 +300,15 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      */
     this.onFeatureSelected = function( ev ) {
         this.openPopup( ev.feature.id );
+        
+        for (var i=0; i<this.results.length; i++) {
+            var result = this.results[i];
+            if (result.feature == ev.feature) {
+                alert( result.div.position().top );
+                this.resultDiv.scrollTop( result.div.position().top );
+                return false;
+            }
+        }
     };
 
     /**
@@ -312,7 +323,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         }
         
         var feature = null;
-        for (i=0; i<this.layer.features.length; i++) {
+        for (var i=0; i<this.layer.features.length; i++) {
             var f = this.layer.features[i];
             if (f.id == fid) {
                 feature = f;
@@ -387,7 +398,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 
 
 /**
- *
+ * @param str {String} The...
  */
 function enhanceLinkResult( str ) {
     if (str.indexOf( "http://") == 0) {

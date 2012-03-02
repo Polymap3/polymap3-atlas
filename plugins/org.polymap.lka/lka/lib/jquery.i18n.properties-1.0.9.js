@@ -15,6 +15,16 @@
 // -> http://code.google.com/p/jquery-i18n-properties/
 
 /**
+ * Translates the entire String if no arguments are given. Otherwise translates
+ * String components given by \{<key>\} markers in the string.
+ * 
+ * @param arguments
+ */
+String.prototype.i18n = function() {
+    return $.i18n.prop( this );
+};
+
+/**
  * Init I18N with default settings.
  */
 function initI18N() {
@@ -43,7 +53,7 @@ $.i18n = {};
 
 /** Map holding bundle keys (if mode: 'map') */
 $.i18n.map = {};
-    
+
 /**
  * Load and parse message bundle files (.properties),
  * making bundles keys available as javascript variables.

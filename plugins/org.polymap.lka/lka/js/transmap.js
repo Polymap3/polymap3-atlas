@@ -14,22 +14,6 @@
  */
 
 /**
- * String standard functions
- */
-String.prototype.startsWith = function( str ) {
-    return this.match("^"+str) == str;
-}
-
-String.prototype.endsWith = function( str ) {
-    return this.match(str+"$") == str;
-}
-
-String.prototype.trim = function( str ) {
-    return this.replace( /^\s\s*/, '' ).replace( /\s\s*$/, '' );
-}
-
-
-/**
  *
  */
 var TransMap = Class.extend( {

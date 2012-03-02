@@ -218,25 +218,23 @@ public class OsmTileCacheServlet
                 ByteArrayOutputStream cached = new ByteArrayOutputStream();
                 out = response.getOutputStream();
                 InputStream in = get.getResponseBodyAsStream();
-                
-//                byte[] buf = new byte[4096];
-//                for (int c=in.read( buf ); c>0; c=in.read( buf )) {
-//                    cached.write( buf, 0, c );
-//                }
-                IOUtils.copy( in, cached );
 
-                cache.put( new Element( cacheKey, cached.toByteArray() ) );
-                if (++cachePutCount % 100 == 0) {
-                    log.info( "Cache put count: " + cachePutCount + " - flushing cache..." );
-                    cache.flush();
+                if (get.getStatusCode() == 200) {
+                    IOUtils.copy( in, cached );
+
+                    cache.put( new Element( cacheKey, cached.toByteArray() ) );
+                    if (++cachePutCount % 100 == 0) {
+                        log.info( "Cache put count: " + cachePutCount + " - flushing cache..." );
+                        cache.flush();
+                    }
+                    log.debug( "### Cache - memory: " + cache.getMemoryStoreSize()
+                            + ", disk: " + cache.getDiskStoreSize() );
+
+                    byte[] result = markerColor != null
+                            ? transparency( cached.toByteArray(), markerColor )
+                            : cached.toByteArray();
+                    out.write( result );
                 }
-                log.debug( "### Cache - memory: " + cache.getMemoryStoreSize()
-                        + ", disk: " + cache.getDiskStoreSize() );
-                
-                byte[] result = markerColor != null
-                        ? transparency( cached.toByteArray(), markerColor )
-                        : cached.toByteArray();
-                out.write( result );
                 out.flush();
                 response.flushBuffer();
             }

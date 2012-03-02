@@ -67,7 +67,7 @@ public class PoiSearcher
     
     public List<String> autocomplete( String term, int maxResults )
     throws Exception {
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList( maxResults );
         for (String s : indexer.searchTerms( term, maxResults )) {
             result.add( s );
         }
