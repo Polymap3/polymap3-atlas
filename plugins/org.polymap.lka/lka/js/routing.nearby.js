@@ -48,7 +48,7 @@ var Nearby = Class.extend( new function NearbyProto() {
     this.createControl = function( _elm, index, _point ) {
         elm = _elm;
         point = _point;
-        elm.append( '<p>' 
+        elm.append( '<div style="background:#f5f5ff; padding:5px;">' 
                 //+ transformed + '</br>'
                 + $.i18n.prop('routing_cost_input') 
                 + '    <input id="routing-cost-input-'+index+'" style="width:110px; margin:1px;"></input>'
@@ -62,7 +62,7 @@ var Nearby = Class.extend( new function NearbyProto() {
                 + '    <button id="routing-nearby-btn-'+index + '" title="Erreichbarkeit in der Karte anzeigen">Anzeigen</button>' 
                 + '    <button id="routing-nearby-btn2-"'+index +'" title="Orte in der Nähe suchen">Suchen...</button>' 
                 + '</center>'
-                + '</p>' );
+                + '</div>' );
         $('#routing-cost-type').buttonset();
         $('#routing-cost-type label span').css( 'padding', '1px 7px' );
         $('#routing-cost-input-'+index).focus();

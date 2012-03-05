@@ -123,8 +123,16 @@ a.close:hover {
 
 .ui-widget input, .ui-widget textarea {
     border: 1px solid #c0c0c0;
-    background-color: #f0f0f0;
-    padding: 2px; 
+    background-color: #ffffff;
+    padding: 3px;
+}
+.ui-widget input:focus, .ui-widget textarea:focus {
+    border: 1px solid #a0a0a0;
+    /*box-shadow: 0 0 1px #538CE0;*/
+    background: #FFF8E1;
+}
+.ui-widget input:hover, .ui-widget textarea:hover {
+    border: 1px solid #909090;
 }
 
 /* The separator, basically for the result list. */
@@ -190,7 +198,9 @@ p {
     top: 40px ! important;
 }
 .olControlAttribution {
-    top: 33px;
+    top: 5px;
+    text-shadow: 0 0 2px #ffffff;
+    font-size: medium !important;
     height: 20px;
 }
 .olControlMousePosition {

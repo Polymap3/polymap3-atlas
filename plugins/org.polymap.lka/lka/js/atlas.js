@@ -30,26 +30,26 @@
  * }
  * </pre>
  */
-var AtlasClass = Class.extend( {
+var AtlasClass = Class.extend( new function AtlasClassProto() {
     
     /** @private The conciguration of the Atlas environment. */
-    config: null,
+    this.config = null;
     
     /** Array of SearchContext instances. */
-    contexts: null,
+    this.contexts = null;
 
     /** The currently active SearchContext: 0->red, 1->green... */
-    result_index: 0,
+    this.result_index = 0;
 
     /** The OpenLayers map. */
-    map: null,
+    this.map = null;
     
-    layers: null,
+    this.layers = null;
     
-    events: new Events(),
+    this.events = new Events();
     
     
-    init: function( config ) {
+    this.init = function( config ) {
         // XXX a bit hackish; allow the init methods to access the global Atlas
         Atlas = this;
         
@@ -58,21 +58,21 @@ var AtlasClass = Class.extend( {
         this.initContexts();
         this.initUI();
         this.initUrlParams();
-    },
+    };
     
     /**
      * 
      */
-    search: function() {
+    this.search = function() {
         var searchStr = $("#search_field").val();
 //        var searchURL = this.config.searchUrl + "?search=" + searchStr;
         this.contexts[this.result_index].search( searchStr );
-    },
+    };
     
     /**
      * 
      */
-    initContexts: function() {        
+    this.initContexts = function() {        
         // create search contexts
         this.contexts = [
             new SearchContext( this.map, 0, "images/marker_red.png", $("#result_body0"), '#ff0000' ),
@@ -87,12 +87,12 @@ var AtlasClass = Class.extend( {
         };
 
         return this;
-    },
+    };
     
     /**
      * 
      */
-    initUI: function() {
+    this.initUI = function() {
         var self = this;
         // search context tabs
         $('#tabs').tabs(); // first tab selected
@@ -124,12 +124,12 @@ var AtlasClass = Class.extend( {
         $('#search_btn')
             .button( {label: 'Suchen'} )    
             .click( function( ev ) { self.search(); } );
-    },
+    };
     
     /**
      * 
      */
-    initMap: function() {
+    this.initMap = function() {
         // DOP *********
         this.dop = new OpenLayers.Layer.WMS( "DOP", 
             "../services/Atlas-Hintergrund", 
@@ -196,7 +196,7 @@ var AtlasClass = Class.extend( {
 
         this.map.addLayer( this.mapnik );
         this.map.addLayer( this.dop );
-//        this.map.addLayer( this.border );
+        this.map.addLayer( this.border );
         this.map.zoomToMaxExtent();
 
         this.map.setCenter( new OpenLayers.LonLat( 13.50, 51.00 )
@@ -220,12 +220,12 @@ var AtlasClass = Class.extend( {
         scaleLine.geodesic = true;
         this.map.addControl( scaleLine );
         this.map.addControl( new OpenLayers.Control.MousePosition() );
-    },
+    };
 
     /**
      * Handle URL params for preset searches. 
      */
-    initUrlParams: function () {
+    this.initUrlParams = function () {
         var search_str = $(document).getUrlParam( "search" );
         if (search_str != null) {
             this.contexts[0].search( decodeURIComponent( search_str ) );
@@ -250,6 +250,6 @@ var AtlasClass = Class.extend( {
             this.contexts[3].deactivate();
         }
         this.contexts[0].activate();
-    }
+    };
 });
 

@@ -1,11 +1,23 @@
+/*                                                                                           
+ * polymap.org                                                                               
+ * Copyright 2010, 2012 Polymap GmbH. All rights reserved.                                   
+ *                                                                                           
+ * This is free software; you can redistribute it and/or modify it                           
+ * under the terms of the GNU Lesser General Public License as                               
+ * published by the Free Software Foundation; either version 3 of                            
+ * the License, or (at your option) any later version.                                       
+ *                                                                                           
+ * This software is distributed in the hope that it will be useful,                          
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                            
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                          
+ * Lesser General Public License for more details.                                           
+ */
 package org.polymap.lka;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.http.HttpService;
+import org.osgi.util.tracker.ServiceTracker;
 
 import org.eclipse.core.runtime.Plugin;
 
@@ -17,9 +29,9 @@ import org.polymap.lka.osmtilecache.OsmTileCacheServlet;
 import org.polymap.lka.poi.SearchServlet;
 
 /**
- * The activator class controls the plug-in life cycle
  * 
- * 
+ *
+ * @author <a href="http://www.polymap.de">Falko Bräutigam</a>
  */
 public class LKAPlugin extends Plugin {
 
@@ -29,13 +41,13 @@ public class LKAPlugin extends Plugin {
 	// The shared instance
 	private static LKAPlugin        plugin;
 	
-    private static boolean          started;
-    
     /** The session context shared by the servlets. */
     private DefaultSessionContext   serviceContext;
     
     public DefaultSessionContextProvider contextProvider;
 
+    private HttpServicesInstaller   servicesInstaller;
+    
     
 	public LKAPlugin() {
 	}
@@ -53,6 +65,7 @@ public class LKAPlugin extends Plugin {
 
 	public void start( final BundleContext context ) 
 	throws Exception {
+        plugin = this;
 	    super.start( context );
 
 	    // serviceContext
@@ -65,64 +78,18 @@ public class LKAPlugin extends Plugin {
         SessionContext.addProvider( contextProvider );
 
 	    // register servlets
-	    context.addBundleListener( new BundleListener() {
-	        public void bundleChanged( BundleEvent ev ) {
-
-	            if (!started && HttpService.class != null) {
-                    // do it first to prevent reentrant calls
-	                started = true;
-
-	                //log.info("bundle event" + ev.getType() + " " + ev.getBundle() );
-	                // if (ev.getType() == BundleEvent.STARTED && ev.getBundle().equals( getBundle() )) {
-
-
-	                HttpService httpService;
-	                ServiceReference[] httpReferences = null;
-	                try {
-	                    httpReferences = context.getServiceReferences( HttpService.class.getName(), null );
-	                } 
-	                catch (InvalidSyntaxException e) {
-	                    started = false;
-	                    e.printStackTrace();
-	                }
-
-                    if (httpReferences != null) {
-                        String port = context.getProperty( "org.osgi.service.http.port" );
-                        String hostname = context.getProperty( "org.osgi.service.http.hostname" );
-
-                        System.out.println( "Found http service on hostname:" + hostname + "/ port:" + port );
-
-                        httpService = (HttpService)context.getService( httpReferences[0] );
-                        try {
-                            httpService.registerResources( "/lka", "/lka", null );
-
-                            httpService.registerServlet( "/lka/search", new SearchServlet(), null, null );
-                            httpService.registerServlet( "/lka/data", new DataServlet(), null, null );
-                            //httpService.registerServlet( "/lka/poi", new PoiTypeProviderServlet(), null, null );
-
-                            httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet(), null, null );
-                        }
-                        catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-	                }
-	            }
-	            // stop
-	            else if (ev.getType() == BundleEvent.STOPPED && ev.getBundle().equals( getBundle() )) {
-
-	            }
-	        }
-	    });
-
-	    plugin = this;
+        servicesInstaller = new HttpServicesInstaller( context );
+        servicesInstaller.open();        
 	}
 
 
 	public void stop( BundleContext context )
 	throws Exception {
+	    servicesInstaller.close();
+	    servicesInstaller = null;
+	    
 		plugin = null;
-		super.stop(context);
+		super.stop( context );
 	}
 
 	
@@ -135,4 +102,39 @@ public class LKAPlugin extends Plugin {
 		return plugin;
 	}
 
+	
+	/**
+	 * 
+	 */
+	class HttpServicesInstaller 
+	        extends ServiceTracker {
+
+	    public HttpServicesInstaller( BundleContext context ) {
+            super( context, HttpService.class.getName(), null );
+	    }
+
+	    public Object addingService( ServiceReference reference ) {
+	        HttpService httpService = (HttpService)super.addingService( reference );
+	        
+	        if (httpService != null) {
+                String port = context.getProperty( "org.osgi.service.http.port" );
+                String hostname = context.getProperty( "org.osgi.service.http.hostname" );
+                System.out.println( "Found http service on hostname:" + hostname + "/ port:" + port );
+
+                try {
+                    httpService.registerServlet( "/lka/search", new SearchServlet(), null, null );
+                    httpService.registerServlet( "/lka/data", new DataServlet(), null, null );
+                    httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet(), null, null );
+                    httpService.registerResources( "/lka", "/lka", null );
+                }
+                catch (Exception e) {
+                    throw new RuntimeException( e );
+                }
+            }
+	        
+	        return httpService;
+	    }
+
+	}
+	
 }

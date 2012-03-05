@@ -98,15 +98,15 @@ var LangSwitcherItem = ToolItem.extend( {
 /**
  * 
  */
-var HtmlDialogToolItem = ToolItem.extend( {
+var HtmlDialogToolItem = ToolItem.extend( new function HtmlDialogToolItemProto() {
     
-    init: function( id, label, tooltip, div, htmlUrl ){
+    this.init = function( id, label, tooltip, div, htmlUrl ){
         this._super( id, label, tooltip );
         this.htmlUrl = htmlUrl;
         this.div = div;
-    },
+    };
     
-    onClick: function() {
+    this.onClick = function() {
         var divElm = this.div;
         var title = this.getLabel();
         $.ajax({
@@ -118,8 +118,7 @@ var HtmlDialogToolItem = ToolItem.extend( {
                 //divElm.addClass( 'ui-widget-shadow' );
             }
         });
-    }
-  
+    };
 });
 
 
@@ -255,27 +254,27 @@ var GeoRssItem = ToolItem.extend( {
 /**
  *
  */
-var KmlItem = ToolItem.extend( {
+var KmlItem = ToolItem.extend( new function KmlItemProto() {
     
-    init: function( id ) {
+    this.init = function( id ) {
         this._super( id, $.i18n.prop( "tb_kml_label" ), $.i18n.prop( "tb_kml_tip" ) );
         this.icon = $.i18n.prop( "tb_kml_icon" );
         
         Atlas.events.bind( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
-    },
+    };
     
-    elementCreated: function( elm ) {
+    this.elementCreated = function( elm ) {
         this.elm = elm;
         //this.elm.attr( 'disabled', 'disabled' );
-    },
+    };
     
-    onSearchCompleted: function( ev ) {
+    this.onSearchCompleted = function( ev ) {
         this.url = ev.searchURL;
         this.elm.removeAttr( 'disabled' );
-    },
+    };
     
-    onClick: function() {
+    onClick = function() {
         if (this.url == null) {
             alert( $.i18n.prop( "tb_kml_disabled" ) );
             return;
@@ -284,34 +283,34 @@ var KmlItem = ToolItem.extend( {
         var parts = this.url.split( "?" );
         var kmlUrl = parts[0] + "/atlas.kml?" + parts[1] + "&outputType=kml";
         window.open( kmlUrl );
-    }
+    };
 });
 
 
 /**
  *
  */
-var LinkItem = ToolItem.extend( {
+var LinkItem = ToolItem.extend( new function LinkItemProto() {
     
-    init: function( id ) {
+    this.init = function( id ) {
         this._super( id, $.i18n.prop( "tb_link_label" ), $.i18n.prop( "tb_link_tip" ) );
         this.icon = $.i18n.prop( "tb_link_icon" );
         
         Atlas.events.bind( "searchCompleted", 
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
-    },
+    };
     
-    elementCreated: function( elm ) {
+    this.elementCreated = function( elm ) {
         this.elm = elm;
         //this.elm.attr( 'disabled', 'disabled' );
-    },
+    };
     
-    onSearchCompleted: function( ev ) {
+    this.onSearchCompleted = function( ev ) {
         this.url = pageUrl();  //ev.pageURL;
         this.elm.removeAttr( 'disabled' );
-    },
+    };
     
-    onClick: function() {
+    this.onClick = function() {
         if (this.url == null) {
             alert( $.i18n.prop( "tb_link_disabled" ) );
             return;
@@ -329,25 +328,25 @@ var LinkItem = ToolItem.extend( {
                 $("#link_input").attr( "value", url );
                 $("#html_link_input").attr( "value", htmlCode );
                 
-                divElm.dialog({ width:350, height:240, title:'Link speichern' });
+                divElm.dialog({ modal:true, width:450, height:200, title:'Link speichern' });
             }
         });
-    }
+    };
 });
 
 
 /**
  *
  */
-var SubmitNewItem = ToolItem.extend( {
+var SubmitNewItem = ToolItem.extend( new function SubmitNewItemProto() {
     
-    init: function( id ) {
+    this.init = function( id ) {
         this._super( id, $.i18n.prop( "tb_new_label" ), $.i18n.prop( "tb_new_tip" ) );
         this.icon = $.i18n.prop( "tb_new_icon" );
         this.url = "test";
-    },
+    };
     
-    onClick: function() {
+    this.onClick = function() {
         var contentURL = "poi_form.html";
         var divElm = $( '#dialog' );
         $.ajax({
@@ -355,10 +354,10 @@ var SubmitNewItem = ToolItem.extend( {
             dataType: "html",
             success: function( data ) {
                 divElm.html( data );
-                divElm.dialog({ width:400, height:430 , title:"Einen neuen Ort anlegen" });
+                divElm.dialog({ modal:true, width:400, height:430 , title:"Einen neuen Ort anlegen" });
             }
         });
-    }
+    };
 });
 
 

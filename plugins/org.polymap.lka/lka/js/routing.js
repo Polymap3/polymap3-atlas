@@ -61,11 +61,11 @@ var Routing = Class.extend( new function RoutingProto() {
         // nearby search
         var btn3 = elm.find( 'a:nth-child(3)');
         btn3.click( function( ev2 ) {
-            if (btn3.attr( 'disabled' ) != null) {
+            if (btn3.attr( 'disabled' ) == 'disabled') {
                 ev2.preventDefault();
             }
             else {
-                btn3.css( 'font-weight', 'bold' ).attr( 'disabled', true );
+                btn3.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
 
                 ev.div.append( '<div id="routing-nearby-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
                 var elm = $('#routing-nearby-'+ev.index);
@@ -82,11 +82,11 @@ var Routing = Class.extend( new function RoutingProto() {
 
         var btn = elm.find( 'a:nth-child(1)');
         btn.click( function( ev2 ) {
-            if (btn.attr( 'disabled' ) != null) {
+            if (btn.attr( 'disabled' ) === 'disabled') {
                 ev2.preventDefault();
             }
             else {
-                btn.css( 'font-weight', 'bold' ).attr( 'disabled', true );
+                btn.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
 
                 ev.div.append( '<div id="routing-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
                 var elm = ev.div.find( 'div' );
@@ -104,11 +104,11 @@ var Routing = Class.extend( new function RoutingProto() {
 
         var btn2 = elm.find( 'a:nth-child(2)');
         btn2.click( function( ev2 ) {
-            if (btn2.attr( 'disabled' ) != null) {
+            if (btn2.attr( 'disabled' ) === 'disabled') {
                 ev2.preventDefault();
             }
             else {
-                btn2.css( 'font-weight', 'bold' ).attr( 'disabled', true );
+                btn2.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
 
                 ev.div.append( '<div id="routing-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
                 var elm = ev.div.find( 'div' );

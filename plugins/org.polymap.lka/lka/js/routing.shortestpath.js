@@ -137,8 +137,17 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     this.createSearchPicklist = function( _parentElm, _inputElm, _index, callback ) {
         var selectElm = null;
         var self = this;
+        var delay = null;
         
-        _inputElm.keyup( function( ev ) {   
+        _inputElm.keyup( function( ev ) {
+            if (delay != null) {
+                clearTimeout( delay );
+                delay = null;
+            }
+            delay = setTimeout( doSearchPicklist, 1000 );
+        });
+        
+        function doSearchPicklist() {
             self.searchService.search( self.searchService.searchUrl( _inputElm.val() ), function( features ) {
                 if (selectElm == null) {
                     _parentElm.append( ('<span style="font-size:10px;">Suchergebnisse:</span>'
@@ -166,7 +175,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                     }
                 }
             });
-        });
+        }
     };
     
     /**
