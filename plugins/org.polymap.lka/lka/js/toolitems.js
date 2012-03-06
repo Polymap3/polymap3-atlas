@@ -79,25 +79,6 @@ var LinkToolItem = ToolItem.extend( {
 /**
  * 
  */
-var LangSwitcherItem = ToolItem.extend( {
-    
-    init: function( id, icon, tooltip, lang ) {
-        this._super( id, "", tooltip );
-        this.lang = lang;
-        this.icon = icon;
-        return this;
-    },
-    
-    onClick: function() {
-        location.replace( location.protocol + "//" + location.host + location.pathname + "?lang=" + this.lang );
-
-    }
-});
-
-
-/**
- * 
- */
 var HtmlDialogToolItem = ToolItem.extend( new function HtmlDialogToolItemProto() {
     
     this.init = function( id, label, tooltip, div, htmlUrl ){

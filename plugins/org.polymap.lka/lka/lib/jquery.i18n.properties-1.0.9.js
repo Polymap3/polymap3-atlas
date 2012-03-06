@@ -114,7 +114,7 @@ $.i18n.properties = function(settings) {
 	}
 	
 	// call callback
-	if(settings.callback){ settings.callback(); }
+	if(settings.callback){ settings.callback( settings ); }
 };
 
 /**

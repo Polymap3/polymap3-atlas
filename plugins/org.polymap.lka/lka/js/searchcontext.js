@@ -53,24 +53,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     
     this.searchURL = "#";
     
-    /**
-     * List of functions. Every result field is send through
-     * all enhancers to create the proper HTML. 
-     */
-    this.resultFieldEnhancers = [ enhanceLinkResult ];
-    
-    /**
-     * Called by #createFeatureHTML() to allow field enhancer functions.
-     */
-    this.enhanceResultField = function( str ) {
-        for (var i=0; this.resultFieldEnhancers.length; i++) {
-            var enhanced = this.resultFieldEnhancers[i].call( this, str );
-            if (enhanced != null) {
-                return enhanced;
-            }
-        }
-        return str;
-    };
     
     /**
      * Active this context by updating the GUI elements.
@@ -106,18 +88,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     };
     
     /**
-     * Provides a way to enhance search URL before it is send to the server
-     * 
-     * @param searchStr
-     * @return
-     */
-    this.createSearchUrl = function( searchStr ) {
-        return Atlas.config.searchUrl + 
-                "?search=" + this.searchStr + 
-                "&outputType=JSON&srs=" + this.map.getProjection();
-    };
-    
-    /**
      * 
      */
     this.search = function( searchStr ) {
@@ -125,7 +95,15 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             this.searchStr = searchStr;
             // see SearchService for more info
             this.searchStr = encodeURIComponent( this.searchStr );
-            this.searchURL = this.createSearchUrl( this.searchStr ); 
+            this.searchURL = Atlas.config.searchUrl 
+                    + "?search=" + this.searchStr 
+                    + "&outputType=JSON&srs=" + this.map.getProjection(); 
+
+            // trigger Event
+            var ev = jQuery.Event( 'searchPreparing' );
+            ev.context = this;
+            ev.searchStr = searchStr;
+            Atlas.events.trigger( ev );
 
             if (this.layer != null) {
                 this.map.removeLayer( this.layer );
@@ -226,9 +204,15 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         var self = this;
         $.each( this.layer.features, function( i, feature ) {
             var feature = self.layer.features[i];
+            
+            // trigger Event
+            var ev = jQuery.Event( 'searchFeatureLoaded' ); 
+            ev.context = this;
+            ev.feature = feature; 
+            Atlas.events.trigger( ev );
+            
             var resultHtml = '<div class="atlas-result" id="feature-' + i + '" style="margin-bottom:2px;" class="ui-corner-all">'
-                    + '<b><a href="#">'
-                    + self.enhanceResultField( feature.data.title ) + '</a></b><br/>' 
+                    + '<b><a href="#">' + feature.data.title + '</a></b><br/>' 
                     + self.createFeatureHTML( feature )
                     + '</div><hr/>';            
             resultDiv.append( resultHtml );
@@ -282,10 +266,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         // fields
         resultHtml += '<p id="feature-field-' + feature.id + '" class="atlas-result-fields">';
         var self = this;
-        jQuery.each( feature.data, function(name, value) {
+        $.each( feature.data, function( name, value ) {
             if (name != "title" && name != "address") {
                 resultHtml += "<b>" + name.capitalize() + "</b>";
-                resultHtml += ": " + self.enhanceResultField( value ) + "<br/>";
+                resultHtml += ": " + value + "<br/>";
             }
         });
         resultHtml += "</p>";
@@ -395,18 +379,4 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 //function onFeatureSelect( contextIndex, fid ) {
 //    Atlas.contexts[contextIndex].openPopup( fid );
 //}
-
-
-/**
- * @param str {String} The...
- */
-function enhanceLinkResult( str ) {
-    if (str.indexOf( "http://") == 0) {
-        valueHtml = "<a href=\"" + str + "\" target=\"_blank\">" + str.substring( 7 ) + "</a>";
-    }
-    else if (str.indexOf( "www.") == 0) {
-        valueHtml = "<a href=\"http://" + str + "\" target=\"_blank\">" + str + "</a>";
-    }
-}
-
 

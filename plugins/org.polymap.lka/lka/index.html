@@ -93,14 +93,17 @@ function initLocal() {
     // init I18N
     var lang = $(document).getUrlParam( "lang" );    
     jQuery.i18n.properties({
-        name: 'messages', 
-        path: 'bundle/', 
-        mode: 'map', 
-        language: lang  //'cz_CZ',
+            name: 'messages', 
+            path: 'bundle/', 
+            mode: 'map', 
+            language: lang,  //'cz_CZ',
+            callback: function( settings ) {
+                Atlas.language = settings.language;
+            }
     });
 
     // init translation; tweak context functions
-    Atlas.transmap = new TransMap();
+    Atlas.transmap = new TransMap( 'bundle/trans_', ['de_cz'] );
     
     Atlas.routing = new Routing(
         '../routing-service/web/v1.0', 
@@ -115,6 +118,7 @@ function initLocal() {
         .addLeft( new LinkToolItem( "tb_3", "Geo-Katalog", "tooltip", "http://google.de" ) )
         .addRight( new LangSwitcherItem( "tb_cz", "images/cz.gif", "", "cz" ) )
         .addRight( new LangSwitcherItem( "tb_de", "images/de.gif", "", "de" ) )
+        .addRight( new LangSwitcherItem( "tb_en", "images/en.gif", "", "en" ) )
         .addRight( new HtmlDialogToolItem( "tb_hilfe", "Hilfe", "Hilfe anzeigen", $('#dialog'), "hilfe.html" ) )
         .addRight( new HtmlDialogToolItem( "tb_impressum", "Impressum", "Impressum anzeigen", $('#dialog'), "impressum.html" ) )
         .addRight( new HtmlDialogToolItem( "tb_kontakt", "Kontakt", "Kontaktdaten anzeigen", $('#dialog'), "kontakt.html" ) )

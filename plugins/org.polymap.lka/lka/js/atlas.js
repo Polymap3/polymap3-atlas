@@ -46,13 +46,14 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
     
     this.layers = null;
     
-    this.events = new Events();
+    this.events = null;
     
     
     this.init = function( config ) {
-        // XXX a bit hackish; allow the init methods to access the global Atlas
+        // XXX a bit hacky; allow the init methods to access the global Atlas
         Atlas = this;
         
+        this.events = new Events();
         this.config = config;
         this.initMap();
         this.initContexts();
@@ -86,6 +87,9 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
             this.contexts[i].mapCRS = this.config.mapCRS;
         };
 
+        // transform URLs in feature fields into links
+        new UrlFieldFeatureResultEnhancer();
+        
         return this;
     };
     
@@ -251,5 +255,27 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         }
         this.contexts[0].activate();
     };
+});
+
+
+/**
+ * 
+ * 
+ */
+var UrlFieldFeatureResultEnhancer = Class.extend( new function() {
+   
+    this.init = function() {
+        Atlas.events.bind( 'searchFeatureLoaded', function( ev ) {
+            $.each( ev.feature.data, function( name, value ) {
+                if (value.indexOf( "http://") == 0) {
+                    ev.feature.data[name] = "<a href=\"" + value + "\" target=\"_blank\">" + value.substring(7) + "</a>";
+                }
+                else if (value.indexOf( "www.") == 0) {
+                    ev.feature.data[name] = "<a href=\"http://" + value + "\" target=\"_blank\">" + value + "</a>";
+                }
+            });
+        });
+    };
+    
 });
 
