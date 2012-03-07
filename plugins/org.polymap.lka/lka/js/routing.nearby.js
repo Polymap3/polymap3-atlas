@@ -22,11 +22,12 @@ var Nearby = Class.extend( new function NearbyProto() {
     
     this.service = null;
     
-    var elm = null;
+    /** The UI element. */
+    this.elm = null;
     
-    var point = null;
+    this.point = null;
     
-    var layer = null;
+    this.layer = null;
     
     /** */
     this.init = function( service ) {
@@ -35,8 +36,8 @@ var Nearby = Class.extend( new function NearbyProto() {
     
     /** */
     this.close = function() {
-        if (elm != null) { elm.remove(); }
-        if (layer != null) { Atlas.map.removeLayer( layer ); }
+        if (this.elm != null) { this.elm.remove(); }
+        if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
     };
     
     /**
@@ -45,10 +46,10 @@ var Nearby = Class.extend( new function NearbyProto() {
      * @param index {Number}
      * @param point {OpenLayers.Geometry.Point}
      */
-    this.createControl = function( _elm, index, _point ) {
-        elm = _elm;
-        point = _point;
-        elm.append( '<div style="background:#f5f5ff; padding:5px;">' 
+    this.createControl = function( elm, index, point ) {
+        this.elm = elm;
+        this.point = point;
+        this.elm.append( '<div style="background:#f5f5ff; padding:5px;">' 
                 //+ transformed + '</br>'
                 + $.i18n.prop('routing_cost_input') 
                 + '    <input id="routing-cost-input-'+index+'" style="width:110px; margin:1px;"></input>'
@@ -101,8 +102,8 @@ var Nearby = Class.extend( new function NearbyProto() {
      * Handles geometry transformation to/from map/routing CRS.
      */
     this.doNearbySearch = function( point, mode, cost, index ) {
-        if (layer != null) {
-            Atlas.map.removeLayer( layer );
+        if (this.layer != null) {
+            Atlas.map.removeLayer( this.layer );
         }
         var transformed = new OpenLayers.Geometry.Point( point.x, point.y )
                 .transform( Atlas.map.getProjectionObject(), this.service.projection );
@@ -110,21 +111,21 @@ var Nearby = Class.extend( new function NearbyProto() {
         var self = this;
         this.service.driveTimePolygon( transformed, cost, mode, function( status, feature ) {
             // XXX handle status
-            layer = new OpenLayers.Layer.Vector( "Nearby", {
+            this.layer = new OpenLayers.Layer.Vector( "Nearby", {
                     isBaseLayer: false,
                     visibility: true,
                     reportError: true,
                     strategies: [new OpenLayers.Strategy.Fixed()],
                     protocol: new OpenLayers.Protocol()
             });
-            layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
+            this.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
             var vector = new OpenLayers.Feature.Vector( feature.geometry.transform( 
                     self.service.projection, Atlas.map.getProjectionObject() ), {} );
-            layer.addFeatures( [vector] );
-            Atlas.map.addLayer( layer );
+            this.layer.addFeatures( [vector] );
+            Atlas.map.addLayer( this.layer );
             
-            if (layer.features.length > 0) {
-                Atlas.map.zoomToExtent( layer.getDataExtent() );
+            if (this.layer.features.length > 0) {
+                Atlas.map.zoomToExtent( this.layer.getDataExtent() );
                 Atlas.map.zoomOut();
             }
         });

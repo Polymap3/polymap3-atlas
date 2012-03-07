@@ -136,12 +136,14 @@ public class GeoJsonEncoder
             
             LinkedHashMap obj = new LinkedHashMap();
             obj.put( "type", "FeatureCollection" );
-            obj.put( "features", new CollectionEncoder( fjson, null ) );
+            obj.put( "features", new CollectionEncoder( features, fjson, null ) );
             obj.put( "crs", new CRSEncoder( fjson, worldCRS ) );
             
             GeoJSONUtil.encode( obj, new OutputStreamWriter( this, "UTF-8" ) );
             
-            features.clear();
+            if (features != null) {
+                features.clear();
+            }
         }
         finally {
             aboutToFlush = false;
@@ -282,8 +284,10 @@ public class GeoJsonEncoder
     /**
      * 
      */
-    class CollectionEncoder 
+    static class CollectionEncoder 
             implements JSONStreamAware {
+
+        private FeatureCollection           features;
 
         private FeatureJSON                 fjson;
         
@@ -294,7 +298,8 @@ public class GeoJsonEncoder
         private CountingOutputStream        byteCounter;
         
         
-        public CollectionEncoder( FeatureJSON fjson, CountingOutputStream byteCounter ) {
+        public CollectionEncoder( FeatureCollection features, FeatureJSON fjson, CountingOutputStream byteCounter ) {
+            this.features = features;
             this.fjson = fjson;
             this.byteCounter = byteCounter;
         }

@@ -199,7 +199,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     this.onLayerLoaded = function() {
         var close_icon = new OpenLayers.Icon( "images/add_obj.gif" );
 
-        resultDiv.empty();
+        this.resultDiv.empty();
+        this.resultDiv.css( 'bottom', '0px' ).css( 'height', '100%' );
         this.results = new Array( this.layer.features.length );
         var self = this;
         $.each( this.layer.features, function( i, feature ) {
@@ -210,15 +211,18 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             ev.context = this;
             ev.feature = feature; 
             Atlas.events.trigger( ev );
-            
+
+//            $.ajax( {
+//                context: 
+//            });
             var resultHtml = '<div class="atlas-result" id="feature-' + i + '" style="margin-bottom:2px;" class="ui-corner-all">'
                     + '<b><a href="#">' + feature.data.title + '</a></b><br/>' 
                     + self.createFeatureHTML( feature )
                     + '</div><hr/>';            
-            resultDiv.append( resultHtml );
+            self.resultDiv.append( resultHtml );
             
             // click
-            resultDiv.find( '#feature-'+i+'>b>a' ).click( function( ev ) {
+            self.resultDiv.find( '#feature-'+i+'>b>a' ).click( function( ev ) {
                 self.openPopup( feature.id );
             });
             
@@ -227,7 +231,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             ev.context = this;
             ev.feature = feature;
             ev.index = i;
-            ev.div = resultDiv.find( '#feature-'+i );
+            ev.div = self.resultDiv.find( '#feature-'+i );
             Atlas.events.trigger( ev );
             
             self.results[i] = ev;
@@ -370,13 +374,3 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     };
 
 }
-
-///**
-// * This function is called by the generated html/javascript in the result
-// * body. It is used by {@link SearchContext#onLoad()} to generate javascript
-// * calls inside the generated HTML.
-// */
-//function onFeatureSelect( contextIndex, fid ) {
-//    Atlas.contexts[contextIndex].openPopup( fid );
-//}
-

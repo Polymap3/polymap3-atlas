@@ -78,17 +78,13 @@ var TransMap = Class.extend( new function TransMapProto() {
      * destination language.
      */
     this.enhanceSearch = function( searchStr ) {
-        var currentLang = Atlas.language;
-        alert( 'current language: ' + currentLang );
-        
-        var result = '';
+        var currentLang = Atlas.language;        
         for (var i=0; i<this.translations.length; i++) {
             if (this.translations[i].srcMatches( currentLang )) {
-                result += this.translations[i].enhanceSearch( searchStr );
-                result += i < this.translations.length-1 ? " " : "";
+                searchStr = this.translations[i].enhanceSearch( searchStr );
             }
         }
-        return result;
+        return searchStr;
     };
     
     /**
@@ -168,6 +164,7 @@ var Translation = Class.extend( new function TranslationProto() {
         return this;
     };
 
+    /** True if the source lang code matches the given code. */
     this.srcMatches = function( langCode ) {
         return langCode.startsWith( this.src );
     };
@@ -208,17 +205,19 @@ var WordTranslator = Class.extend( new function WordTranslator() {
     };
 
     this.enhanceSearch = function( line, context ) {
-        return stringReplace( line, this.from.toLowerCase(), 
+        if (this.fromRegex == null) {
+            this.fromRegex = new RegExp( this.from, 'gi' );
+        }
+        return line.replace( this.fromRegex, 
                 "(" + this.from + " OR " + this.to.split( " " ).join( " OR " ) + ")" );
     };
     
     this.enhanceResult = function( line, context ) {
-        return stringReplace( line, this.from, this.to );
+        if (this.fromRegex == null) {
+            this.fromRegex = new RegExp( this.from, 'gi' );
+        }
+        return line.replace( this.fromRegex, this.to );
     };
-    
-    function stringReplace( line, search, replace ) {
-        return line.replace( search, replace );
-    }
 });
 
         

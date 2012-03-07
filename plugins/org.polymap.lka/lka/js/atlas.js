@@ -100,7 +100,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         var self = this;
         // search context tabs
         $('#tabs').tabs(); // first tab selected
-        $('#tabs').bind( 'tabsselect', function( event, ui ) {
+        $('#tabs').bind( 'tabsselect', function( ev, ui ) {
             //ui.tab     // anchor element of the selected (clicked) tab
             //ui.panel   // element, that contains the selected/clicked tab contents
             self.contexts[self.result_index].searchStr = $('#search_field').val();

@@ -25,15 +25,17 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     this.searchService = null;
     
     /** The document element to create the UI into. */
-    var elm = null;
+    this.elm = null;
     
-    var layer = null;
+    this.index;
     
-    var hoverControl = null, selectControl = null;;
+    this.layer = null;
     
-    var index;
+    this.hoverControl = null; 
+    this.selectControl = null;
     
-    var fromPoint = null, toPoint = null;
+    this.fromPoint = null; 
+    this.toPoint = null;
 
     /** */
     this.init = function( service ) {
@@ -47,10 +49,10 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     
     /** */
     this.close = function() {
-        if (elm != null) { elm.remove(); }
-        if (selectControl != null) { Atlas.map.removeControl( selectControl ); }
-        if (hoverControl != null) { Atlas.map.removeControl( hoverControl ); }
-        if (layer != null) { Atlas.map.removeLayer( layer ); }
+        if (this.elm != null) { this.elm.remove(); }
+        if (this.selectControl != null) { Atlas.map.removeControl( this.selectControl ); }
+        if (this.hoverControl != null) { Atlas.map.removeControl( this.hoverControl ); }
+        if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
     };
     
     /**
@@ -61,10 +63,10 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
      * @param fromSearchStr
      * @param toSearchStr 
      */
-    this.createControl = function( _elm, _index, fromPoint, fromSearchStr, toPoint, toSearchStr ) {
-        elm = _elm;
-        index = _index;
-        elm.append( ('<div style="background:#f5f5ff; padding:5px; font-size:10px;">'
+    this.createControl = function( elm, index, fromPoint, fromSearchStr, toPoint, toSearchStr ) {
+        this.elm = elm;
+        this.index = index;
+        this.elm.append( ('<div style="background:#f5f5ff; padding:5px; font-size:10px;">'
                 + '<b>{0}</b> <input id="{1}" style="width:97%; margin: 1px 0px 1px 0px;"></input>'
                 + '    <div id="{7}" style="color:#808080;"></div>'
                 + '<b>{2}</b> <input id="{3}" style="width:97%; margin: 1px 50x 1px 0px;"></input>'
@@ -76,22 +78,22 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                         'routing-btn-'+index, 'Route berechnen', 'Route suchen und in der Karte anzeigen',
                         'routing-from-pl-'+index, 'routing-to-pl-'+index) );
 
-        elm.find( 'button' ).button()
+        this.elm.find( 'button' ).button()
                 //.attr( 'disabled', 'disabled' )
                 .css( 'box-shadow', '0px 1px 1px #090909' )
                 .find( 'span').css( 'padding', '1px 7px' );
         
         // set default value
-        elm.find( '#routing-from-input-'+index).val( fromSearchStr != null ? fromSearchStr : null );
-        elm.find( '#routing-to-input-'+index).val( toSearchStr != null ? toSearchStr : null );
+        this.elm.find( '#routing-from-input-'+index).val( fromSearchStr != null ? fromSearchStr : null );
+        this.elm.find( '#routing-to-input-'+index).val( toSearchStr != null ? toSearchStr : null );
         
         this.createSearchPicklist( 
-                elm.find( '#routing-from-pl-'+index ), elm.find( '#routing-from-input-'+index ), index,
+                this.elm.find( '#routing-from-pl-'+index ), this.elm.find( '#routing-from-input-'+index ), index,
                 function( feature ) { 
                     fromPoint = feature.geometry.getCentroid(); 
                 });
         this.createSearchPicklist( 
-                elm.find( '#routing-to-pl-'+index ), elm.find( '#routing-to-input-'+index ), index,
+                this.elm.find( '#routing-to-pl-'+index ), this.elm.find( '#routing-to-input-'+index ), index,
                 function( feature ) {
                     toPoint = feature.geometry.getCentroid(); 
                 });
@@ -99,7 +101,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         
         // keyup -> enable/disable, searchStr, doRouteSearch()
         var self = this;
-        elm.find( 'input' ).keyup( function( ev ) {
+        this.elm.find( 'input' ).keyup( function( ev ) {
             var inputElm = $(this);
             //window.setTimeout( function() { inputElm.autocomplete( 'close' ); }, 5000 );
             
@@ -108,9 +110,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 return false;
             }
             if ($(this).val().length != 0) {
-                elm.find( '#routing-btn-'+index ).removeAttr( 'disabled' );
+                this.elm.find( '#routing-btn-'+index ).removeAttr( 'disabled' );
             } else {
-                elm.find( '#routing-btn-'+index ).attr( 'disabled', 'disabled' );
+                this.elm.find( '#routing-btn-'+index ).attr( 'disabled', 'disabled' );
             }
 
             if ($(this).attr( 'id' ).startsWith( 'routing-from')) {
@@ -121,9 +123,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                     
         });
         // autocomplete
-        elm.find( 'input' ).autocomplete({ source: Atlas.config.autocompleteUrl, zIndex: 1000, delay: 500 });
+        this.elm.find( 'input' ).autocomplete({ source: Atlas.config.autocompleteUrl, zIndex: 1000, delay: 500 });
          
-        elm.find( '#routing-btn-'+index ).click( function() {
+        this.elm.find( '#routing-btn-'+index ).click( function() {
             if (fromPoint == null || toPoint == null) {
                 alert( 'Start und/oder Ziel sind noch nicht eindeutig.' );
             }
@@ -183,8 +185,8 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
      */
     this.doRouteSearch = function( fromPoint, toPoint, index ) {
         // remove current layer/control
-        if (hoverControl != null) { Atlas.map.removeControl( hoverControl ); }
-        if (layer != null) { Atlas.map.removeLayer( layer ); }
+        if (this.hoverControl != null) { Atlas.map.removeControl( this.hoverControl ); }
+        if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
 
         var fromTransformed = new OpenLayers.Geometry.Point( fromPoint.x, fromPoint.y )
                 .transform( Atlas.map.getProjectionObject(), this.service.projection );
@@ -197,7 +199,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 alert( 'routing_no_result'.i18n() );
             }
 
-            layer = new OpenLayers.Layer.Vector( "ShortestPath", {
+            this.layer = new OpenLayers.Layer.Vector( "ShortestPath", {
                 isBaseLayer: false,
                 visibility: true,
                 reportError: true,
@@ -205,7 +207,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 protocol: new OpenLayers.Protocol(),
                 styleMap: defaultStyleMap()
             });
-            layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
+            this.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
 
             var vectors = new Array( features.length+2 );
             $.each( features, function( i, feature ) {
@@ -215,34 +217,34 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             // flags
             vectors[features.length] = new OpenLayers.Feature.Vector( toPoint, {title:'Ziel'} );
             vectors[features.length+1] = new OpenLayers.Feature.Vector( fromPoint, {title:'Start'} );
-            layer.addFeatures( vectors );
-            Atlas.map.addLayer( layer );
+            this.layer.addFeatures( vectors );
+            Atlas.map.addLayer( this.layer );
 
             // hover features
-            selectControl = new OpenLayers.Control.SelectFeature( layer, {
+            this.selectControl = new OpenLayers.Control.SelectFeature( this.layer, {
                 clickout: true, toggle: false,
                 multiple: false, hover: false,
                 toggleKey: "ctrlKey", // ctrl key removes from selection
                 multipleKey: "shiftKey", // shift key adds to selection
                 box: false
             });
-            Atlas.map.addControl( selectControl );
-            selectControl.activate();
+            Atlas.map.addControl( this.selectControl );
+            this.selectControl.activate();
 
-            hoverControl = new OpenLayers.Control.SelectFeature( layer, {
+            this.hoverControl = new OpenLayers.Control.SelectFeature( this.layer, {
                 hover: true,
                 //highlightOnly: true,
                 multiple: false
             });
-            Atlas.map.addControl( hoverControl );
-            hoverControl.activate();      
+            Atlas.map.addControl( this.hoverControl );
+            this.hoverControl.activate();      
 
-            layer.events.register( "featureselected", layer, function( ev ) {
+            this.layer.events.register( "featureselected", this.layer, function( ev ) {
                 //alert( this.selectedFeatures );
             });
 
-            if (layer.features.length > 0) {
-                Atlas.map.zoomToExtent( layer.getDataExtent() );
+            if (this.layer.features.length > 0) {
+                Atlas.map.zoomToExtent( this.layer.getDataExtent() );
                 Atlas.map.zoomOut();
             }
         });
