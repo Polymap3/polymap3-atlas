@@ -28,6 +28,16 @@ String.prototype.trim = function( str ) {
     return this.replace( /^\s\s*/, '' ).replace( /\s\s*$/, '' );
 };
 
+String.prototype.afterLast = function( delim ) {
+    var tokens = this.split( delim );
+    return tokens[tokens.length-1];
+};
+
+String.prototype.beforeFirst = function( delim ) {
+    var tokens = this.split( delim );
+    return tokens[0];
+};
+
 /**
  * Allows to convert first char to upper case.
  */

@@ -89,12 +89,22 @@ body {
 .atlas-result-address {
     color: #606060;
     font-style: italic;
+    margin: 7px 15px;
 }
+.atlas-result-fields {
+    color: #606060;
+}
+
 .atlas-result-routing {
-    font-size: 10px;
+    font-size: smaller;
+    background: #f5f5ff;
+    padding: 2px;
+    margin: 0px;
 }
 
 .routing-nearby {
+    background: #f5f5ff; 
+    padding: 5px 2px 5px 2px;
     /*border: 1px solid #efefef;*/
 }
 
@@ -114,6 +124,10 @@ a.close:hover {
 .ui-widget { 
     /*font-family: arial,sans-serif;*/
     font-size: 12px;
+}
+
+.ui-dialog {
+   box-shadow: 0px 5px 8px #606060;
 }
 
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {

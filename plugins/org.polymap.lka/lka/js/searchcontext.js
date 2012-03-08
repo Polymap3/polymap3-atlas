@@ -62,6 +62,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             .val( decodeURIComponent( this.searchStr ) );
             //.css( 'box-shadow', '0 0 3px ' + this.geomColor );        
         $('#search_img').attr( "src", this.markerImage );
+        
+//        var tabs = $('#tabs');
+//        if (tabs.tabs( "option", "selected" ) != index) {
+//            tabs.tabs( 'select', index );
+//        }
 
         if (this.hoverControl != null) {
             this.hoverControl.activate();
@@ -69,6 +74,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         if (this.selectControl != null) {
             this.selectControl.activate();
         }
+        return this;
     };
     
     /**
@@ -197,14 +203,16 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * and zooms the map to the data extent.
      */
     this.onLayerLoaded = function() {
-        var close_icon = new OpenLayers.Icon( "images/add_obj.gif" );
-
         this.resultDiv.empty();
         this.resultDiv.css( 'bottom', '0px' ).css( 'height', '100%' );
         this.results = new Array( this.layer.features.length );
+        
+        /* Maps category name into JavaScript Function. */
+        var categoryRenderers = {};
+        var NO_RENDERER = {};
+        
         var self = this;
         $.each( this.layer.features, function( i, feature ) {
-            var feature = self.layer.features[i];
             
             // trigger Event
             var ev = jQuery.Event( 'searchFeatureLoaded' ); 
@@ -212,19 +220,40 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             ev.feature = feature; 
             Atlas.events.trigger( ev );
 
-//            $.ajax( {
-//                context: 
-//            });
-            var resultHtml = '<div class="atlas-result" id="feature-' + i + '" style="margin-bottom:2px;" class="ui-corner-all">'
+            // basic HTML
+            self.resultDiv.append( '<div class="atlas-result" id="feature-' + i 
+                    + '"    style="margin-bottom:2px;" class="ui-corner-all">'
                     + '<b><a href="#">' + feature.data.title + '</a></b><br/>' 
-                    + self.createFeatureHTML( feature )
-                    + '</div><hr/>';            
-            self.resultDiv.append( resultHtml );
+                    + '</div><hr/>' );
             
-            // click
-            self.resultDiv.find( '#feature-'+i+'>b>a' ).click( function( ev ) {
-                self.openPopup( feature.id );
-            });
+            // load/execute the renderer
+            var categories = feature.data.categories != null ? feature.data.categories.split( ',' ) : [];
+            categories.push( 'standard' );
+            
+            for (var j=0; j<categories.length; j++) {
+                var renderer = categoryRenderers[categories[j]];
+                if (renderer == null) {
+                    $.ajax({
+                        'url': categories[j].toLowerCase() + '.js',
+                        'async': false,
+                        'cache': false,
+                        'dataType': 'text',
+                        'success': function( data ) {
+                            categoryRenderers[categories[j]] = renderer = eval( data );
+                        },
+                        'error': function() {
+                            categoryRenderers[categories[j]] = NO_RENDERER;
+                        }
+                    });
+                }
+                // execute renderer
+                if (renderer != null && renderer != NO_RENDERER) {
+                    var div = self.resultDiv.find( '#feature-'+i );
+                    // new object/context for every call
+                    renderer.call( {}, self, feature, i, div );
+                    break;
+                }
+            }
             
             // trigger event
             var ev = jQuery.Event( "searchResultGenerated" );
@@ -239,8 +268,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 
         if (this.layer.features.length > 0) {
             this.map.zoomToExtent( this.layer.getDataExtent() );
-            this.activate();
+            if (this.map.getScale() < 20000) {
+                this.map.zoomToScale( 20000, false );
+            }
         }
+        this.activate();
         
         // send UI event
         var ev = jQuery.Event( "searchCompleted" ); 
@@ -248,36 +280,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         ev.searchURL = Atlas.config.searchUrl + "?search=" + this.searchStr; 
         ev.pageURL = pageUrl();
         Atlas.events.trigger( ev );
-    };
-
-    /**
-     * Creates HTML code for a given feature.
-     */
-    this.createFeatureHTML = function( feature ) {
-        var resultHtml = "";
-        // address
-        if (feature.data.address != null) {
-            var address = new OpenLayers.Format.JSON().read( feature.data.address );
-    
-            if (address != null && address.street != null) {
-                resultHtml += "<p class=\"atlas-result-address\">";
-                resultHtml += address.street + " " + address.number + "<br/>";
-                resultHtml += address.postalCode + " " + address.city;
-                resultHtml += "</p>";
-            }
-        }
-
-        // fields
-        resultHtml += '<p id="feature-field-' + feature.id + '" class="atlas-result-fields">';
-        var self = this;
-        $.each( feature.data, function( name, value ) {
-            if (name != "title" && name != "address") {
-                resultHtml += "<b>" + name.capitalize() + "</b>";
-                resultHtml += ": " + value + "<br/>";
-            }
-        });
-        resultHtml += "</p>";
-        return resultHtml;
     };
 
     /**
@@ -304,7 +306,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * @param fid The fid of the feature to popup.
      * @return
      */
-    this.openPopup = function( fid ) {
+    this.openPopup = function( fid, popupHtml ) {
         // remove old popup
         if (this.popup != null && this.popup.div != null) {
             this.popup.destroy();
@@ -318,11 +320,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 break;
             }
         }
-        
-        // create popup
-        var popupHtml = '<b>' + feature.data.title + '</b><br/>'
-                + '_____________________________________'
-                + this.createFeatureHTML( feature );
         
         var anchor = {
             size: new OpenLayers.Size( 36, 28 ),

@@ -102,6 +102,8 @@ class PoiIndexer {
 
     public static final String FIELD_ADDRESS = "adresse";
 
+    public static final String FIELD_CATEGORIES = "categories";
+
     private PoiProvider       provider;
     
     private File              indexDir;
@@ -338,19 +340,6 @@ class PoiIndexer {
                                     doc.add( new Field( FIELD_SRS, dataSRS,
                                             Field.Store.YES, Field.Index.NO ) );
                                 }
-//                                // Point
-//                                else if (prop.getValue().getClass().equals( Point.class )) {
-//                                    Point point = (Point)prop.getValue();
-//                                    CoordinateReferenceSystem pointCRS = feature.getDefaultGeometryProperty().getDescriptor().getCoordinateReferenceSystem();
-//                                    String srs = CRS.toSRS( pointCRS );
-//                                    srs = srs.equalsIgnoreCase( "GCS_WGS_1984" ) ? "EPSG:4326" : srs;
-//                                    JSONObject json = new JSONObject()
-//                                            .put( "x", point.getX() )
-//                                            .put( "y", point.getY() )
-//                                            .put( "srs", srs );
-//                                    doc.add( new Field( FIELD_GEOM, json.toString(),
-//                                            Field.Store.YES, Field.Index.NO ) );
-//                                }
                                 // address fields
                                 else if (ArrayUtils.contains( AddressIndexer.PROP_CITY, propName.toLowerCase() )) {
                                     address.setCity( prop.getValue().toString() );
@@ -378,7 +367,6 @@ class PoiIndexer {
                                         continue;
                                     }
                                     doc.add( new Field( propName, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
-                                    //log.debug( "        field: " + propName + "=" + propValue );
 
                                     keywords.append( prop.getValue().toString() ).append( ' ' );
                                 }
@@ -386,12 +374,16 @@ class PoiIndexer {
                             }
                             
                             keywords.append( layerKeywords );
-                            //log.debug( "    keywords: " + keywords.toString() );
                             doc.add( new Field( FIELD_KEYWORDS, keywords.toString(),
                                     Field.Store.NO, Field.Index.ANALYZED ) );
 
                             doc.add( new Field( FIELD_ADDRESS, address.toJSON(),
                                     Field.Store.YES, Field.Index.ANALYZED ) );
+
+                            String categories = layer.getKeywords() != null 
+                                    ? StringUtils.join( layer.getKeywords(), "," ) : "";
+                            doc.add( new Field( FIELD_CATEGORIES, categories,
+                                    Field.Store.YES, Field.Index.NO ) );
 
                             iwriter.addDocument( doc );
                             size++;

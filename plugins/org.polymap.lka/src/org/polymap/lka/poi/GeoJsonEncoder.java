@@ -307,6 +307,7 @@ public class GeoJsonEncoder
         public void writeJSONString( Writer out ) 
         throws IOException {
             if (features == null) {
+                out.write( "[]" );
                 return;
             }
             

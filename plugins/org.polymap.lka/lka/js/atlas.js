@@ -66,7 +66,6 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
      */
     this.search = function() {
         var searchStr = $("#search_field").val();
-//        var searchURL = this.config.searchUrl + "?search=" + searchStr;
         this.contexts[this.result_index].search( searchStr );
     };
     
@@ -167,7 +166,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
             } );
         this.border.setVisibility( true );
         this.border.buffer = 0;
-        this.border.attribution = 'powered by <b><a href="http://polymap.org/polymap3">POLYMAP3</a></b>';
+        this.border.attribution = 'powered by <b><a target="_blank" href="http://polymap.org/polymap3"> POLYMAP3</a></b>';
         
         // Map ************
 
