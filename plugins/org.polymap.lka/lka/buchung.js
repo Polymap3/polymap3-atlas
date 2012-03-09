@@ -121,8 +121,9 @@
             dialogDiv.dialog( 'close' );
             dialogDiv.remove();
 
-            var searchStr = 'strasse:' + address.street.beforeFirst(' ') + "*"
-                    + ' AND nummer:' + address.number + ' AND ort:' + address.city + '*';
+            var searchStr = 'strasse:"' + address.street.replace( /straße/gi, '').toLowerCase() + '"'
+                    + ' AND nummer:' + address.number.replace( /[^0-9]+/gi, '')
+                    + ' AND ort:' + address.city.toLowerCase() + '*';
             var tabIndex = Atlas.result_index + 1;
             $('#tabs').tabs( 'select', tabIndex );
             Atlas.contexts[tabIndex].search( searchStr );        

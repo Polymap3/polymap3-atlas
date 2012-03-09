@@ -1,13 +1,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Mittelsachsen Atlas</title>
+<title>head_title</title>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta name="keywords" content="Geoportal, Geokatalog, Mittelsachsen-Atlas, Mittelsachsenatlas, Mittelsachsen, Atlas, GDI, Geodaten, Geodatenkatalog, POI, Inspire, Landkreis Mittelsachsen">
-<meta name="description" content="Geoportal, Geokatalog, Mittelsachsen-Atlas, Mittelsachsenatlas, Mittelsachsen, Atlas, GDI, Geodaten, Geodatenkatalog, POI, Inspire, Landkreis Mittelsachsen"> 
-<meta name="publisher" content="Landratsamt Mittelsachsen Uwe Weigel">
-<meta name="copyright" content="Polymap GmbH">
-<meta name="author" content="Polymap GmbH">
-<meta name="Language" content="German, de, deutsch, at, ch">
+<meta name="keywords" content="Geoportal, Atlas, GDI, Geodaten, Geodatenkatalog, POI">
+<meta name="description" content="Atlas">
 <meta name="robots" content="index,follow">
 <meta name="revisit-after" content="10 days">
 <!-- meta http-equiv="pragma" content="no-cache">
@@ -29,6 +25,8 @@
 <script language="javascript" src="lib/jquery-ui-1.8.custom.min.js" type="text/javascript"></script>
 <script language="javascript" src="lib/jquery.dd.js" type="text/javascript"></script>
 <script language="javascript" src="lib/jquery.layout-1.2.0.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.localizer.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.i18n.properties-1.0.9.js" type="text/javascript"></script>
 
 <!-- OpenLayers -->
 <script src="openlayers/full/OpenLayers.js" type="text/javascript"></script>
@@ -44,20 +42,24 @@
 <link rel="stylesheet" type="text/css" href="css/dd.css" />
 <link rel="stylesheet" type="text/css" href="css/atlas-mittelsachsen.layout.css" />
 
-<!-- Atlas JavaScript/CSS -->
+<!-- Atlas JavaScript -->
 <script src="js/measure.js" type="text/javascript"></script>
 <script src="js/searchcontext.js" type="text/javascript"></script>
 <script src="js/utils.js" type="text/javascript"></script>
 <script src="js/atlas.layout.js" type="text/javascript"></script>
+<script src="js/inheritance.js" type="text/javascript"></script>
+<script src="js/toolitem.js" type="text/javascript"></script>
+<script src="js/topbar.js" type="text/javascript"></script>
 
 <!-- Local config -->
 <script type="text/javascript">
+
 /** The configuration of the search field */
 var search_field_config = {
-        //autocomplete_url : '../polymap/lka/search',
-        autocomplete_url : 'search',
-        search_url : 'search',
-        base_url : 'index-mittelsachsen.html'
+    //autocomplete_url : '../polymap/lka/search',
+    autocomplete_url : 'search',
+    search_url : 'search',
+    base_url : 'index-mittelsachsen.html'
 }
 
 /** Array of SearchContext instances. */
@@ -75,8 +77,31 @@ var measure = null;
 var highlightColor = "#f55";
 var dialogDiv;
 
+
 function initLocal() {
+    // init I18N
+    jQuery.i18n.properties({
+        name: 'messages', 
+        path: 'bundle/', 
+        mode: 'map', 
+        //language: 'cz_CZ',
+    });
+
+    // Topbar
+    /*new Topbar( $('#topbar') )
+        .addLeft( new LinkToolItem( $.i18n.prop( "tb_1" ), $.i18n.prop( "project_title" ), 
+                "tooltip", $.i18n.prop( "project_link" ) ) )
+        .addLeft( new LinkToolItem( "tb_2", "Projekt", "tooltip", "http://google.de" ) )
+        .addLeft( new LinkToolItem( "tb_3", "Geo-Katalog", "tooltip", "http://google.de" ) )
+        .create();*/
+    
+    // Toolbar
+    new Toolbar( $('#toolbar2') )
+        .addLeft( new ToggleLayerItem( "tb_dop", "Luftbild", "tooltip", "", map, "DOP" ) )
+        .create();
+    
     dialogDiv = $('#dialog');
+    
     contexts = [
         new SearchContext( map, 0, "images/marker_red.png", $("#result_body0"), '#ff0000' ),
         new SearchContext( map, 1, "images/marker_green.png", $("#result_body1"), '#00ff00' ),
@@ -116,6 +141,11 @@ function initLocal() {
     $('#search_field').focus();
     
     updateLinks();
+
+    // localize HTML
+    $(function() {
+        $('html').localize();
+    });
 }
 
 function initMap() {
@@ -362,6 +392,10 @@ function updateLinks() {
 <!-- Layout North -->
 <!--div class="ui-layout-north" onmouseover="myLayout.allowOverflow('north')" onmouseout="myLayout.resetOverflow(this)"-->
 <div class="ui-layout-north" style="padding:0px; overflow:visible; overflow-x:auto; overflow-y:hidden;">
+    <!-- Topbar -->
+    <div id="topbar">
+    </div>
+
     <!-- Top Menu -->
     <div id="topmenue" class="ui-widget-content ui-widget"
         style="height:22; margin-top:3; border:none; border-bottom:1px solid #bbb">
@@ -383,7 +417,7 @@ function updateLinks() {
 
       <table cellspacing="1" class="ui-widget-content ui-widget" style="float:right; border:none;">
       <tr>
-        <td><a href="#" onClick="show_dialog( dialogDiv,'>  Nutzungsbedingungen', 'nutzungsbedingungen.html' );">&copy;&nbsp;Nutzungsbedingungen</a></td>
+        <td><a href="#" onClick="show_dialog( dialogDiv,'>  Nutzungsbedingungen', 'nutzungsbedingungen.html' );">Nutzungsbedingungen</a></td>
         <td>|</td>
 	  
         <td> <a href="#" onClick="show_dialog( dialogDiv,'> Hilfe', 'hilfe.html');">Hilfe</a></td>
@@ -399,8 +433,8 @@ function updateLinks() {
     
     <!-- Logo -->
     <div style="position:absolute; padding:5pt; margin:0pt;">
-        <a title="Mittelsachsen Atlas" href="http://www.mittelsachsen-atlas.de"> 
-        <img style= border:none; src="images/mittelsachsen-atlas.png" id="logo" alt="mittelsachsen-atlas" width="200" height="74"/></a>
+        <a title="logo_title" href="logo_link"> 
+        <img style= border:none; src="logo_img" id="logo" alt="logo_img_alt" width="200" height="74"/></a>
     </div>
     
     <!-- Search Form -->
@@ -455,6 +489,9 @@ function updateLinks() {
 <!-- overflow-xxx is for IE to hide vertical scrollbar -->
 <div class="ui-layout-center" style="visibility:hidden; padding:0px; overflow:visible; overflow-x:auto; overflow-y:hidden;">
     
+    <div id="toolbar2">
+    </div>
+    
     <!-- Toolbar -->
     <div id="toolbar" class="ui-widget-header ui-widget-content ui-helper-reset"
          style="position:absolute; width:100%; z-index:10000; height:31px; border-top:none; border-left:none; border-right:none; overflow:hidden;">
@@ -462,8 +499,8 @@ function updateLinks() {
       <table style="float:left;" cellspacing="1" align="center" cellpadding="0">
           <tr>
               <td class="ui-widget-header ui-widget-content ui-widget" style="height:29; width:80; padding:3; text-align:center; border:none;">
-                  <a title="Luftbildansicht zuschalten" onclick="toggleSatellite()" href="#" id="satelite_link"/>  
-                  <img title="Luftbildansicht zuschalten" alt="" src="images/fav.png" style="vertical-align:top;"/>  Luftbild</a>
+                  <a title="Luftbildansicht" onclick="toggleSatellite()" href="#" id="satelite_link"/>  
+                  <img title="Luftbildansicht" alt="" src="images/fav.png" style="vertical-align:top;"/>Luftbild</a>
               </td>
 
               <!--td> <p class="style_buttontrenner"> |</p> </td>        
