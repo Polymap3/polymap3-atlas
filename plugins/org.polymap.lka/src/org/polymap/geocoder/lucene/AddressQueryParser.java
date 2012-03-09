@@ -37,7 +37,6 @@ import org.apache.lucene.search.Query;
 
 import org.polymap.geocoder.Address;
 
-
 /**
  * 
  *

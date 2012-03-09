@@ -206,7 +206,7 @@ var WordTranslator = Class.extend( new function WordTranslator() {
 
     this.enhanceSearch = function( line, context ) {
         if (this.fromRegex == null) {
-            this.fromRegex = new RegExp( this.from, 'gi' );
+            this.fromRegex = new RegExp( '\\b' + this.from + '\\b', 'gi' );
         }
         return line.replace( this.fromRegex, 
                 "(" + this.from + " OR " + this.to.split( " " ).join( " OR " ) + ")" );

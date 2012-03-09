@@ -50,8 +50,10 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -60,20 +62,19 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
-
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
 import org.polymap.core.model.event.IModelHandleable;
-import org.polymap.core.model.event.ModelStoreEvent;
 import org.polymap.core.model.event.IModelStoreListener;
+import org.polymap.core.model.event.ModelStoreEvent;
 import org.polymap.core.model.event.ModelStoreEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.workbench.PolymapWorkbench;
+
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.lka.LKAPlugin;
@@ -85,7 +86,6 @@ import org.polymap.lka.LKAPlugin;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-@SuppressWarnings("deprecation")
 class PoiIndexer {
     
     private static final Log  log = LogFactory.getLog( PoiIndexer.class );
@@ -110,7 +110,7 @@ class PoiIndexer {
     
     private Directory         directory;
 
-    private Analyzer          analyzer = new PoiAnalyzer( Version.LUCENE_CURRENT );
+    private Analyzer          analyzer = new PoiAnalyzer();
 
     private IndexSearcher     searcher;
     
@@ -251,7 +251,7 @@ class PoiIndexer {
     public ScoreDoc[] search( String searchStr, int maxResults )
     throws CorruptIndexException, IOException, ParseException {
 
-        QueryParser parser = new QueryParser( Version.LUCENE_CURRENT, FIELD_KEYWORDS, analyzer );
+        QueryParser parser = new QueryParser( LKAPlugin.LUCENE_VERSION, FIELD_KEYWORDS, analyzer );
         parser.setDefaultOperator( QueryParser.AND_OPERATOR );
         Query query = parser.parse( decorateSearch( searchStr ) );
         log.info( "    ===> POI: Lucene query: " + query );
@@ -268,7 +268,7 @@ class PoiIndexer {
 
     
     protected String decorateSearch( String searchStr ) {
-        if (StringUtils.containsNone( searchStr, new char[] { '*', '?', '~' } )
+        if (StringUtils.containsNone( searchStr, "*?~\"" )
                 && !StringUtils.contains( searchStr, " OR " )
                 && !StringUtils.contains( searchStr, " AND " )) {
             return searchStr + "*";
@@ -290,7 +290,9 @@ class PoiIndexer {
         IndexWriter iwriter = null;
         try {
             log.debug( "    creating index writer for directory: " + directory + " ..." );
-            iwriter = new IndexWriter( directory, analyzer, true, new IndexWriter.MaxFieldLength( 25000 ) );
+            IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
+            config.setOpenMode( OpenMode.CREATE );
+            iwriter = new IndexWriter( directory, config );
 
             for (ILayer layer : provider.findLayers()) {
                 FeatureCollection fc = null;

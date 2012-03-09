@@ -30,7 +30,7 @@ import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.util.AttributeSource;
-import org.apache.lucene.util.Version;
+import org.polymap.lka.LKAPlugin;
 
 /**
  * Used by {@link PoiIndexer} to analyse fields of POIs. 
@@ -42,18 +42,14 @@ import org.apache.lucene.util.Version;
 final class PoiAnalyzer
         extends Analyzer {
 
-    private final Version       matchVersion;
-
-    
-    public PoiAnalyzer( Version matchVersion ) {
-        this.matchVersion = matchVersion;
+    public PoiAnalyzer() {
     }
 
 
     public TokenStream tokenStream( String fieldName, Reader reader ) {
         Tokenizer tokenStream = new PoiTokenizer( reader );
         //TokenStream result = new StandardFilter( tokenStream );
-        TokenStream result = new LowerCaseFilter( tokenStream );
+        TokenStream result = new LowerCaseFilter( LKAPlugin.LUCENE_VERSION, tokenStream );
         //result = new StopFilter( enableStopPositionIncrements, result, stopSet );
         return result;
     }
@@ -67,18 +63,18 @@ final class PoiAnalyzer
             extends CharTokenizer {
 
         public PoiTokenizer( Reader in ) {
-            super( in );
+            super( LKAPlugin.LUCENE_VERSION, in );
         }
 
         public PoiTokenizer( AttributeSource source, Reader in ) {
-            super( source, in );
+            super( LKAPlugin.LUCENE_VERSION, source, in );
         }
 
         public PoiTokenizer( AttributeFactory factory, Reader in ) {
-            super( factory, in );
+            super( LKAPlugin.LUCENE_VERSION, factory, in );
         }
 
-        protected boolean isTokenChar( char c ) {
+        protected boolean isTokenChar( int c ) {
             switch (c) {
                 case ' ': return false;
                 case '\t': return false;
@@ -87,7 +83,7 @@ final class PoiAnalyzer
                 case '.': return false;
                 case ',': return false;
                 case ';': return false;
-                //case ':': return false;
+                case ':': return false;
                 case '-': return false;
                 case '\\': return false;
                 case '/': return false;

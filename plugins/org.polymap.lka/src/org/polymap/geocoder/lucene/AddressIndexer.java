@@ -57,8 +57,10 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -67,8 +69,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
-
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
@@ -92,7 +92,6 @@ import org.polymap.lka.poi.SearchServlet;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-@SuppressWarnings("deprecation")
 public class AddressIndexer {
     
     private static final Log  log = LogFactory.getLog( AddressIndexer.class );
@@ -132,7 +131,7 @@ public class AddressIndexer {
     
     private Directory         directory;
 
-    private Analyzer          analyzer = new AddressAnalyzer( Version.LUCENE_CURRENT );
+    private Analyzer          analyzer = new AddressAnalyzer();
 
     private IndexSearcher     searcher;
 
@@ -205,7 +204,7 @@ public class AddressIndexer {
                 return true;
             }
         };
-        ProjectRepository.globalInstance().addModelStoreListener( modelListener );
+        ProjectRepository.instance().addModelStoreListener( modelListener );
     }
 
     /**
@@ -402,8 +401,8 @@ public class AddressIndexer {
             query = new AddressQueryParser( analyzer ).parse( addressStr );
         }
         else {
-            WhitespaceAnalyzer a = new WhitespaceAnalyzer( Version.LUCENE_CURRENT );
-            QueryParser parser = new QueryParser( Version.LUCENE_CURRENT, FIELD_KEYWORDS, a );
+            WhitespaceAnalyzer a = new WhitespaceAnalyzer( LKAPlugin.LUCENE_VERSION );
+            QueryParser parser = new QueryParser( LKAPlugin.LUCENE_VERSION, FIELD_KEYWORDS, a );
             parser.setDefaultOperator( QueryParser.AND_OPERATOR );
             query = parser.parse( addressStr );
         }
@@ -461,7 +460,10 @@ public class AddressIndexer {
         log.info( "Re-indexing addresses..." );
 
         log.info( "    creating index writer for directory: " + directory + " ..." );
-        IndexWriter iwriter = new IndexWriter( directory, analyzer, true, new IndexWriter.MaxFieldLength( 25000 ) );
+        
+        IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
+        config.setOpenMode( OpenMode.CREATE );
+        IndexWriter iwriter = new IndexWriter( directory, config );
 
         for (FeatureSource fs : provider.findFeatureSources()) {
             // SRS

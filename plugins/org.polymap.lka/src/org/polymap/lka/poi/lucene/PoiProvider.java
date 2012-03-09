@@ -75,7 +75,7 @@ class PoiProvider {
      * all layers starting with "csv". 
      */
     protected List<ILayer> findLayers() {
-        IMap rootMap = ProjectRepository.globalInstance().getRootMap();
+        IMap rootMap = ProjectRepository.instance().getRootMap();
         
         for (IMap map : rootMap.getMaps()) {
             if (map.getLabel().equalsIgnoreCase( "atlas" )) {

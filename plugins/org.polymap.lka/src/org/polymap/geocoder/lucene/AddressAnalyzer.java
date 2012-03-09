@@ -22,6 +22,8 @@
  */
 package org.polymap.geocoder.lucene;
 
+import java.util.Set;
+
 import java.io.IOException;
 import java.io.Reader;
 
@@ -35,7 +37,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.AttributeSource;
-import org.apache.lucene.util.Version;
+import org.polymap.lka.LKAPlugin;
 
 /**
  * Used by {@link AddressIndexer} to analyse address fields. 
@@ -47,19 +49,18 @@ import org.apache.lucene.util.Version;
 final class AddressAnalyzer
         extends Analyzer {
 
-    private final Version       matchVersion;
-
-    
-    public AddressAnalyzer( Version matchVersion ) {
-        this.matchVersion = matchVersion;
+    public AddressAnalyzer() {
     }
 
 
     public TokenStream tokenStream( String fieldName, Reader reader ) {
         Tokenizer tokenStream = new AddressTokenizer( reader );
-        //TokenStream result = new StandardFilter( tokenStream );
-        TokenStream result = new LowerCaseFilter( tokenStream );
-        result = new StopFilter( false, result, StopFilter.makeStopSet( "strasse", "straﬂe" ), true );
+        TokenStream result = new LowerCaseFilter( LKAPlugin.LUCENE_VERSION, tokenStream );
+        
+        //result = new StopFilter( false, result, StopFilter.makeStopSet( "strasse", "straﬂe" ), true );
+        Set<Object> stopWords = StopFilter.makeStopSet( LKAPlugin.LUCENE_VERSION, "strasse", "straﬂe" );
+        result = new StopFilter( LKAPlugin.LUCENE_VERSION, result, stopWords, true);
+
         result = new StreetSuffixFilter( result );
         return result;
     }
@@ -73,18 +74,18 @@ final class AddressAnalyzer
             extends CharTokenizer {
 
         public AddressTokenizer( Reader in ) {
-            super( in );
+            super( LKAPlugin.LUCENE_VERSION, in );
         }
 
         public AddressTokenizer( AttributeSource source, Reader in ) {
-            super( source, in );
+            super( LKAPlugin.LUCENE_VERSION, source, in );
         }
 
         public AddressTokenizer( AttributeFactory factory, Reader in ) {
-            super( factory, in );
+            super( LKAPlugin.LUCENE_VERSION, factory, in );
         }
 
-        protected boolean isTokenChar( char c ) {
+        protected boolean isTokenChar( int c ) {
             switch (c) {
                 case ' ': return false;
                 case '\t': return false;

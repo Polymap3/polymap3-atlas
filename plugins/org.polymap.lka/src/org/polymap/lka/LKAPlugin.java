@@ -19,6 +19,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.http.HttpService;
 import org.osgi.util.tracker.ServiceTracker;
 
+import org.apache.lucene.util.Version;
+
 import org.eclipse.core.runtime.Plugin;
 
 import org.polymap.core.runtime.DefaultSessionContext;
@@ -36,17 +38,20 @@ import org.polymap.lka.poi.SearchServlet;
 public class LKAPlugin extends Plugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.polymap.lka";
+	public static final String     PLUGIN_ID = "org.polymap.lka";
+	
+	/** The Lucene version we are using, current 3.4 from core.libs. */
+	public final static Version    LUCENE_VERSION = Version.LUCENE_34;
 
 	// The shared instance
-	private static LKAPlugin        plugin;
+	private static LKAPlugin       plugin;
 	
     /** The session context shared by the servlets. */
-    private DefaultSessionContext   serviceContext;
+    private DefaultSessionContext  serviceContext;
     
     public DefaultSessionContextProvider contextProvider;
 
-    private HttpServicesInstaller   servicesInstaller;
+    private HttpServicesInstaller  servicesInstaller;
     
     
 	public LKAPlugin() {
