@@ -122,7 +122,7 @@
             dialogDiv.remove();
 
             var searchStr = 'strasse:' + address.street.beforeFirst(' ') + "*"
-                    + ' AND nummer:' + address.number + ' AND plz:' + address.postalCode.afterLast('-');
+                    + ' AND nummer:' + address.number + ' AND ort:' + address.city + '*';
             var tabIndex = Atlas.result_index + 1;
             $('#tabs').tabs( 'select', tabIndex );
             Atlas.contexts[tabIndex].search( searchStr );        
@@ -130,7 +130,7 @@
         
         dialogDiv.dialog( {
             modal: true,
-            show: 'scale',
+            //show: 'scale',
             minWidth: 650,
             close: function( ev, ui ) {
                 dialogDiv.remove();

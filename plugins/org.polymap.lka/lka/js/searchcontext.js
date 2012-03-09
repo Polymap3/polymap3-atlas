@@ -291,14 +291,14 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     this.onFeatureSelected = function( ev ) {
         this.openPopup( ev.feature.id );
         
-        for (var i=0; i<this.results.length; i++) {
-            var result = this.results[i];
-            if (result.feature == ev.feature) {
-                alert( result.div.position().top );
-                this.resultDiv.scrollTop( result.div.position().top );
-                return false;
-            }
-        }
+//        for (var i=0; i<this.results.length; i++) {
+//            var result = this.results[i];
+//            if (result.feature == ev.feature) {
+//                alert( result.div.position().top );
+//                this.resultDiv.scrollTop( result.div.position().top );
+//                return false;
+//            }
+//        }
     };
 
     /**
@@ -310,6 +310,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         // remove old popup
         if (this.popup != null && this.popup.div != null) {
             this.popup.destroy();
+        }
+        
+        if (popupHtml == null) {
+            popupHtml = "funktioniert noch nicht wieder..."
         }
         
         var feature = null;
@@ -335,10 +339,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         feature.popup = this.popup;
         this.popup.feature = feature;
         map.addPopup( this.popup );
-        
-        //$('.resultFields').expandable({title:'...'});
-        //$('.olPopup').css( 'height', '300px' ).css( 'width', '300px' );
-
         return null;
     };
 

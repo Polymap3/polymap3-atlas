@@ -66,6 +66,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     this.createControl = function( elm, index, fromPoint, fromSearchStr, toPoint, toSearchStr ) {
         this.elm = elm;
         this.index = index;
+        this.fromPoint = fromPoint;
+        this.toPoint = toPoint;
+        var self = this;
         this.elm.append( ('<div style="background:#f5f5ff; padding:5px; font-size:10px;">'
                 + '<b>{0}</b> <input id="{1}" style="width:97%; margin: 1px 0px 1px 0px;"></input>'
                 + '    <div id="{7}" style="color:#808080;"></div>'
@@ -90,17 +93,16 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         this.createSearchPicklist( 
                 this.elm.find( '#routing-from-pl-'+index ), this.elm.find( '#routing-from-input-'+index ), index,
                 function( feature ) { 
-                    fromPoint = feature.geometry.getCentroid(); 
+                    self.fromPoint = feature.geometry.getCentroid(); 
                 });
         this.createSearchPicklist( 
                 this.elm.find( '#routing-to-pl-'+index ), this.elm.find( '#routing-to-input-'+index ), index,
                 function( feature ) {
-                    toPoint = feature.geometry.getCentroid(); 
+                    self.toPoint = feature.geometry.getCentroid(); 
                 });
         
         
         // keyup -> enable/disable, searchStr, doRouteSearch()
-        var self = this;
         this.elm.find( 'input' ).keyup( function( ev ) {
             var inputElm = $(this);
             //window.setTimeout( function() { inputElm.autocomplete( 'close' ); }, 5000 );
@@ -110,9 +112,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 return false;
             }
             if ($(this).val().length != 0) {
-                this.elm.find( '#routing-btn-'+index ).removeAttr( 'disabled' );
+                self.elm.find( '#routing-btn-'+index ).removeAttr( 'disabled' );
             } else {
-                this.elm.find( '#routing-btn-'+index ).attr( 'disabled', 'disabled' );
+                self.elm.find( '#routing-btn-'+index ).attr( 'disabled', 'disabled' );
             }
 
             if ($(this).attr( 'id' ).startsWith( 'routing-from')) {
@@ -126,10 +128,10 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         this.elm.find( 'input' ).autocomplete({ source: Atlas.config.autocompleteUrl, zIndex: 1000, delay: 500 });
          
         this.elm.find( '#routing-btn-'+index ).click( function() {
-            if (fromPoint == null || toPoint == null) {
+            if (self.fromPoint == null || self.toPoint == null) {
                 alert( 'Start und/oder Ziel sind noch nicht eindeutig.' );
             }
-            self.doRouteSearch( fromPoint, toPoint, index );
+            self.doRouteSearch( self.fromPoint, self.toPoint, self.index );
         });
     };
     
@@ -199,7 +201,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 alert( 'routing_no_result'.i18n() );
             }
 
-            this.layer = new OpenLayers.Layer.Vector( "ShortestPath", {
+            self.layer = new OpenLayers.Layer.Vector( "ShortestPath", {
                 isBaseLayer: false,
                 visibility: true,
                 reportError: true,
@@ -207,7 +209,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 protocol: new OpenLayers.Protocol(),
                 styleMap: defaultStyleMap()
             });
-            this.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
+            self.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
 
             var vectors = new Array( features.length+2 );
             $.each( features, function( i, feature ) {
@@ -217,34 +219,45 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             // flags
             vectors[features.length] = new OpenLayers.Feature.Vector( toPoint, {title:'Ziel'} );
             vectors[features.length+1] = new OpenLayers.Feature.Vector( fromPoint, {title:'Start'} );
-            this.layer.addFeatures( vectors );
-            Atlas.map.addLayer( this.layer );
+            self.layer.addFeatures( vectors );
+            Atlas.map.addLayer( self.layer );
 
             // hover features
-            this.selectControl = new OpenLayers.Control.SelectFeature( this.layer, {
+            self.selectControl = new OpenLayers.Control.SelectFeature( self.layer, {
                 clickout: true, toggle: false,
                 multiple: false, hover: false,
                 toggleKey: "ctrlKey", // ctrl key removes from selection
                 multipleKey: "shiftKey", // shift key adds to selection
                 box: false
             });
-            Atlas.map.addControl( this.selectControl );
-            this.selectControl.activate();
+            Atlas.map.addControl( self.selectControl );
+            self.selectControl.activate();
 
-            this.hoverControl = new OpenLayers.Control.SelectFeature( this.layer, {
+            self.hoverControl = new OpenLayers.Control.SelectFeature( self.layer, {
                 hover: true,
                 //highlightOnly: true,
                 multiple: false
             });
-            Atlas.map.addControl( this.hoverControl );
-            this.hoverControl.activate();      
+            Atlas.map.addControl( self.hoverControl );
+            self.hoverControl.activate();      
 
-            this.layer.events.register( "featureselected", this.layer, function( ev ) {
-                //alert( this.selectedFeatures );
+            var tooltip;
+            self.layer.events.register( "featureselected", self.layer, function( ev ) {
+                if (tooltip != null) {
+                    tooltip.remove();
+                }
+                $(document.body).append( 
+                        '<div id="routing-tooltip" style="z-index:1000; position:absolute;'
+                        + '   left:100px; top:200px; padding:5px; background:#FFFFCD; box-shadow:2px 2px 2px #808080;">'
+                        + '<b>' + ev.feature.data.name + '</b><br/>'
+                        + 'L&auml;nge: ' + ev.feature.data.length + '<br/>' 
+                        + 'Kosten: ' + ev.feature.data.cost 
+                        + '</div>');
+                tooltip = $('#routing-tooltip');
             });
 
-            if (this.layer.features.length > 0) {
-                Atlas.map.zoomToExtent( this.layer.getDataExtent() );
+            if (self.layer.features.length > 0) {
+                Atlas.map.zoomToExtent( self.layer.getDataExtent() );
                 Atlas.map.zoomOut();
             }
         });

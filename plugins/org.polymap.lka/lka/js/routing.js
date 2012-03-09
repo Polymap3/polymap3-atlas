@@ -22,10 +22,10 @@ var Routing = Class.extend( new function RoutingProto() {
     this.service = null;
     
     /** Array of {@link Nearby} objects. */
-    var nearbies = [];
+    this.nearbies = [];
     
     /** Array of {@link ShortestPath} objects. */
-    var routes = [];
+    this.routes = [];
     
     /**
      * 
@@ -71,11 +71,11 @@ var Routing = Class.extend( new function RoutingProto() {
                 var elm = $('#routing-nearby-'+ev.index);
                 closeButton( elm, function() {
                     btn3.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
-                    nearbies[ev.index].close();
-                    nearbies[ev.index] = null;
+                    self.nearbies[ev.index].close();
+                    self.nearbies[ev.index] = null;
                 });
-                nearbies[ev.index] = new Nearby( self.service );
-                nearbies[ev.index].createControl( elm, ev.index, ev.feature.geometry.getCentroid() );
+                self.nearbies[ev.index] = new Nearby( self.service );
+                self.nearbies[ev.index].createControl( elm, ev.index, ev.feature.geometry.getCentroid() );
                 elm.fadeIn( 1000 );
             }
         });
@@ -88,15 +88,15 @@ var Routing = Class.extend( new function RoutingProto() {
             else {
                 btn.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
 
-                ev.div.append( '<div id="routing-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
+                ev.div.append( '<div id="routing-to-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
                 var elm = ev.div.find( 'div' );
                 closeButton( elm, function() {
                     btn.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
-                    routes[ev.index].close();
-                    routes[ev.index] = null;
+                    self.routes[ev.index].close();
+                    self.routes[ev.index] = null;
                 });
-                routes[ev.index] = new ShortestPath( self.service );
-                routes[ev.index].createControl( elm, ev.index, 
+                self.routes[ev.index] = new ShortestPath( self.service );
+                self.routes[ev.index].createControl( elm, ev.index, 
                         null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
                 elm.fadeIn( 1000 );
             }
@@ -110,15 +110,15 @@ var Routing = Class.extend( new function RoutingProto() {
             else {
                 btn2.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
 
-                ev.div.append( '<div id="routing-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
+                ev.div.append( '<div id="routing-from-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
                 var elm = ev.div.find( 'div' );
                 closeButton( elm, function() {
                     btn2.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
-                    routes[ev.index].close();
-                    routes[ev.index] = null;
+                    self.routes[ev.index].close();
+                    self.routes[ev.index] = null;
                 });
-                routes[ev.index] = new ShortestPath( self.service );
-                routes[ev.index].createControl( elm, ev.index, 
+                self.routes[ev.index] = new ShortestPath( self.service );
+                self.routes[ev.index].createControl( elm, ev.index, 
                         ev.feature.geometry.getCentroid(), ev.feature.data.title, null, null );
                 elm.fadeIn( 1000 );
             }
@@ -149,7 +149,7 @@ var Routing = Class.extend( new function RoutingProto() {
 var TestRoutingItem = ToolItem.extend( new function TestRoutingItemProto() {
 
     /** @type RoutingService */
-    var service = null;
+    this.service = null;
     
     this.init = function( id, service ) {
         this._super( id, $.i18n.prop( "tb_routing_label" ), $.i18n.prop( "tb_routing_tip" ) );
@@ -158,7 +158,7 @@ var TestRoutingItem = ToolItem.extend( new function TestRoutingItemProto() {
     };
     
     this.onClick = function() {
-        service.driveTimePolygon( 13.33, 50.90, 1000, 'length' );
+        this.service.driveTimePolygon( 13.33, 50.90, 1000, 'length' );
     };
 });
 

@@ -49,10 +49,9 @@ var Nearby = Class.extend( new function NearbyProto() {
     this.createControl = function( elm, index, point ) {
         this.elm = elm;
         this.point = point;
-        this.elm.append( '<div style="background:#f5f5ff; padding:5px;">' 
-                //+ transformed + '</br>'
+        this.elm.append( '<div class="routing-nearby">'
                 + $.i18n.prop('routing_cost_input') 
-                + '    <input id="routing-cost-input-'+index+'" style="width:110px; margin:1px;"></input>'
+                + '    <input id="routing-cost-input-'+index+'" style="width:50px; margin:3px;"></input>'
                 + '<span id="routing-cost-type">'
                 + '    <input id="cost-length" value="length" type="radio" name="cost-radios" checked="checked"/>'
                 + '      <label for="cost-length" title="Angabe ist Wegstrecke in Metern">Meter</label>'
@@ -64,29 +63,31 @@ var Nearby = Class.extend( new function NearbyProto() {
                 + '    <button id="routing-nearby-btn2-"'+index +'" title="Orte in der Nähe suchen">Suchen...</button>' 
                 + '</center>'
                 + '</div>' );
+        
         $('#routing-cost-type').buttonset();
         $('#routing-cost-type label span').css( 'padding', '1px 7px' );
-        $('#routing-cost-input-'+index).focus();
+        
         var buttons = $('#routing-nearby-'+index+' button');
         buttons.button()
-                .attr( 'disabled', 'disabled' )
+                //.attr( 'disabled', 'disabled' )
                 .css( 'box-shadow', '0px 1px 1px #090909' );        
 
         $('#routing-nearby-'+index+' button span').css( 'padding', '1px 7px' );
         //$('#routing-nearby-btn').css( 'float', 'right' );
 
         var self = this;
-        $('#routing-cost-input-'+index).keyup( function( ev ) {
-            if ($(this).val().length != 0) {
-                buttons.removeAttr( 'disabled' );
-            } else {
-                buttons.attr( 'disabled', 'disabled' );
-            }
-            if (ev.keyCode == 13) {
-                var mode = $('input[name="cost-radios"]:checked').val();
-                self.doNearbySearch( point, mode, $(this).val(), index );
-            }
-        });
+        $('#routing-cost-input-'+index).val( '1000' ).focus()
+            .keyup( function( ev ) {
+                if ($(this).val().length != 0) {
+                    buttons.removeAttr( 'disabled' );
+                } else {
+                    buttons.attr( 'disabled', 'disabled' );
+                }
+                if (ev.keyCode == 13) {
+                    var mode = $('input[name="cost-radios"]:checked').val();
+                    self.doNearbySearch( point, mode, $(this).val(), index );
+                }
+            });
         
         $('#routing-nearby-btn-'+index).click( function() {
             var mode = $('input[name="cost-radios"]:checked').val();
@@ -111,21 +112,21 @@ var Nearby = Class.extend( new function NearbyProto() {
         var self = this;
         this.service.driveTimePolygon( transformed, cost, mode, function( status, feature ) {
             // XXX handle status
-            this.layer = new OpenLayers.Layer.Vector( "Nearby", {
+            self.layer = new OpenLayers.Layer.Vector( "Nearby", {
                     isBaseLayer: false,
                     visibility: true,
                     reportError: true,
                     strategies: [new OpenLayers.Strategy.Fixed()],
                     protocol: new OpenLayers.Protocol()
             });
-            this.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
+            self.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
             var vector = new OpenLayers.Feature.Vector( feature.geometry.transform( 
                     self.service.projection, Atlas.map.getProjectionObject() ), {} );
-            this.layer.addFeatures( [vector] );
-            Atlas.map.addLayer( this.layer );
+            self.layer.addFeatures( [vector] );
+            Atlas.map.addLayer( self.layer );
             
-            if (this.layer.features.length > 0) {
-                Atlas.map.zoomToExtent( this.layer.getDataExtent() );
+            if (self.layer.features.length > 0) {
+                Atlas.map.zoomToExtent( self.layer.getDataExtent() );
                 Atlas.map.zoomOut();
             }
         });
