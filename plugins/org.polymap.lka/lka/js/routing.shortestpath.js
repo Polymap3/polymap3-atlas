@@ -36,6 +36,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     
     this.fromPoint = null; 
     this.toPoint = null;
+    
+    /** {RoutingTooltip} */
+    this.tooltip;
 
     /** */
     this.init = function( service ) {
@@ -53,6 +56,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         if (this.selectControl != null) { Atlas.map.removeControl( this.selectControl ); }
         if (this.hoverControl != null) { Atlas.map.removeControl( this.hoverControl ); }
         if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
+        if (this.tooltip != null) { this.tooltip.close(); }
     };
     
     /**
@@ -187,14 +191,17 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
      */
     this.doRouteSearch = function( fromPoint, toPoint, index ) {
         // remove current layer/control
+        if (this.selectControl != null) { Atlas.map.removeControl( this.selectControl ); }
         if (this.hoverControl != null) { Atlas.map.removeControl( this.hoverControl ); }
         if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
+        if (this.tooltip != null) { this.tooltip.close(); }
 
         var fromTransformed = new OpenLayers.Geometry.Point( fromPoint.x, fromPoint.y )
                 .transform( Atlas.map.getProjectionObject(), this.service.projection );
         var toTransformed = new OpenLayers.Geometry.Point( toPoint.x, toPoint.y )
                 .transform( Atlas.map.getProjectionObject(), this.service.projection );
 
+        // execute search request
         var self = this;
         self.service.shortestPath( fromTransformed, toTransformed, function( status, features ) {
             if (features.length == 0) {
@@ -241,19 +248,10 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             Atlas.map.addControl( self.hoverControl );
             self.hoverControl.activate();      
 
-            var tooltip;
+            // tooltip
+            self.tooltip = new RoutingTooltip( status, vectors );            
             self.layer.events.register( "featureselected", self.layer, function( ev ) {
-                if (tooltip != null) {
-                    tooltip.remove();
-                }
-                $(document.body).append( 
-                        '<div id="routing-tooltip" style="z-index:1000; position:absolute;'
-                        + '   left:100px; top:200px; padding:5px; background:#FFFFCD; box-shadow:2px 2px 2px #808080;">'
-                        + '<b>' + ev.feature.data.name + '</b><br/>'
-                        + 'L&auml;nge: ' + ev.feature.data.length + '<br/>' 
-                        + 'Kosten: ' + ev.feature.data.cost 
-                        + '</div>');
-                tooltip = $('#routing-tooltip');
+                self.tooltip.highlight( ev.feature );
             });
 
             if (self.layer.features.length > 0) {
@@ -289,4 +287,80 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             'select': selectStyle });
     }
     
+});
+
+/**
+ * Route and segment display over the map.
+ * 
+ * @author <a href="http://polymap.de">Falko Bräutigam</a>
+ */
+var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
+    
+    this.tooltip = null;
+    
+    this.featuresMap;
+    
+    this.highlighted = null;
+    
+    this.defaultStyle = null;
+    
+    this.init = function( status, features ) {
+        $(document.body).append( 
+                '<div id="routing-tooltip" class="ui-widget-content ui-corner-all"' 
+                + '   style="z-index:1000; position:absolute; color:#707070; border:0px solid black;'
+                + '   left:50px; top:200px; padding:5px; background:#FFFFCF; box-shadow:2px 3px 3px #808080;">'
+                + '<b>' + 'routing_total_length'.i18n() + '</b> ???<br/>'
+                + '<b>' + 'routing_total_cost'.i18n() + '</b> ???<br/>'
+                + '<hr/>'
+                + '<div id="routing-tooltip-list" style="overflow:auto;'
+                + '    width:180px; height:300px;">'
+                + '</div>'
+                + '</div>' );
+        this.tooltip = $('#routing-tooltip');
+        
+        var list = this.tooltip.find('#routing-tooltip-list');
+        var totalLength = 0;
+        var totalCost = 0;
+        var self = this;
+        this.featuresMap = {};
+        $.each( features, function( i, feature ) {
+            if (feature.data.length != undefined && feature.data.cost != undefined) {
+                list.append( '<div style="padding:3px; margin-right:5px;">' 
+                    + '<b>' + feature.data.name + '</b><br/>'
+                    + 'L&auml;nge: ' + feature.data.length.toFixed(0) + ' m <br/>' 
+                    + 'Kosten: ' + feature.data.cost.toFixed( 2 ) + ' ? <br/>'
+                    + '</div>' );
+                self.featuresMap[feature.id] = i;
+                totalLength += feature.data.length;
+                totalCost += feature.data.cost;
+            }
+        });
+    };
+    
+    this.close = function() {
+        if (this.tooltip != null) { this.tooltip.remove(); }
+    };
+    
+    this.highlight = function( feature ) {
+        if (this.highlighted != null) {
+            this.highlighted.css( 'background', this.defaultStyle.background );
+            this.highlighted.css( 'border', this.defaultStyle.border );
+            this.highlighted.css( 'color', this.defaultStyle.color );
+        }
+        
+        var index = this.featuresMap[feature.id];
+        var list = this.tooltip.find( '#routing-tooltip-list' );
+        this.highlighted = list.find( ':nth-child({0})'.format(index+1) );
+        
+        this.defaultStyle = {
+                background: this.highlighted.css( 'background' ),
+                border: this.highlighted.css( 'border' ),
+                color: this.highlighted.css( 'color' ) };
+        
+        this.highlighted.css( 'background', '#FFFFAF' )
+                .css( 'color', '#222' )
+                .css( 'border', '1px solid #d0d0d0')
+                .addClass( 'ui-corner-all' );
+        list.scrollTo( this.highlighted, 1000 );
+    };
 });
