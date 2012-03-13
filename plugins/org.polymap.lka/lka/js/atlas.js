@@ -229,30 +229,41 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
      * Handle URL params for preset searches. 
      */
     this.initUrlParams = function () {
-        var search_str = $(document).getUrlParam( "search" );
-        if (search_str != null) {
-            this.contexts[0].search( decodeURIComponent( search_str ) );
+//        var search_str = $(document).getUrlParam( "search" );
+//        if (search_str != null) {
+//            this.contexts[0].search( decodeURIComponent( search_str ) );
+//        }
+        
+        for (var i=3; i>=0; i--) {
+            var search_str = $(document).getUrlParam( 'search'+ (i+1) );
+            if (search_str != null) {
+                this.contexts[i].search( decodeURIComponent( search_str ) );
+            }
         }
-        search_str = $(document).getUrlParam( "search1" );
-        if (search_str != null) {
-            this.contexts[0].search( decodeURIComponent( search_str ) );
-        }
-        search_str = $(document).getUrlParam( "search2" );
-        if (search_str != null) {
-            this.contexts[1].search( decodeURIComponent( search_str ) );
-            this.contexts[1].deactivate();
-        }
-        search_str = $(document).getUrlParam( "search3" );
-        if (search_str != null) {
-            this.contexts[2].search( decodeURIComponent( search_str ) );
-            this.contexts[2].deactivate();
-        }
-        search_str = $(document).getUrlParam( "search4" );
-        if (search_str != null) {
-            this.contexts[3].search( decodeURIComponent( search_str ) );
-            this.contexts[3].deactivate();
-        }
-        this.contexts[0].activate();
+    
+        // wait for all context to load -> active context[0]
+        var self = this;
+        setTimeout( function() {
+            self.contexts[0].activate();
+            
+            var bounds = null;
+            for (var i=3; i>=0; i--) {
+                var context = self.contexts[i];
+                if (context.layer != null && context.layer.features.length > 0) {
+                    if (bounds == null) {
+                        bounds = context.layer.getDataExtent()
+                    } else {
+                        bounds.extend( context.layer.getDataExtent() );
+                    }
+                }
+            }
+            if (bounds != null) {   
+                self.map.zoomToExtent( bounds );
+                if (self.map.getScale() < 20000) {
+                    self.map.zoomToScale( 20000, false );
+                }
+            }
+        }, 2000 );        
     };
 });
 

@@ -58,9 +58,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * Active this context by updating the GUI elements.
      */
     this.activate = function() {
-        $('#search_field')
-            .val( decodeURIComponent( this.searchStr ) );
-            //.css( 'box-shadow', '0 0 3px ' + this.geomColor );        
+        $('#search_field').val( decodeURIComponent( this.searchStr ) );
         $('#search_img').attr( "src", this.markerImage );
         
 //        var tabs = $('#tabs');
@@ -170,8 +168,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             });
             this.map.addControl( this.selectControl );
             this.selectControl.activate();
-            var fs_cb = callback( this.onFeatureSelected, {scope:this} );
-            this.layer.events.register( "featureselected", this.layer, fs_cb );
+//            var fs_cb = callback( this.onFeatureSelected, {scope:this} );
+//            this.layer.events.register( "featureselected", this.layer, fs_cb );
 
             var cb = callback( this.onLayerLoaded, {scope:this} );
             this.layer.events.register( "loadend", this.layer, cb );
@@ -271,6 +269,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             if (this.map.getScale() < 20000) {
                 this.map.zoomToScale( 20000, false );
             }
+            $('#tab_title_result'+index).text( this.layer.features.length );
+        }
+        else {
+            $('#tab_title_result'+index).text( '<>' );
         }
         this.activate();
         

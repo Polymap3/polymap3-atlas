@@ -22,21 +22,12 @@
  * @param index {Number} The index of the feature in the result collection.
  */
 (function( context, feature, index, div ) {
-    //  click -> popup
-    var self = this;
-    div.find( 'b>a' )
-        .attr( 'title', 'In der Karte anzeigen' )
-        .click( function( ev ) {
-            var popupHtml = '<b>' + feature.data.title + '</b><br/>'
-                + '_____________________________________'
-                + self.createHtml();
-            context.openPopup( feature.id, popupHtml );
-        });
+    var self = this;    
 
     /**
      * Creates the result list HTML.
      */
-    this.createHtml = function() {
+    this.createHtml = function( detailsLinkId ) {
         var resultHtml = '';
         // address
         if (feature.data.address != null) {
@@ -50,24 +41,47 @@
         // fields
         resultHtml += '<p id="feature-field-' + feature.id + '" class="atlas-result-fields">';
         resultHtml += '<b>Angebot: </b><span style="display:block; margin:3px 0px 3px 15px;">' + feature.data.Angebot + '';
-        resultHtml += ' >>&nbsp;<a id="feature-details-'+index+'" style="font-weight:bold;" href="#">Details...</a>';
+        resultHtml += ' >>&nbsp;<a id="'+detailsLinkId+'" style="font-weight:bold;" href="#">Details...</a>';
         resultHtml += '</span></p>';
         return resultHtml;
     };    
 
+    // append the HTML
+    div.append( this.createHtml( 'feature-details-list-'+index ) );
+    div.find( '#feature-details-list-'+index ).click( function( ev ) {
+        self.openDetails();
+    });
+
+    // popup
+    var popupHtml = '<b>' + feature.data.title + '</b><br/>'
+            + '_____________________________________'
+            + self.createHtml( 'feature-details-popup-'+index );
+    
+    // result list click -> popup
+    div.find( 'b>a' )
+        .attr( 'title', 'In der Karte anzeigen' )
+        .click( function( ev ) {
+            context.openPopup( feature.id, popupHtml );
+            $('#feature-details-popup-'+index).click( function( ev ) {
+                self.openDetails();
+            });
+        });
+
+    // feature click -> popup
+    context.layer.events.register( "featureselected", context.layer, function( ev ) {
+        if (ev.feature == feature) {
+            context.openPopup( feature.id, popupHtml );
+            $('#feature-details-popup-'+index).click( function( ev ) {
+                self.openDetails();
+            });
+            context.resultDiv.scrollTo( div, 2000 );
+        }
+    });
+
     /**
      * 
      */
-    this.createLine = function( key, value ) {
-        return '<b>{0}</b>:<span style="display:block; margin:3px 0px 3px 15px;">{1}</span>'
-                .format( key, value != null ? value : '-' );
-    };
-    
-    // append the HTML
-    div.append( this.createHtml() );
-    
-    // details dialog
-    div.find( '#feature-details-'+index ).click( function( ev ) {
+    this.openDetails = function() {
         var html = '<div id="feature-details-dialog" title="{0}">'.format( feature.data.title );
         
         html += '<table><tr>';
@@ -137,5 +151,14 @@
                 dialogDiv.remove();
             }
         });
-    });
+    };
+
+    /**
+     * 
+     */
+    this.createLine = function( key, value ) {
+        return '<b>{0}</b>:<span style="display:block; margin:3px 0px 3px 15px;">{1}</span>'
+                .format( key, value != null ? value : '-' );
+    };
+    
 })
