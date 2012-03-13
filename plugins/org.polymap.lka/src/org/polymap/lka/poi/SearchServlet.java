@@ -81,7 +81,6 @@ public class SearchServlet
 
     public SearchServlet()
     throws Exception {
-        super();
         try {
             log.info( "Initializing SearchServlet ..." );
             LKAPlugin.getDefault().mapServiceContext();

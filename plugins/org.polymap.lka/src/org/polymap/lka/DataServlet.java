@@ -73,9 +73,7 @@ public class DataServlet
 
     private static final Log  log = LogFactory.getLog( DataServlet.class );
 
-    public DataServlet()
-            throws Exception {
-        super();
+    public DataServlet() throws Exception {
         log.info( "Initializing DataServlet ..." );
     }
 
@@ -268,7 +266,7 @@ public class DataServlet
      * @return The layer or null, if no layer is found for the given path.
      */
     protected ILayer findLayer( IPath path ) {
-        IMap rootMap = ProjectRepository.globalInstance().getRootMap();
+        IMap rootMap = ProjectRepository.instance().getRootMap();
         
         // crop file.ext
         if (!path.hasTrailingSeparator()) {

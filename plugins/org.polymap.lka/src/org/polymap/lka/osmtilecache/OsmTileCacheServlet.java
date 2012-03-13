@@ -83,7 +83,6 @@ public class OsmTileCacheServlet
 
     public OsmTileCacheServlet()
     throws Exception {
-        super();
         log.info( "Initializing OSM TileCache ..." );
 
         // HTTPClient

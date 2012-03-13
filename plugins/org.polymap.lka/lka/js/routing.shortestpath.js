@@ -82,7 +82,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 + '</div>')
                 .format( 'routing_from_input'.i18n(), 'routing-from-input-'+index,
                         'routing_to_input'.i18n(), 'routing-to-input-'+index,
-                        'routing-btn-'+index, 'Route berechnen', 'Route suchen und in der Karte anzeigen',
+                        'routing-btn-'+index, 'routing_shortestpath'.i18n(), 'routing_shortestpath_tip'.i18n(),
                         'routing-from-pl-'+index, 'routing-to-pl-'+index) );
 
         this.elm.find( 'button' ).button()
@@ -266,9 +266,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
      */
     function defaultStyleMap() {
         var defaultStyle = new OpenLayers.Style({
-            externalGraphic: 'images/flag_yellow.png',
-            graphicHeight: 20,
-            graphicWidth: 28,
+            externalGraphic: 'images/marker_b.png',
+            graphicHeight: 28,
+            graphicWidth: 36,
 //            graphicXOffset: -10.5,
 //            graphicYOffset: -12.5,
             strokeWidth: 5,

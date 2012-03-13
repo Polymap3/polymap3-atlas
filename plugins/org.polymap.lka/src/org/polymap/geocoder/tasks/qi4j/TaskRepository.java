@@ -71,8 +71,6 @@ public class TaskRepository
 
     protected TaskRepository( QiModuleAssembler assembler ) {
         super( assembler );
-        log.info( "uow: " + uow.isOpen() );
-        
         // for the global instance of the module (Qi4jPlugin.Session.globalInstance()) there
         // is no request context
         if (ContextProvider.hasContext()) {
@@ -80,7 +78,6 @@ public class TaskRepository
         }
 
         taskList = uow.get( TaskListComposite.class, "taskList" );
-        System.out.println( "ServiceList: " + taskList );
     }
     
     

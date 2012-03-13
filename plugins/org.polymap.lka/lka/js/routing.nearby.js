@@ -49,8 +49,8 @@ var Nearby = Class.extend( new function NearbyProto() {
     this.createControl = function( elm, index, point ) {
         this.elm = elm;
         this.point = point;
-        this.elm.append( '<div class="routing-nearby">'
-                + $.i18n.prop('routing_cost_input') 
+        this.elm.append( ('<div class="routing-nearby">'
+                + 'routing_cost_input'.i18n() 
                 + '    <input id="routing-cost-input-'+index+'" style="width:50px; margin:3px;"></input>'
                 + '<span id="routing-cost-type">'
                 + '    <input id="cost-length" value="length" type="radio" name="cost-radios" checked="checked"/>'
@@ -59,10 +59,12 @@ var Nearby = Class.extend( new function NearbyProto() {
                 + '      <label for="cost-time" title="Angabe ist Fahrzeit in Minuten">Min.</label>'
                 + '</span>'
                 + '<center>'
-                + '    <button id="routing-nearby-btn-'+index + '" title="Erreichbarkeit in der Karte anzeigen">Anzeigen</button>' 
-                + '    <button id="routing-nearby-btn2-"'+index +'" title="Orte in der Nähe suchen">Suchen...</button>' 
+                + '    <button id="routing-nearby-btn-'+index + '" title="{1}">{0}</button>' 
+                + '    <button id="routing-nearby-btn2-"'+index +'" title="{3}">{2}</button>' 
                 + '</center>'
-                + '</div>' );
+                + '</div>')
+                .format( 'routing_nearby_show'.i18n(), 'routing_nearby_show_tip'.i18n(),
+                        'routing_nearby_search'.i18n(), 'routing_nearby_search_tip'.i18n() ) );
         
         $('#routing-cost-type').buttonset();
         $('#routing-cost-type label span').css( 'padding', '1px 7px' );

@@ -41,7 +41,6 @@ import org.polymap.core.qi4j.QiModuleAssembler;
 import org.polymap.core.qi4j.entitystore.json.JsonEntityStoreInfo;
 import org.polymap.core.qi4j.entitystore.json.JsonEntityStoreService;
 import org.polymap.core.runtime.Polymap;
-import org.polymap.geocoder.tasks.ITask;
 import org.polymap.geocoder.tasks.qi4j.operations.NewTaskOperation;
 import org.polymap.geocoder.tasks.qi4j.operations.RemoveTaskOperation;
 
@@ -62,6 +61,8 @@ public class TaskRepositoryAssembler
     private UnitOfWorkFactory           uowf;
     
     private Module                      module;
+
+    private File                        moduleRoot;
     
     
     public QiModule newModule() {
@@ -83,7 +84,7 @@ public class TaskRepositoryAssembler
 
     public void assemble( ApplicationAssembly _app )
     throws Exception {
-        log.info( "Assembling: org.polymap.core.services ..." );
+        log.info( "assembling..." );
         
         LayerAssembly domainLayer = _app.layerAssembly( "adhoc-layer" );
         ModuleAssembly domainModule = domainLayer.moduleAssembly( "tasks-module" );
@@ -96,18 +97,11 @@ public class TaskRepositoryAssembler
                 RemoveTaskOperation.class
         );
 
-//        // persistence
-//        Preferences prefRoot = Preferences.userRoot().node( "org/polymap/geocoder/tasks" );
-//        domainModule.addServices( PreferencesEntityStoreService.class )
-//                .setMetaInfo( new PreferencesEntityStoreInfo( prefRoot ) )
-//                .instantiateOnStartup()
-//                ;  //.identifiedBy( "rdf-repository" );
-
         // persistence: workspace/JSON
         File root = new File( Polymap.getWorkspacePath().toFile(), "data" );
         root.mkdir();
         
-        File moduleRoot = new File( root, "org.polymap.geocoder.tasks" );
+        moduleRoot = new File( root, "org.polymap.geocoder.tasks" );
         moduleRoot.mkdir();
 
         domainModule.addServices( JsonEntityStoreService.class )
@@ -116,42 +110,24 @@ public class TaskRepositoryAssembler
                 ;  //.identifiedBy( "rdf-repository" );
         
         domainModule.addServices( UuidIdentityGeneratorService.class );
-
-        // indexer
-//        RdfNativeSesameStoreAssembler rdf = new RdfNativeSesameStoreAssembler();
-//        rdf.assemble( domainModule );
     }                
 
     
     public void createInitData() 
     throws Exception {
+        if (moduleRoot.list().length == 0) {
+            UnitOfWork start_uow = uowf.newUnitOfWork();
+            log.info( "creating initial data..." );
+            start_uow.newEntity( TaskListComposite.class, "taskList" );
+            start_uow.complete();
+        }
         
         // check/init rootMap
         UnitOfWork start_uow = uowf.newUnitOfWork();
         try {
             TaskListComposite taskList = start_uow.get( TaskListComposite.class, "taskList" );
-            System.out.println( "TaskList: " + taskList );
-            for (ITask task : taskList.getTasks()) {
-                System.out.println( "   child: " + task.toString() );
-            }
             if (taskList == null) {
                 throw new NoSuchEntityException( null );
-            }
-        }
-        catch (Throwable e) {
-            try {
-                log.info( "No config or error, creating global config. (" + e + ")" );
-//                EntityBuilder<IMap> builder = start_uow.newEntityBuilder( IMap.class, "root" );
-//                //builder.instance().setLabel( "root" );
-//                IMap rootMap = builder.newInstance();
-//                rootMap.setLabel( "root" );
-
-                TaskListComposite taskList = start_uow.newEntity( TaskListComposite.class, "taskList" );
-                System.out.println( "taskList: " + taskList );
-            }
-            catch (Exception e1) {
-                log.error( e1.getMessage(), e1 );
-                throw e1;
             }
         }
         finally {

@@ -114,14 +114,13 @@ function initLocal() {
     Atlas.topbar = new Topbar( $('#topbar') )
         .addLeft( new LinkToolItem( "tb_1", $.i18n.prop( "project_title" ), 
                 "tooltip", $.i18n.prop( "project_link" ) ) )
-        .addLeft( new LinkToolItem( "tb_2", "Projekt", "tooltip", "http://google.de" ) )
-        .addLeft( new LinkToolItem( "tb_3", "Geo-Katalog", "tooltip", "http://google.de" ) )
+        //.addLeft( new LinkToolItem( "tb_2", "Projekt", "tooltip", "http://google.de" ) )
         .addRight( new LangSwitcherItem( "tb_cz", "images/cz.gif", "", "cz" ) )
         .addRight( new LangSwitcherItem( "tb_de", "images/de.gif", "", "de" ) )
         .addRight( new LangSwitcherItem( "tb_en", "images/en.gif", "", "en" ) )
-        .addRight( new HtmlDialogToolItem( "tb_hilfe", "Hilfe", "Hilfe anzeigen", $('#dialog'), "hilfe.html" ) )
-        .addRight( new HtmlDialogToolItem( "tb_impressum", "Impressum", "Impressum anzeigen", $('#dialog'), "impressum.html" ) )
-        .addRight( new HtmlDialogToolItem( "tb_kontakt", "Kontakt", "Kontaktdaten anzeigen", $('#dialog'), "kontakt.html" ) )
+        .addRight( new HtmlDialogToolItem( "tb_help", "tb_help".i18n(), "tb_help_tip".i18n(), $('#dialog'), "hilfe.html" ) )
+        .addRight( new HtmlDialogToolItem( "tb_legal", "tb_legal".i18n(), "tb_editorial_tip".i18n(), $('#dialog'), "impressum.html" ) )
+        .addRight( new HtmlDialogToolItem( "tb_contact", "tb_contact".i18n(), "tb_contact_tip".i18n(), $('#dialog'), "kontakt.html" ) )
         .create();
     
     // Toolbar

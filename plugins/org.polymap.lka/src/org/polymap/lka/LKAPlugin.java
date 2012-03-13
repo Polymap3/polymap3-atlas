@@ -35,7 +35,8 @@ import org.polymap.lka.poi.SearchServlet;
  *
  * @author <a href="http://www.polymap.de">Falko Bräutigam</a>
  */
-public class LKAPlugin extends Plugin {
+public class LKAPlugin 
+        extends Plugin {
 
 	// The plug-in ID
 	public static final String     PLUGIN_ID = "org.polymap.lka";
@@ -46,7 +47,7 @@ public class LKAPlugin extends Plugin {
 	// The shared instance
 	private static LKAPlugin       plugin;
 	
-    /** The session context shared by the servlets. */
+    /** The session context shared by all servlets. */
     private DefaultSessionContext  serviceContext;
     
     public DefaultSessionContextProvider contextProvider;
@@ -74,6 +75,7 @@ public class LKAPlugin extends Plugin {
 	    super.start( context );
 
 	    // serviceContext
+	    assert serviceContext == null && contextProvider == null;
         serviceContext = new DefaultSessionContext( "lka-services" );
         contextProvider = new DefaultSessionContextProvider() {
             protected DefaultSessionContext newContext( String sessionKey ) {
@@ -136,7 +138,6 @@ public class LKAPlugin extends Plugin {
                     throw new RuntimeException( e );
                 }
             }
-	        
 	        return httpService;
 	    }
 
