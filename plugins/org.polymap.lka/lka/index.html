@@ -66,12 +66,17 @@
 <script type="text/javascript">
 
 // the Atlas environment
-var MyAtlasClass = AtlasClass.extend( {
-    init: function( config ) {
+var MyAtlasClass = AtlasClass.extend(  new function() {
+    this.init = function( config ) {
         // XXX a bit hackish; allow the init methods to access the global Atlas
         Atlas = this;
         this._super( config );
-    }
+    };
+    
+    this.initMap = function() {
+        alert( 'initMap(): ...' );
+        //this._super();
+    };
 });
 
 var Atlas;
@@ -242,19 +247,16 @@ function pageUrl() {
         </ul>
         
         <div id="result_body0" class="ui-layout-content ui-dialog-content" style="bottom:0px;">
-            <p>An dieser Stelle erscheinen die Ergebnisse der Suchkategorie "rot".</p>
-            <p>
-            Die Ergebnisse weiterer Suchanfragen k&ouml;nnen den anders farbigen Kategorien (gr&uuml;n, gelb und blau) zugeordnet werden. So k&ouml;nnen Sie ein individuelles Themenprofil f&uuml;r sich erstellen. 
-            </p>
+            result_body_red
         </div>
         <div id="result_body1" class="ui-layout-content ui-dialog-content">
-            <p>Keine Suche f&uuml;r gr&uuml;n -&gt; keine Treffer</p>
+            result_body_green
         </div>
         <div id="result_body2" class="ui-layout-content ui-dialog-content">
-            <p>Keine Suche f&uuml;r gelb -&gt; keine Treffer</p>
+            result_body_yellow
         </div>
         <div id="result_body3" class="ui-layout-content ui-dialog-content">
-            <p>Keine Suche f&uuml;r blau -&gt; keine Treffer</p>
+            result_body_blue
         </div>
 </div>
 

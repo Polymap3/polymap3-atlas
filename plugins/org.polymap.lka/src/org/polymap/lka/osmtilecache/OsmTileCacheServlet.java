@@ -115,13 +115,13 @@ public class OsmTileCacheServlet
                     true,                   // overflow to disk 
                     f.getAbsolutePath(), 
                     false,                  // eternal
-                    3600*24*7,             // timeToLive 
+                    3600*24*7,              // timeToLive 
                     3600*24*7, 
                     true,                   // diskPersistent
-                    30,                    // disk expire thread interval 
+                    30,                     // disk expire thread interval 
                     null,
                     null,                   // bootstrap cache loader
-                    20000,                  // maxElementsOnDisk 
+                    200000,                 // maxElementsOnDisk 
                     1);                     // disk spool buf MB
             cache.setDiskStorePath( f.getAbsolutePath() );
             ehcm.addCache( cache );

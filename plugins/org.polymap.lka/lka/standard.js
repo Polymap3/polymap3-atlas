@@ -22,17 +22,10 @@
  * @param index {Number} The index of the feature in the result collection.
  */
 (function( context, feature, index, div ) {
-    //  click -> popup
     var self = this;
-    div.find( 'b>a' ).click( function( ev ) {
-        var popupHtml = '<b>' + feature.data.title + '</b><br/>'
-                + '_____________________________________'
-                + self.createHtml();
-        context.openPopup( feature.id, popupHtml );
-    });
 
     /**
-     * 
+     * Creates the HTML for result list entry and popup.
      */
     this.createHtml = function() {
         var resultHtml = '';
@@ -42,8 +35,8 @@
             var address = new OpenLayers.Format.JSON().read( feature.data.address );
 
             if (address != null && address.street != null) {
-                resultHtml += ('<p class="atlas-result-address">{0} {1}<br/>{2} {3}</p>'
-                        .format( address.street, address.number, address.postalCode, address.city ));
+                resultHtml += '<p class="atlas-result-address">{0} {1}<br/>{2} {3}</p>'
+                        .format( address.street, address.number, address.postalCode, address.city );
             }
         }
 
@@ -58,5 +51,31 @@
         return resultHtml;
     };    
 
+    /**
+     * 
+     */
+    this.createPopupHtml = function() {
+        return '<b>' + feature.data.title + '</b><br/>'
+                + '_____________________________________'
+                + self.createHtml();
+    };
+    
+    // result list entry
     div.append( this.createHtml() );
+    
+    // result list click -> popup
+    div.find( 'b>a' )
+        .attr( 'title', 'result_list_entry_link'.i18n() )
+        .click( function( ev ) {
+            context.openPopup( feature.id, self.createPopupHtml() ); 
+        });
+    
+    // feature click -> popup
+    context.layer.events.register( "featureselected", context.layer, function( ev ) {
+        if (ev.feature == feature) {
+            context.openPopup( feature.id, self.createPopupHtml() );
+            context.resultDiv.scrollTo( div, 2000 );
+        }
+    });
+
 })

@@ -283,6 +283,9 @@ var UrlFieldFeatureResultEnhancer = Class.extend( new function() {
                 else if (value.indexOf( "www.") == 0) {
                     ev.feature.data[name] = "<a href=\"http://" + value + "\" target=\"_blank\">" + value + "</a>";
                 }
+                else if (value.indexOf( "@") > 0) {
+                    ev.feature.data[name] = "<a href=\"mailto:" + value + "\" target=\"_blank\">" + value + "</a>";
+                }
             });
         });
     };

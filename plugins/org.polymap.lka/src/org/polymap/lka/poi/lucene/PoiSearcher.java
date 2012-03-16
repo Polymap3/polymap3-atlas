@@ -31,6 +31,8 @@ import java.io.StringReader;
 import org.geotools.geojson.geom.GeometryJSON;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.ScoreDoc;
@@ -40,6 +42,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.eclipse.core.runtime.IPath;
 
 import org.polymap.core.runtime.Polymap;
+
 import org.polymap.geocoder.Address;
 import org.polymap.lka.poi.SearchResult;
 import org.polymap.lka.poi.SearchSPI;
@@ -53,6 +56,8 @@ import org.polymap.lka.poi.SearchSPI;
  */
 public class PoiSearcher
         implements SearchSPI {
+
+    private static final Log  log = LogFactory.getLog( PoiSearcher.class );
 
     private PoiIndexer          indexer;
 
@@ -83,48 +88,54 @@ public class PoiSearcher
         
         List<SearchResult> result = new ArrayList( maxResults );
         for (ScoreDoc scoreDoc : scoreDocs) {
-            Document doc = indexer.getDocument( scoreDoc );
-            
-            String title = doc.get( PoiIndexer.FIELD_TITLE );
-            if (title == null) {
-                title = doc.get( StringUtils.capitalize( PoiIndexer.FIELD_TITLE ) );
+            String title = null;
+            try {
+                Document doc = indexer.getDocument( scoreDoc );
+                
+                title = doc.get( PoiIndexer.FIELD_TITLE );
+                if (title == null) {
+                    title = doc.get( StringUtils.capitalize( PoiIndexer.FIELD_TITLE ) );
+                }
+                if (title == null) {
+                    title = doc.get( PoiIndexer.FIELD_TITLE.toUpperCase() );
+                }
+                if (title == null) {
+                    title = "(ohne Namen)";
+                }
+                SearchResult record = new SearchResult( scoreDoc.score, title );
+                
+                for (Fieldable field : doc.getFields()) {
+                    // geom
+                    if (field.name().equals( PoiIndexer.FIELD_GEOM )) {
+                        Geometry geom = jsonDecoder.read( new StringReader( field.stringValue() ) );
+                        record.setGeom( geom );
+                    }
+                    // srs
+                    else if (field.name().equals( PoiIndexer.FIELD_SRS )) {
+                        record.setSRS( field.stringValue() );
+                    }
+                    // title
+                    else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_TITLE )) {
+                        // already set
+                    }
+                    // keywords
+                    else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_KEYWORDS )) {
+                        // ommit keyword
+                    }
+                    // address
+                    else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_ADDRESS )) {
+                        record.setAddress( Address.valueOf( field.stringValue() ) );
+                    }
+                    // all other fields
+                    else {
+                        record.addField( field.name(), field.stringValue() );
+                    }
+                }
+                result.add( record );
             }
-            if (title == null) {
-                title = doc.get( PoiIndexer.FIELD_TITLE.toUpperCase() );
+            catch (Exception e) {
+                log.error( "Error while building SearchResult: " + title, e );
             }
-            if (title == null) {
-                title = "(ohne Namen)";
-            }
-            SearchResult record = new SearchResult( scoreDoc.score, title );
-            
-            for (Fieldable field : doc.getFields()) {
-                // geom
-                if (field.name().equals( PoiIndexer.FIELD_GEOM )) {
-                    Geometry geom = jsonDecoder.read( new StringReader( field.stringValue() ) );
-                    record.setGeom( geom );
-                }
-                // srs
-                else if (field.name().equals( PoiIndexer.FIELD_SRS )) {
-                    record.setSRS( field.stringValue() );
-                }
-                // title
-                else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_TITLE )) {
-                    // already set
-                }
-                // keywords
-                else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_KEYWORDS )) {
-                    // ommit keyword
-                }
-                // address
-                else if (field.name().equalsIgnoreCase( PoiIndexer.FIELD_ADDRESS )) {
-                    record.setAddress( Address.valueOf( field.stringValue() ) );
-                }
-                // all other fields
-                else {
-                    record.addField( field.name(), field.stringValue() );
-                }
-            }
-            result.add( record );
         }
         return result;
     }

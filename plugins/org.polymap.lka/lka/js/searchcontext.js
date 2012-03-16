@@ -292,15 +292,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      */
     this.onFeatureSelected = function( ev ) {
         this.openPopup( ev.feature.id );
-        
-//        for (var i=0; i<this.results.length; i++) {
-//            var result = this.results[i];
-//            if (result.feature == ev.feature) {
-//                alert( result.div.position().top );
-//                this.resultDiv.scrollTop( result.div.position().top );
-//                return false;
-//            }
-//        }
     };
 
     /**
