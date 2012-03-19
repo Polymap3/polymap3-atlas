@@ -140,6 +140,8 @@ public class GeoJsonEncoder
             obj.put( "crs", new CRSEncoder( fjson, worldCRS ) );
             
             GeoJSONUtil.encode( obj, new OutputStreamWriter( this, "UTF-8" ) );
+
+            log.info( "    encoded: " + size() + " byte" );
             
             if (features != null) {
                 features.clear();

@@ -26,7 +26,7 @@
  *     autocompleteUrl: 'search',
  *     searchUrl: 'search',
  *     baseUrl: 'index.html',
- *     mapCRS: "EPSG:900913"
+ *     mapCRS: 'EPSG:900913'
  * }
  * </pre>
  */
@@ -77,7 +77,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         this.contexts = [
             new SearchContext( this.map, 0, "images/marker_red.png", $("#result_body0"), '#ff0000' ),
             new SearchContext( this.map, 1, "images/marker_green.png", $("#result_body1"), '#00ff00' ),
-            new SearchContext( this.map, 2, "images/marker_yellow.png", $("#result_body2"), '#00ffff' ),
+            new SearchContext( this.map, 2, "images/marker_yellow.png", $("#result_body2"), '#FFEE00' ),
             new SearchContext( this.map, 3, "images/marker_blue.png", $("#result_body3"), '#0000ff' ) 
         ];
         // initialize contexts
@@ -137,10 +137,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         this.dop = new OpenLayers.Layer.WMS( "DOP", 
             "../services/Atlas-Hintergrund", 
             { layers : 'roads', format: "image/jpeg" },
-            { transparent: true,
-              isBaseLayer: false,
-              transitionEffect: 'resize'
-            } );
+            { transparent: true, isBaseLayer: false, transitionEffect: 'resize' } );
         this.dop.setVisibility( false );
         this.dop.buffer = 0;
         this.dop.attribution = '<a href="http://www.landesvermessung.sachsen.de/inhalt/geo/basis/basis_dienste.html#geosn">GeoSN</a>';
@@ -149,10 +146,8 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         var fiveDays = 5*24*60*60;
         this.mapnik = new OpenLayers.Layer.OSM( "OSM Mapnik",
             // "http://tile.openstreetmap.org/${z}/${x}/${y}.png", {
-            "osmcache/${z}/${x}/${y}.png?targetBaseURL=http://tile.openstreetmap.org&expires=" + fiveDays, {
-            transitionEffect: 'resize',
-            isBaseLayer: true
-        });
+            "osmcache/${z}/${x}/${y}.png?targetBaseURL=http://tile.openstreetmap.org&expires=" + fiveDays, 
+            { transitionEffect: 'resize', isBaseLayer: true } );
         var aliasproj = new OpenLayers.Projection( "EPSG:3857" );
         this.mapnik.projection = aliasproj;
         this.mapnik.buffer = 0;
@@ -160,10 +155,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         // Border *********
         this.border = new OpenLayers.Layer.WMS( "Kreisgrenze",
             "../services/Atlas-Hintergrund",
-            { layers : 'Kreisgrenze2',
-              transparent: true,
-              isBaseLayer: false
-            } );
+            { layers : 'Kreisgrenze2', transparent: true, isBaseLayer: false } );
         this.border.setVisibility( true );
         this.border.buffer = 0;
         this.border.attribution = 'powered by <b><a target="_blank" href="http://polymap.org/polymap3"> POLYMAP3</a></b>';
@@ -217,7 +209,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         //overview.activate();
         //overview.maximizeControl();
 
-        this.map.addControl( new OpenLayers.Control.LayerSwitcher() );
+        //this.map.addControl( new OpenLayers.Control.LayerSwitcher() );
         this.map.addControl( new OpenLayers.Control.PanZoomBar() );
         var scaleLine = new OpenLayers.Control.ScaleLine();
         scaleLine.geodesic = true;

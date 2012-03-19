@@ -3,7 +3,7 @@
 <head>
 <title>POLYMAP3|Atlas</title>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta name="keywords" content="Geoportal, Atlas, GDI, Ort, Geodaten, Geodatenkatalog, POI">
+<meta name="keywords" content="Geoportal, Karte, GIS, Polymap, Atlas, GDI, Ort, Geodaten, Geodatenkatalog, POI">
 <meta name="description" content="Atlas">
 <meta name="robots" content="index,follow">
 <meta name="revisit-after" content="10 days">
@@ -53,7 +53,7 @@
 <script src="js/atlas.js" type="text/javascript"></script>
 <script src="js/toolitems.js" type="text/javascript"></script>
 <script src="js/topbar.js" type="text/javascript"></script>
-<script src="js/transmap.js" type="text/javascript"></script>
+<!--script src="js/transmap.js" type="text/javascript"></script-->
 <script src="js/measure.js" type="text/javascript"></script>
 <script src="js/searchservice.js" type="text/javascript"></script>
 <script src="js/searchcontext.js" type="text/javascript"></script>
@@ -61,6 +61,7 @@
 <script src="js/routing.nearby.js" type="text/javascript"></script>
 <script src="js/routing.shortestpath.js" type="text/javascript"></script>
 <script src="js/routing.js" type="text/javascript"></script>
+<script src="js/boundsearch.js" type="text/javascript"></script>
 
 <!-- Local config -->
 <script type="text/javascript">
@@ -68,94 +69,95 @@
 // the Atlas environment
 var MyAtlasClass = AtlasClass.extend(  new function() {
     this.init = function( config ) {
-        // XXX a bit hackish; allow the init methods to access the global Atlas
         Atlas = this;
-        this._super( config );
-    };
-    
-    this.initMap = function() {
-        alert( 'initMap(): ...' );
-        //this._super();
-    };
-});
-
-var Atlas;
-
-
-function initLocal() {
-    // init the Atlas
-    Atlas = new MyAtlasClass( {
+        this._super( {
             //autocompleteUrl : '../polymap/lka/search',
             autocompleteUrl: 'search',
             searchUrl: 'search',
             baseUrl: 'index.html',
             mapCRS: "EPSG:900913"
-    }); 
+        });
         
-    // init measure
-    Atlas.measure = new MeasureMode( Atlas.map, $("#measure_link") );
-    
-    // init I18N
-    var lang = $(document).getUrlParam( "lang" );    
-    jQuery.i18n.properties({
-            name: 'messages', 
-            path: 'bundle/', 
-            mode: 'map', 
-            language: lang,  //'cz_CZ',
-            callback: function( settings ) {
-                Atlas.language = settings.language;
+        // load and init bound search
+        $.ajax({
+            url: 'boundsearch.json',
+            dataType: 'html',
+            success: function( data ) {
+                var json = new OpenLayers.Format.JSON().read( data );
+                Atlas.boundSearch = new BoundSearch( json );
             }
-    });
-
-    // init translation; tweak context functions
-    Atlas.transmap = new TransMap( 'bundle/trans_', ['de_cz'] );
+        });
+        
+        // init measure
+        Atlas.measure = new MeasureMode( Atlas.map, $("#measure_link") );
+        
+        // init I18N
+        var lang = $(document).getUrlParam( "lang" );    
+        jQuery.i18n.properties({
+                name: 'messages', 
+                path: 'bundle/', 
+                mode: 'map', 
+                language: lang,  //'cz_CZ',
+                callback: function( settings ) {
+                    Atlas.language = settings.language;
+                }
+        });
     
-    Atlas.routing = new Routing(
-        '../routing-service/web/v1.0', 
-        'a27fb9d8ace734e3b4395ec342ddb35c' );
-        //'f4c8d0c39ff58a705a9677f38fbee7af' );
+        // init translation; tweak context functions
+        //Atlas.transmap = new TransMap( 'bundle/trans_', ['de_cz'] );
+        
+        Atlas.routing = new Routing(
+            '../routing-service/web/v1.0', 
+            'a27fb9d8ace734e3b4395ec342ddb35c' );
+            //'f4c8d0c39ff58a705a9677f38fbee7af' );
+        
+        // Topbar
+        Atlas.topbar = new Topbar( $('#topbar') )
+            .addLeft( new LinkToolItem( "tb_1", $.i18n.prop( "project_title" ), 
+                    "tooltip", $.i18n.prop( "project_link" ) ) )
+            //.addLeft( new LinkToolItem( "tb_2", "Projekt", "tooltip", "http://google.de" ) )
+            //.addRight( new LangSwitcherItem( "tb_cz", "images/cz.gif", "", "cz" ) )
+            //.addRight( new LangSwitcherItem( "tb_de", "images/de.gif", "", "de" ) )
+            //.addRight( new LangSwitcherItem( "tb_en", "images/en.gif", "", "en" ) )
+            .addRight( new HtmlDialogToolItem( "tb_help", "tb_help".i18n(), "tb_help_tip".i18n(), $('#dialog'), "hilfe.html" ) )
+            .addRight( new HtmlDialogToolItem( "tb_legal", "tb_legal".i18n(), "tb_editorial_tip".i18n(), $('#dialog'), "impressum.html" ) )
+            .addRight( new HtmlDialogToolItem( "tb_contact", "tb_contact".i18n(), "tb_contact_tip".i18n(), $('#dialog'), "kontakt.html" ) )
+            .create();
+        
+        // Toolbar
+        Atlas.toolbar = new Toolbar( $('#toolbar2') )
+            .addLeft( new ToggleLayerItem( "tb_dop", $.i18n.prop( "tb_dop_label" ), 
+                    $.i18n.prop( "tb_dop_label" ), $.i18n.prop( "tb_dop_icon" ), Atlas.map, "DOP" ) )
+            .addRight( new SubmitNewItem( "tb_new" ) )
+            .addRight( new ToggleMeasureItem( "tb_measure", Atlas.measure ) )
+            .addRight( new LinkItem( "tb_link" ) )
+            .addRight( new KmlItem( "tb_kml" ) )
+            .addRight( new GeoRssItem( "tb_georss" ) )
+            .addRight( new BookmarkItem( "tb_bookmark" ) )
+            //.addRight( new TestRoutingItem( "tb_routing", Atlas.routing ) )
+            .create();
+        
+        dialogDiv = $('#dialog');        
     
-    // Topbar
-    Atlas.topbar = new Topbar( $('#topbar') )
-        .addLeft( new LinkToolItem( "tb_1", $.i18n.prop( "project_title" ), 
-                "tooltip", $.i18n.prop( "project_link" ) ) )
-        //.addLeft( new LinkToolItem( "tb_2", "Projekt", "tooltip", "http://google.de" ) )
-        .addRight( new LangSwitcherItem( "tb_cz", "images/cz.gif", "", "cz" ) )
-        .addRight( new LangSwitcherItem( "tb_de", "images/de.gif", "", "de" ) )
-        .addRight( new LangSwitcherItem( "tb_en", "images/en.gif", "", "en" ) )
-        .addRight( new HtmlDialogToolItem( "tb_help", "tb_help".i18n(), "tb_help_tip".i18n(), $('#dialog'), "hilfe.html" ) )
-        .addRight( new HtmlDialogToolItem( "tb_legal", "tb_legal".i18n(), "tb_editorial_tip".i18n(), $('#dialog'), "impressum.html" ) )
-        .addRight( new HtmlDialogToolItem( "tb_contact", "tb_contact".i18n(), "tb_contact_tip".i18n(), $('#dialog'), "kontakt.html" ) )
-        .create();
+        // localize HTML
+        $(function() {
+            $('html').localize();
+        });
     
-    // Toolbar
-    Atlas.toolbar = new Toolbar( $('#toolbar2') )
-        .addLeft( new ToggleLayerItem( "tb_dop", $.i18n.prop( "tb_dop_label" ), 
-                $.i18n.prop( "tb_dop_label" ), $.i18n.prop( "tb_dop_icon" ), Atlas.map, "DOP" ) )
-        .addRight( new SubmitNewItem( "tb_new" ) )
-        .addRight( new ToggleMeasureItem( "tb_measure", Atlas.measure ) )
-        .addRight( new LinkItem( "tb_link" ) )
-        .addRight( new KmlItem( "tb_kml" ) )
-        .addRight( new GeoRssItem( "tb_georss" ) )
-        .addRight( new BookmarkItem( "tb_bookmark" ) )
-        //.addRight( new TestRoutingItem( "tb_routing", Atlas.routing ) )
-        .create();
-    
-    dialogDiv = $('#dialog');        
+        // make all divs in north_pane visible after the HTML is localized
+        window.setTimeout( function() {
+            $('#north_pane>div').fadeIn( 1000 );
+            $('#search_field').focus();
+        }, 1000 );
+    };
+});
 
-    // localize HTML
-    $(function() {
-        $('html').localize();
-    });
+var Atlas;
 
-    // make all divs in north_pane visible after the HTML is localized
-    window.setTimeout( function() {
-        $('#north_pane>div').fadeIn( 1000 );
-        $('#search_field').focus();
-    }, 1000 );
-
+function initLocal() {
+    // init the Atlas
+    Atlas = new MyAtlasClass();
 }
-
 
 /**
  * The page URL including search params from all search contexts.
@@ -199,7 +201,7 @@ function pageUrl() {
     </div>
     
     <!-- Search Form -->
-    <div id="search_pane" style="display:none;">
+    <div id="search_pane" class="ui-widget-content" style="border:none; display:none;">
         <img style="margin: 1px 0px 0px; padding: 0px; position: absolute; left: -38px; top: 20px;" src="images/marker_red.png" id="search_img">
         
         <input title="Sucheingabe" id="search_field" size="40" maxlength="150" 

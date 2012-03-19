@@ -62,7 +62,7 @@ body {
     
     border: 1px solid #ccc;
     
-    height: 21px;
+    height: 20px;
     width: 370px;
     position: absolute;
     top: 20px;
@@ -81,6 +81,16 @@ body {
     position: absolute; 
     top: 20px; 
     left: 390px;
+}
+
+#bound-search-link {
+    font-size: smaller;
+    color: #a0a0a0;
+    position: absolute; 
+    top: 55px;
+    left: 2px;
+    /*width: 380px;*/
+    /*text-align: right;*/
 }
 
 /**********************************************************
@@ -212,10 +222,11 @@ p {
     top: 40px ! important;
 }
 .olControlAttribution {
-    top: -1px;
+    top: 0px;
     padding: 1px 3px 1px 3px;
+    right: 0px !important;
     /*box-shadow: 0 1px 2px #606060;*/
-    border: 1px solid #d0d0d0;
+    /*border: 1px solid #d0d0d0;*/
     background: #ffffff;
     height: 14px;
 }

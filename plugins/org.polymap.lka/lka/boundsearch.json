@@ -1,0 +1,16 @@
+{
+    "Freiberg": "?search1=Freiberg",
+    "Döbeln": "?search1=Döbeln",
+    "Bildungsangebote": {
+        "Mittelschule": {
+            "alle Fächer": "?search1=Mittelschule",
+            "Biologie": "?search1=Mittelschule Biologie",
+            "Geschichte": "?search1=Mittelschule Geschichte"
+        },
+        "Gymnasium": {
+            "alle Fächer": "?search1=Gymnasium",
+            "Biologie": "?search1=Gymnasium Biologie",
+            "Geschichte": "?search1=Gymnasium Geschichte"
+        }
+    }
+}

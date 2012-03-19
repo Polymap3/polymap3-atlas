@@ -96,6 +96,13 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      */
     this.search = function( searchStr ) {
         try {
+            this.resultDiv.empty();
+            this.resultDiv.css( 'bottom', '0px' ).css( 'height', '100%' );
+            this.resultDiv.append( 
+                    '<div style="width:100px; margin:0 auto; align:center; text-align:center;">' +
+                    '<img src="{0}" style="margin:5px;"></img><br/>'.format( 'images/loader_small.gif') +
+                    '<em>{0}</em></dev>'.format( 'context_loading'.i18n() ) );
+            
             this.searchStr = searchStr;
             // see SearchService for more info
             this.searchStr = encodeURIComponent( this.searchStr );
@@ -205,7 +212,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         this.resultDiv.css( 'bottom', '0px' ).css( 'height', '100%' );
         this.results = new Array( this.layer.features.length );
         
-        /* Maps category name into JavaScript Function. */
+        /* maps category name into JavaScript Function. */
         var categoryRenderers = {};
         var NO_RENDERER = {};
         
@@ -237,7 +244,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                         'cache': false,
                         'dataType': 'text',
                         'success': function( data ) {
-                            categoryRenderers[categories[j]] = renderer = eval( data );
+                            renderer = new Function( 'context', 'feature', 'index', 'div', data );
+                            categoryRenderers[categories[j]] = renderer;
                         },
                         'error': function() {
                             categoryRenderers[categories[j]] = NO_RENDERER;

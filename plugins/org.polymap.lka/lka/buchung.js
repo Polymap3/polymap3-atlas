@@ -21,7 +21,7 @@
  * @param feature {OpenLayers.Feature.Vector}
  * @param index {Number} The index of the feature in the result collection.
  */
-(function( context, feature, index, div ) {
+//(function( context, feature, index, div ) {
     var self = this;    
 
     /**
@@ -161,4 +161,4 @@
                 .format( key, value != null ? value : '-' );
     };
     
-})
+//})
