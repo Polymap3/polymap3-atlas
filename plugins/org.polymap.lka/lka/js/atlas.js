@@ -76,8 +76,8 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         // create search contexts
         this.contexts = [
             new SearchContext( this.map, 0, "images/marker_red.png", $("#result_body0"), '#ff0000' ),
-            new SearchContext( this.map, 1, "images/marker_green.png", $("#result_body1"), '#00ff00' ),
-            new SearchContext( this.map, 2, "images/marker_yellow.png", $("#result_body2"), '#FFEE00' ),
+            new SearchContext( this.map, 1, "images/marker_green.png", $("#result_body1"), '#00AB39' ),
+            new SearchContext( this.map, 2, "images/marker_yellow.png", $("#result_body2"), '#B48400' ),
             new SearchContext( this.map, 3, "images/marker_blue.png", $("#result_body3"), '#0000ff' ) 
         ];
         // initialize contexts
@@ -209,7 +209,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         //overview.activate();
         //overview.maximizeControl();
 
-        //this.map.addControl( new OpenLayers.Control.LayerSwitcher() );
+        this.map.addControl( new OpenLayers.Control.LayerSwitcher() );
         this.map.addControl( new OpenLayers.Control.PanZoomBar() );
         var scaleLine = new OpenLayers.Control.ScaleLine();
         scaleLine.geodesic = true;
@@ -269,7 +269,10 @@ var UrlFieldFeatureResultEnhancer = Class.extend( new function() {
     this.init = function() {
         Atlas.events.bind( 'searchFeatureLoaded', function( ev ) {
             $.each( ev.feature.data, function( name, value ) {
-                if (value.indexOf( "http://") == 0) {
+                if (value == null || typeof value != 'string') {
+                    return;
+                }
+                else if (value.indexOf( "http://") == 0) {
                     ev.feature.data[name] = "<a href=\"" + value + "\" target=\"_blank\">" + value.substring(7) + "</a>";
                 }
                 else if (value.indexOf( "www.") == 0) {

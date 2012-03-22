@@ -37,16 +37,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     /** The string that has been searched for in this context. */
     this.searchStr = "";
     
+    /** {SearchLayer} */
     this.layer = null;
     
     this.popup = null;
-    
-    this.selectControl = null;
-    
-    this.hoverControl = null;
-    
-    this.tooltipsControl = null;
-    
+        
     this.markerImage = markerImage;
     
     this.geomColor = geomColor;
@@ -66,11 +61,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 //            tabs.tabs( 'select', index );
 //        }
 
-        if (this.hoverControl != null) {
-            this.hoverControl.activate();
-        }
-        if (this.selectControl != null) {
-            this.selectControl.activate();
+        if (this.layer) {
+            this.layer.activate();
         }
         return this;
     };
@@ -79,11 +71,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * Deactive this context by updating the GUI elements.
      */
     this.deactivate = function() {
-        if (this.selectControl != null) {
-            this.selectControl.deactivate();
-        }
-        if (this.hoverControl != null) {
-            this.hoverControl.deactivate();
+        if (this.layer) {
+            this.layer.deactivate();
         }
         if (this.popup != null && this.popup.div != null) {
             this.popup.destroy();
@@ -116,86 +105,20 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             ev.searchStr = searchStr;
             Atlas.events.trigger( ev );
 
-            if (this.layer != null) {
-                this.map.removeLayer( this.layer );
-            }
-            if (this.selectControl != null) {
-                this.map.removeControl( this.selectControl );
-            }
-            if (this.hoverControl != null) {
-                this.map.removeControl( this.hoverControl );
+            // remove old layer
+            if (this.layer) {
+                this.layer.close();
             }
             
             // new layer / style
-            var defaultStyle = new OpenLayers.Style({
-                'externalGraphic': this.markerImage,
-                'graphicHeight': 28,
-                'graphicWidth': 36,
-                'graphicXOffset': -10.5,
-                'graphicYOffset': -12.5,
-                'strokeWidth': 2,
-                'strokeColor': this.geomColor,
-                fillOpacity: 0.7,
-                fillColor: '#a0a0a0'
+            this.layer = new SearchLayer( this, {
+                'url': this.searchURL,
+                'attribution': this.attribution,
+                'markerImage': this.markerImage,
+                'color': this.geomColor,
+                //'onFeatureHovered': callback( this.onFeatureHovered, {scope:this} ),
+                'onLoaded': callback( this.onLayerLoaded, {scope:this} ) 
             });
-            var selectStyle = new OpenLayers.Style({
-                'strokeWidth': 3,
-                fillOpacity: 1
-            });
-            var styleMap = new OpenLayers.StyleMap({
-                'default': defaultStyle,
-                'select': selectStyle });
-
-            this.layer = new OpenLayers.Layer.GML( "Suchergebnis",
-                this.searchURL, { 
-                format: OpenLayers.Format.GeoJSON,
-                styleMap: styleMap
-            });
-            this.layer.attribution = this.attribution;
-            this.map.addLayer( this.layer );
- 
-//          // hover feature
-            var fh_cb = callback( this.onFeatureHovered, {scope:this} );
-            this.hoverControl = new OpenLayers.Control.SelectFeature( this.layer, {
-                hover: true,
-                highlightOnly: true,
-                clickout: true
-                //onSelect: fh_cb
-            });
-            this.map.addControl( this.hoverControl );
-            this.hoverControl.activate();
-            this.layer.events.register( "featurehighlighted", this.layer, fh_cb );
-
-            // select feature
-            this.selectControl = new OpenLayers.Control.SelectFeature( this.layer, {
-                clickout: true
-//                onSelect: function( ev ) {
-//                    alert( "Selected feature: " + ev );
-//                }
-            });
-            this.map.addControl( this.selectControl );
-            this.selectControl.activate();
-//            var fs_cb = callback( this.onFeatureSelected, {scope:this} );
-//            this.layer.events.register( "featureselected", this.layer, fs_cb );
-
-            var cb = callback( this.onLayerLoaded, {scope:this} );
-            this.layer.events.register( "loadend", this.layer, cb );
-            this.layer.events.register( "loadcancel", this.layer, cb );
-            
-//            // tooltips
-//            this.layer.events.register( "mouseover", this.layer, function( ev ) {
-//                tooltips.show( {html:"My first ToolTips"} );
-//            });
-//            this.layer.events.register( "mouseout", this.layer, function( ev ) {
-//                tooltips.hide();
-//            });
-//
-//            var tooltips = new OpenLayers.Control.ToolTips({
-//                bgColor: "#ffffd0",
-//                //textColor: "black", 
-//                bold: true, 
-//                opacity: 1 });
-//            map.addControl( tooltips );
         } 
         catch( e ) {
             throw e;
@@ -226,7 +149,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             Atlas.events.trigger( ev );
 
             // basic HTML
-            self.resultDiv.append( '<div class="atlas-result" id="feature-' + i 
+            var key = feature.id.afterLast( '.' );
+            self.resultDiv.append( '<div class="atlas-result" id="feature-' + key  
                     + '"    style="margin-bottom:2px;" class="ui-corner-all">'
                     + '<b><a href="#">' + feature.data.title + '</a></b><br/>' 
                     + '</div><hr/>' );
@@ -254,9 +178,14 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 }
                 // execute renderer
                 if (renderer != null && renderer != NO_RENDERER) {
-                    var div = self.resultDiv.find( '#feature-'+i );
+                    var div = self.resultDiv.find( '#feature-'+key );
                     // new object/context for every call
-                    renderer.call( {}, self, feature, i, div );
+                    try {
+                        renderer.call( {}, self, feature, i, div );
+                    }
+                    catch ( e ) {
+                        alert( 'Renderer: ' + e );
+                    }
                     break;
                 }
             }
@@ -266,14 +195,14 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             ev.context = this;
             ev.feature = feature;
             ev.index = i;
-            ev.div = self.resultDiv.find( '#feature-'+i );
+            ev.div = self.resultDiv.find( '#feature-'+key );
             Atlas.events.trigger( ev );
             
             self.results[i] = ev;
         });
 
         if (this.layer.features.length > 0) {
-            this.map.zoomToExtent( this.layer.getDataExtent() );
+            this.map.zoomToExtent( this.layer.layer.getDataExtent() );
             if (this.map.getScale() < 20000) {
                 this.map.zoomToScale( 20000, false );
             }
@@ -307,7 +236,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * @param fid The fid of the feature to popup.
      * @return
      */
-    this.openPopup = function( fid, popupHtml ) {
+    this.openPopup = function( featureOrFid, popupHtml ) {
         // remove old popup
         if (this.popup != null && this.popup.div != null) {
             this.popup.destroy();
@@ -318,12 +247,17 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         }
         
         var feature = null;
-        for (var i=0; i<this.layer.features.length; i++) {
-            var f = this.layer.features[i];
-            if (f.id == fid) {
-                feature = f;
-                break;
+        if (typeof featureOrFid == 'string') {
+            for (var i=0; i<this.layer.features.length; i++) {
+                var f = this.layer.features[i];
+                if (f.id == featureOrFid) {
+                    feature = f;
+                    break;
+                }
             }
+        }
+        else {
+            feature = featureOrFid;
         }
         
         var anchor = {
@@ -344,31 +278,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     };
 
     /**
-     * Callback for 'featurehighlighted' event.
      * 
-     * @param ev
-     * @return
      */
-    this.onFeatureHovered = function( ev ) {
-        alert( "Hovered: " + ev.feature.id );
-        
-//        // tooltips
-//        this.layer.events.register( "mouseover", this.layer, function( ev ) {
-//            tooltips.show( {html:"My first ToolTips"} );
-//        });
-//        this.layer.events.register( "mouseout", this.layer, function( ev ) {
-//            tooltips.hide();
-//        });
-
-        if (this.tooltipsControl == null) {
-            this.tooltipsControl = new OpenLayers.Control.ToolTips({
-                bgColor: "#ffffd0",
-                //textColor: "black", 
-                bold: true, 
-                opacity: 1 });
-            map.addControl( tooltips );
-        }
-        this.tooltipsControl.show( {html:ev.feature.id} );
+    this.findResultDiv = function( feature ) {
+        return this.resultDiv.find( '#feature-' + feature.id.afterLast('.') );
     };
-
+    
 }

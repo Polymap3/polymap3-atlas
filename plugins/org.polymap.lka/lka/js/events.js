@@ -44,4 +44,4 @@ Events = Class.extend( {
     trigger: function( event ) {
         $(this).trigger( event );
     }
-} );
+});
