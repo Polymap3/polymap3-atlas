@@ -36,6 +36,8 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
 
     this.controls;
     
+    this.clusterPopup;
+    
     /**
      * @param config {
      *     url: The URL the load the layer features from.
@@ -52,12 +54,11 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
         this.controls = [];
         this.features = [];
         
-        this.clustered = new OpenLayers.Strategy.Cluster({
-            distance: 25,
-            threshold: 2
+        this.clustered = new OpenLayers.Strategy.AtlasCluster({
+            'distance': 22,
+            'threshold': 2
         });
 
-        //this.initClusterLayer();
         this.initLayer();
         
         // hover feature
@@ -87,10 +88,9 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
 
         var self = this;
         this.layer.events.register( 'featureselected', this.layer, function( ev ) {
-            if (!ev.feature.cluster) {
-                return;
+            if (ev.feature.cluster && !self.clusterPopup) {
+                self.openClusterPopup( ev );
             }
-            self.openClusterPopup( ev );
         });
     };
     
@@ -113,11 +113,11 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
                         .format( xy.x + mapOffset.left - 10, xy.y + mapOffset.top - 10 )
                 + '</div>' );
         
-        var popup = $('#cluster-popup');
+        this.clusterPopup = $('#cluster-popup');
         $.each( ev.feature.cluster, function( i, feature ) {
-            popup.append( '> <a id="cluster-popup-link-{1}" href="#">{0}</a><br/>'
+            self.clusterPopup.append( '> <a id="cluster-popup-link-{1}" href="#">{0}</a><br/>'
                     .format( feature.data.title, i ) );
-            var link = popup.find( "#cluster-popup-link-{0}".format(i) );
+            var link = self.clusterPopup.find( "#cluster-popup-link-{0}".format(i) );
             
             // focus
             link.hover( function( ev ) {
@@ -132,7 +132,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
                 self.selectControl.unselect( clusterFeature );
             });
         });
-        popup.mouseleave( function( ev ) {
+        this.clusterPopup.mouseleave( function( ev ) {
             self.closeClusterPopup();
             self.selectControl.unselect( clusterFeature );            
         });
@@ -155,12 +155,16 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
      * 
      */
     this.closeClusterPopup = function() {
-        $(document).unbind( 'keypress', this.keyHandler ); 
-        $(document).unbind( 'click', this.clickHandler ); 
-        
-        $('#cluster-popup').fadeOut( 1700, function() {
-            $(this).remove();
-        });
+        if (this.clusterPopup) {
+            var self = this;
+            this.clusterPopup.fadeOut( 1000, function() {
+                $(this).remove();
+                self.clusterPopup = null;
+
+                $(document).unbind( 'keypress', this.keyHandler ); 
+                $(document).unbind( 'click', this.clickHandler ); 
+            });
+        }
     };
     
     this.activate = function() {
@@ -224,14 +228,14 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
             'graphicWidth': 36,
             'graphicXOffset': -10.5,
             'graphicYOffset': -12.5,
-            'strokeWidth': 2,
+            'strokeWidth': 3,
             'strokeColor': self.config.color,
             'fillOpacity': '${opacity}',  //0.7,
             'fillColor': self.config.color  //'#a0a0a0'
         }, { 
             'context': {
                 'radius': function( feature ) {
-                    return feature.cluster ? Math.min(feature.attributes.count, 10) + 6 : 0;
+                    return feature.cluster ? Math.min(feature.attributes.count, 15) + 9 : 0;
                 },
                 'graphic': function( feature ) {
                     return feature.cluster ? undefined : self.config.markerImage;
@@ -242,10 +246,10 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
                             : feature.attributes.title;
                 },
                 'opacity': function( feature ) {
-                    if (feature.geometry instanceof OpenLayers.Geometry.Point) {
-                        return feature.cluster ? 0.35 : 1;
+                    if (feature.cluster) {
+                        return 0.6;
                     } else {
-                        return 0.35;
+                        return feature.geometry instanceof OpenLayers.Geometry.Point ? 0.80 : 0.35;
                     }
                 },
                 'label': function( feature ) {
@@ -257,7 +261,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
 
         var selectStyle = new OpenLayers.Style({
             'strokeColor': '#A000A0',
-            'strokeWidth': 3,
+            'strokeWidth': 4,
             'fillOpacity': 0.8,
             'fillColor': '#a0a0a0',
             'graphicHeight': 36,
@@ -265,7 +269,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
         }, { 
             'context': {
                 'radius': function( feature ) {
-                    return feature.cluster ? Math.min(feature.attributes.count, 10) + 8 : 0;
+                    return feature.cluster ? Math.min(feature.attributes.count, 10) + 12 : 0;
                 },
                 'tooltip': function( feature ) {
                     return feature.cluster 
@@ -325,7 +329,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
     this.onLayerLoaded = function() {
         var self = this;
 
-        // resolve clusters
+        // resolve clusters into single features
         self.features = [];
         $.each( this.layer.features, function( i, feature ) {
             if (feature.cluster) {
@@ -335,75 +339,8 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
             }
         });
         
-//        // fill clusterLayer
-//        if (this.clusterLayer) {
-//            var clusterFeatures = [];
-//            $.each( this.features, function( i, feature ) {
-//                if (feature.geometry instanceof OpenLayers.Geometry.Point) {
-//                    var geom = feature.geometry;
-//                    clusterFeatures.push( new OpenLayers.Feature.Vector( 
-//                        new OpenLayers.Geometry.Point( geom.x, geom.y ), 
-//                        feature.attributes ) );
-//                }
-//            })
-//            self.clusterLayer.addFeatures( clusterFeatures );
-//            self.map.addLayer( self.clusterLayer );
-//            self.clusterLayer.setVisibility( true );
-//        }
         // callback
         this.config.onLoaded.call( {} );
-    };
-
-    /**
-     * 
-     */
-    this.initClusterLayer = function() {
-        var self = this;
-        var clusterDefaultStyle = new OpenLayers.Style({
-            'pointRadius': '${radius}',
-            'graphicTitle': '${tooltip}',
-            'label': '${label}',
-            'fontSize': '10px',
-            'fontColor': "#ffffff",
-            'strokeWidth': 2,
-            'strokeColor': self.config.color,
-            'fillOpacity': 0.7,
-            'fillColor': '#a0a0a0'
-        }, {
-            'context': {
-                'radius': function( feature ) {
-                    return feature.cluster
-                            ? Math.min(feature.attributes.count, 15) + 3
-                            : 5;
-                },
-                'tooltip': function( feature ) {
-                    return feature.cluster 
-                            ? feature.attributes.count 
-                            : '';
-                },
-                'label': function( feature ) {
-                    return feature.cluster 
-                            ? feature.attributes.count 
-                            : 'X';
-                }
-            }
-        });
-        var clusterSelectStyle = new OpenLayers.Style({
-            'strokeWidth': 3,
-            'fillOpacity': 1
-        });
-
-        this.clusterLayer = new OpenLayers.Layer.Vector( 'Clustered', {
-            'isBaseLayer': false,
-            'visibility': true,
-            'reportError': true,
-            'styleMap': new OpenLayers.StyleMap({
-                'default': clusterDefaultStyle,
-                'select': clusterSelectStyle
-            }),
-            'strategies': [this.clustered],
-            'protocol': new OpenLayers.Protocol()
-        });
     };
 
     /**
@@ -412,4 +349,36 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
     this.getDataExtent = function() {
         return this.layer ? this.layer.getDataExtent() : null;
     }
+});
+
+
+/**
+ * 
+ */
+OpenLayers.Strategy.AtlasCluster = OpenLayers.Class( OpenLayers.Strategy.Cluster, {
+    
+    /**
+     * Method: shouldCluster
+     * Determine whether to include a feature in a given cluster.
+     * 
+     * Only Point geometries are clustered. All other geometry types are never
+     * clustered.
+     *
+     * Parameters:
+     * cluster - {<OpenLayers.Feature.Vector>} A cluster.
+     * feature - {<OpenLayers.Feature.Vector>} A feature.
+     *
+     * Returns:
+     * {Boolean} The feature should be included in the cluster.
+     */
+    shouldCluster: function( cluster, feature ) {
+        if (!(feature.geometry instanceof OpenLayers.Geometry.Point)) {
+            return false;
+        }
+        else {
+            return OpenLayers.Strategy.Cluster.prototype.shouldCluster.apply( this, arguments );
+        }
+    },
+    
+    CLASS_NAME: "OpenLayers.Strategy.AtlasCluster" 
 });

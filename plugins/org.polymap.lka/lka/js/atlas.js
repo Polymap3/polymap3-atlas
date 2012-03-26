@@ -75,10 +75,10 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
     this.initContexts = function() {        
         // create search contexts
         this.contexts = [
-            new SearchContext( this.map, 0, "images/marker_red.png", $("#result_body0"), '#ff0000' ),
+            new SearchContext( this.map, 0, "images/marker_red.png", $("#result_body0"), '#f30000' ),
             new SearchContext( this.map, 1, "images/marker_green.png", $("#result_body1"), '#00AB39' ),
             new SearchContext( this.map, 2, "images/marker_yellow.png", $("#result_body2"), '#B48400' ),
-            new SearchContext( this.map, 3, "images/marker_blue.png", $("#result_body3"), '#0000ff' ) 
+            new SearchContext( this.map, 3, "images/marker_blue.png", $("#result_body3"), '#2243FF' ) 
         ];
         // initialize contexts
         for (var i=0; i < this.contexts.length; i++) {
