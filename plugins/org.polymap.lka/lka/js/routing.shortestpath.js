@@ -34,8 +34,13 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     this.hoverControl = null; 
     this.selectControl = null;
     
-    this.fromPoint = null; 
+    this.fromPoint = null;
+    this.fromSearchStr = null;
+    this.fromInput = null;
+    
     this.toPoint = null;
+    this.toSearchStr = null;
+    this.toInput = null;
     
     /** {RoutingTooltip} */
     this.tooltip;
@@ -72,12 +77,16 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         this.index = index;
         this.fromPoint = fromPoint;
         this.toPoint = toPoint;
+        this.fromSearchStr = fromSearchStr;
+        this.toSearchStr = toSearchStr;
         var self = this;
-        this.elm.append( ('<div style="background:#f5f5ff; padding:5px; font-size:10px;">'
-                + '<b>{0}</b> <input id="{1}" style="width:97%; margin: 1px 0px 1px 0px;"></input>'
-                + '    <div id="{7}" style="color:#808080;"></div>'
-                + '<b>{2}</b> <input id="{3}" style="width:97%; margin: 1px 50x 1px 0px;"></input>'
-                + '    <div id="{8}" style="color:#808080;"></div>'
+        
+        this.elm.append( (
+                '<div style="background:#f5f5ff; padding:5px; font-size:10px;">'
+                + '<b>{0}</b><br/> <input id="{1}" style="width:85%; margin: 1px 0px 1px 0px;"></input>'
+                + '    <span id="{7}" style="color:#606060; margin:0px 5px;"></span><br/>'
+                + '<b>{2}</b><br/> <input id="{3}" style="width:85%; margin: 1px 50x 1px 0px;"></input>'
+                + '    <span id="{8}" style="color:#606060; margin:0px 5px;"></span>'
                 + '<center> <button id="{4}" title="{6}" style="margin:3px;">{5}</button> </center>'
                 + '</div>')
                 .format( 'routing_from_input'.i18n(), 'routing-from-input-'+index,
@@ -90,27 +99,36 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 .css( 'box-shadow', '0px 1px 1px #090909' )
                 .find( 'span').css( 'padding', '1px 7px' );
         
+        this.fromInput = this.elm.find( '#routing-from-input-'+index );
+        this.toInput = this.elm.find( '#routing-to-input-'+index );
+
         // set default value
-        this.elm.find( '#routing-from-input-'+index).val( fromSearchStr != null ? fromSearchStr : null );
-        this.elm.find( '#routing-to-input-'+index).val( toSearchStr != null ? toSearchStr : null );
+        this.fromInput.val( this.fromSearchStr != null ? this.fromSearchStr : null );
+        this.toInput.val( this.toSearchStr != null ? this.toSearchStr : null );
         
         this.createSearchPicklist( 
-                this.elm.find( '#routing-from-pl-'+index ), this.elm.find( '#routing-from-input-'+index ), index,
+                this.elm.find( '#routing-from-pl-'+index ), this.fromInput, index,
                 function( feature ) { 
                     self.fromPoint = feature.geometry.getCentroid(); 
                 });
         this.createSearchPicklist( 
-                this.elm.find( '#routing-to-pl-'+index ), this.elm.find( '#routing-to-input-'+index ), index,
+                this.elm.find( '#routing-to-pl-'+index ), this.toInput, index,
                 function( feature ) {
                     self.toPoint = feature.geometry.getCentroid(); 
                 });
         
-        
+        // keydown -> clear current points
+        this.elm.find( 'input' ).keydown( function( ev ) {
+            //alert( $(this).attr( 'id' ) );
+            if ($(this).attr( 'id' ).startsWith( 'routing-from')) {
+                self.fromPoint = null;
+            } else {
+                self.toPoint = null;
+            }
+        });
         // keyup -> enable/disable, searchStr, doRouteSearch()
         this.elm.find( 'input' ).keyup( function( ev ) {
             var inputElm = $(this);
-            //window.setTimeout( function() { inputElm.autocomplete( 'close' ); }, 5000 );
-            
             if (ev.keyCode == 13) {
                 $(this).autocomplete( 'close' );
                 return false;
@@ -122,21 +140,45 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             }
 
             if ($(this).attr( 'id' ).startsWith( 'routing-from')) {
-                fromSearchStr = $(this).val();
+                self.fromSearchStr = $(this).val();
             } else {
-                toSearchStr = $(this).val();
-            }
-                    
+                self.toSearchStr = $(this).val();
+            }                    
         });
         // autocomplete
         this.elm.find( 'input' ).autocomplete({ source: Atlas.config.autocompleteUrl, zIndex: 1000, delay: 500 });
-         
-        this.elm.find( '#routing-btn-'+index ).click( function() {
-            if (self.fromPoint == null || self.toPoint == null) {
-                alert( 'Start und/oder Ziel sind noch nicht eindeutig.' );
-            }
-            self.doRouteSearch( self.fromPoint, self.toPoint, self.index );
+        
+        // click -> checkFromToPoint()
+        this.elm.find( '#routing-btn-'+index ).click( function( ev ) {
+            self.checkPoints()
         });
+    };
+    
+    /**
+     * Check if this.fromPoint and this.toPoint are set. If not call
+     * this.createPicklistDialog() and check back.
+     */
+    this.checkPoints = function() {
+        var self = this;
+        if (!this.fromPoint) {
+            var searchUrl = this.searchService.searchUrl( this.fromInput.val() )
+            this.createPicklistDialog( searchUrl, function( feature ) {
+                self.fromInput.val( self.fromSearchStr = feature.data.title );
+                self.fromPoint = feature.geometry.getCentroid();
+                self.checkPoints();
+            });
+        }
+        else if (!this.toPoint) {
+            searchUrl = this.searchService.searchUrl( this.toInput.val() )
+            this.createPicklistDialog( searchUrl, function( feature ) {
+                self.toInput.val( self.toSearchStr = feature.data.title );
+                self.toPoint = feature.geometry.getCentroid();
+                self.checkPoints();
+            });
+        }
+        else {
+            this.doRouteSearch( this.fromPoint, this.toPoint, this.index );
+        }
     };
     
     /**
@@ -152,38 +194,59 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 clearTimeout( delay );
                 delay = null;
             }
-            delay = setTimeout( doSearchPicklist, 1000 );
+            delay = setTimeout( doSetTooltip, 1000 );
         });
         
-        function doSearchPicklist() {
-            self.searchService.search( self.searchService.searchUrl( _inputElm.val() ), function( features ) {
-                if (selectElm == null) {
-                    _parentElm.append( ('<span style="font-size:10px;">Suchergebnisse:</span>'
-                            + '<select id="routing-result-list-{0}" name="list1" size="5"'
-                            + '    style="width:100%; color:#808080; box-shadow: 1px 1px 2px #606060;"/>')
-                            .format( _index ) );
-                    
-                    selectElm = _parentElm.find( '#routing-result-list-'+_index );
-                    selectElm.click( function( ev ) {
-                        _inputElm.val( $(this).val() );
-                        _parentElm.empty();
-                        callback.call( self, features[ev.target.index] );
-                        selectElm = null;
-                    });
-                }
+        function doSetTooltip() {
+            var searchUrl = self.searchService.searchUrl( _inputElm.val() );
+            self.searchService.search( searchUrl, function( features ) {
+                _parentElm.text( features.length );
+                _parentElm.attr( 'title', features.length + ' mögliche Orte'  );
                 if (features.length == 1 /*&& features[0].data.title == _inputElm.val()*/) {
-                    _parentElm.empty();
-                    selectElm = null;
                     callback.call( self, features[0] );
-                }
-                else {
-                    selectElm.empty();
-                    for (var i=0; i<features.length; i++) {
-                        selectElm.append( '<option>' + features[i].data.title + '</option>' );
-                    }
                 }
             });
         }
+    };
+    
+    /**
+     * 
+     */
+    this.createPicklistDialog = function( searchUrl, callback ) {
+        var self = this;
+        
+        $(document.body).append( '<div id="routing-picklist-dialog"></div>' );
+        var dialogDiv = $( '#routing-picklist-dialog' );
+
+        dialogDiv.append( '<span style="color:#808080;">Mögliche Orte:</span>'
+                + '<select id="routing-result-list" name="list1" size="15"'
+                + '    style="width:100%; height:100%;" />' );
+                    
+        dialogDiv.dialog( {
+            title: 'Routing Ziel/Start',
+            modal: true,
+            //show: 'scale',
+            minWidth: 350,
+            minHeight: 300,
+            close: function( ev, ui ) {
+                dialogDiv.remove();
+            }
+        });
+
+        this.searchService.search( searchUrl, function( features ) {
+            dialogDiv.find( '>span' ).text( 'Mögliche Orte (' + features.length + ')' );
+            
+            var selectElm = dialogDiv.find( '#routing-result-list' );
+            selectElm.click( function( ev ) {
+                dialogDiv.remove();
+                callback.call( self, features[ev.target.index] );
+            });
+
+            selectElm.empty();
+            for (var i=0; i<features.length; i++) {
+                selectElm.append( '<option>' + features[i].data.title + '</option>' );
+            }
+        });
     };
     
     /**
@@ -209,14 +272,14 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             }
 
             self.layer = new OpenLayers.Layer.Vector( "ShortestPath", {
-                isBaseLayer: false,
-                visibility: true,
-                reportError: true,
-                strategies: [new OpenLayers.Strategy.Fixed()],
-                protocol: new OpenLayers.Protocol(),
-                styleMap: defaultStyleMap()
+                'isBaseLayer': false,
+                'visibility': true,
+                'reportError': true,
+                'strategies': [new OpenLayers.Strategy.Fixed()],
+                'protocol': new OpenLayers.Protocol(),
+                'styleMap': defaultStyleMap()
             });
-            self.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
+            self.layer.attribution = 'Routing by <b><a href="http://pgrouting.org">PGRouting</a></b>';
 
             var vectors = new Array( features.length+2 );
             $.each( features, function( i, feature ) {
@@ -249,7 +312,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             self.hoverControl.activate();      
 
             // tooltip
-            self.tooltip = new RoutingTooltip( status, vectors );            
+            self.tooltip = new RoutingTooltip( self, status, vectors );            
             self.layer.events.register( "featureselected", self.layer, function( ev ) {
                 self.tooltip.highlight( ev.feature );
             });
@@ -296,21 +359,23 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
  */
 var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
     
-    this.tooltip = null;
+    this.shortestPath = null;
     
-    this.featuresMap;
+    this.tooltip = null;
     
     this.highlighted = null;
     
     this.defaultStyle = null;
     
-    this.init = function( status, features ) {
+    this.init = function( shortestPath, status, features ) {
+        this.shortestPath = shortestPath;
         $(document.body).append( 
                 '<div id="routing-tooltip" class="ui-widget-content ui-corner-all"' 
                 + '   style="z-index:1000; position:absolute; color:#707070; border:0px solid black;'
                 + '   left:50px; top:200px; padding:5px; background:#FFFFCF; box-shadow:2px 3px 3px #808080;">'
-                + '<b>' + 'routing_total_length'.i18n() + '</b> ???<br/>'
-                + '<b>' + 'routing_total_cost'.i18n() + '</b> ???<br/>'
+                + '<a href="#" class="close" title="Schliessen" style="float:right;"></a>'
+                + '<b>' + 'routing_total_length'.i18n() + '</b> <span id="routing-total-length" /> km<br/>'
+                + '<b>' + 'routing_total_cost'.i18n() + '</b> <span id="routing-total-cost" /> min.<br/>'
                 + '<hr/>'
                 + '<div id="routing-tooltip-list" style="overflow:auto;'
                 + '    width:180px; height:300px;">'
@@ -318,23 +383,42 @@ var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
                 + '</div>' );
         this.tooltip = $('#routing-tooltip');
         
+        this.tooltip.find( '>a' ).click( function( ev) {
+            shortestPath.close();
+        });
+        
         var list = this.tooltip.find('#routing-tooltip-list');
         var totalLength = 0;
         var totalCost = 0;
         var self = this;
-        this.featuresMap = {};
+        
+        var street = {'name': 'Start', 'length':0, 'cost':0, 'features':[], 'index':0};
+        this.streets = [street];
         $.each( features, function( i, feature ) {
-            if (feature.data.length != undefined && feature.data.cost != undefined) {
-                list.append( '<div style="padding:3px; margin-right:5px;">' 
-                    + '<b>' + feature.data.name + '</b><br/>'
-                    + 'L&auml;nge: ' + feature.data.length.toFixed(0) + ' m <br/>' 
-                    + 'Kosten: ' + feature.data.cost.toFixed( 2 ) + ' ? <br/>'
-                    + '</div>' );
-                self.featuresMap[feature.id] = i;
+            
+            if (feature.data.length && feature.data.cost) {
+                if (street.name != feature.data.name) {
+                    list.append( '<div style="padding:3px; margin-right:5px;">'
+                            + '<b>' + (street.name.length > 0 ? street.name : '-') + '</b><br/>'
+                            + 'L&auml;nge: ' + (street.length/1000).toFixed( 2 ) + ' km <br/>' 
+                            + 'Zeit: ' + (street.cost/60).toFixed( 2 ) + ' min. <br/>'
+                            + '</div>' );
+
+                    street = {'name': feature.data.name, 'length':0, 'cost':0, 'features':[feature], 'index':self.streets.length};
+                    self.streets.push( street );
+                }
+                else {
+                    street.features.push( feature );
+                    street.length += feature.data.length;
+                    street.cost += feature.data.cost;
+                }
+                
                 totalLength += feature.data.length;
                 totalCost += feature.data.cost;
             }
         });
+        this.tooltip.find( '#routing-total-length' ).text( (totalLength/1000).toFixed(2) );
+        this.tooltip.find( '#routing-total-cost' ).text( (totalCost/60).toFixed(2) );
     };
     
     this.close = function() {
@@ -347,20 +431,31 @@ var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
             this.highlighted.css( 'border', this.defaultStyle.border );
             this.highlighted.css( 'color', this.defaultStyle.color );
         }
-        
-        var index = this.featuresMap[feature.id];
-        var list = this.tooltip.find( '#routing-tooltip-list' );
-        this.highlighted = list.find( ':nth-child({0})'.format(index+1) );
-        
-        this.defaultStyle = {
-                background: this.highlighted.css( 'background' ),
-                border: this.highlighted.css( 'border' ),
-                color: this.highlighted.css( 'color' ) };
-        
-        this.highlighted.css( 'background', '#FFFFAF' )
-                .css( 'color', '#222' )
-                .css( 'border', '1px solid #d0d0d0')
-                .addClass( 'ui-corner-all' );
-        list.scrollTo( this.highlighted, 1000 );
+
+        var found;
+        for (var i=0; i<this.streets.length && !found; i++) {
+            var street = this.streets[i];
+            for (var j=0; j<street.features.length; j++) {
+                if (street.features[j] == feature) {
+                    found = street;
+                    break;
+                }
+            }
+        }
+        if (found) {
+            var list = this.tooltip.find( '#routing-tooltip-list' );
+            this.highlighted = list.find( ':nth-child({0})'.format( found.index+1 ) );
+
+            this.defaultStyle = {
+                    background: this.highlighted.css( 'background' ),
+                    border: this.highlighted.css( 'border' ),
+                    color: this.highlighted.css( 'color' ) };
+
+            this.highlighted.css( 'background', '#FFFFAF' )
+            .css( 'color', '#222' )
+            .css( 'border', '1px solid #d0d0d0')
+            .addClass( 'ui-corner-all' );
+            list.scrollTo( this.highlighted, 1000 );
+        }
     };
 });

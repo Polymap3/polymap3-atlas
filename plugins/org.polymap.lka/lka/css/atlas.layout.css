@@ -150,12 +150,12 @@ a.close:hover {
     background-color: #ffffff;
     padding: 3px;
 }
-.ui-widget input:focus, .ui-widget textarea:focus {
+.ui-widget input:focus, .ui-widget textarea:focus .ui-widget select:focus {
     border: 1px solid #a0a0a0;
     /*box-shadow: 0 0 1px #538CE0;*/
     background: #FFF8E1;
 }
-.ui-widget input:hover, .ui-widget textarea:hover {
+.ui-widget input:hover, .ui-widget textarea:hover .ui-widget select:hover {
     border: 1px solid #909090;
 }
 
