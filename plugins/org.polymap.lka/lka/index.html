@@ -84,6 +84,7 @@ MyAtlasClass = AtlasClass.extend(  new function() {
         $.ajax({
             url: 'boundsearch.json',
             dataType: 'html',
+            cache: false,
             success: function( data ) {
                 var json = new OpenLayers.Format.JSON().read( data );
                 Atlas.boundSearch = new BoundSearch( json );
@@ -187,7 +188,7 @@ function pageUrl() {
 <!-- ******************************************************
   - HTML
   -->
-<body onload="initLocal(); init_layout();">        
+<body onload="init_layout(); initLocal();">        
 
 <!-- Layout North -->
 <!--div class="ui-layout-north" onmouseover="myLayout.allowOverflow('north')" onmouseout="myLayout.resetOverflow(this)"-->

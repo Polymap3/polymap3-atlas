@@ -2,6 +2,9 @@
     "Freiberg": "?search1=Freiberg",
     "Döbeln": "?search1=Döbeln",
     "Bildungsangebote": {
+        "Grundschule": {
+            "alle Fächer": "?search1=Grundschule"
+        },
         "Mittelschule": {
             "alle Fächer": "?search1=Mittelschule",
             "Biologie": "?search1=Mittelschule Biologie",

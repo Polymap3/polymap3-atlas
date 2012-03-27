@@ -1,11 +1,11 @@
-var myLayout;
+var atlasLayout;
 
 function init_layout() {
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
 
-    myLayout = $('body').layout({
+    atlasLayout = $('body').layout({
 
         //  enable showOverflow on west-pane so popups will overlap north pane
         west__showOverflowOnHover: true
@@ -18,17 +18,19 @@ function init_layout() {
 
         //  some resizing/toggling settings
         ,   north__slidable:        false   // OVERRIDE the pane-default of 'slidable=true'
-        ,   north__togglerLength_closed: '100%' // toggle-button is full-width of resizer-bar
-        ,   north__spacing_closed:  7       // big resizer-bar when open (zero height)
+        //,   north__togglerLength_closed: '100%' // toggle-button is full-width of resizer-bar
+        ,   north__spacing_closed:  5       // big resizer-bar when open (zero height)
         ,   north__resizable:       false   // OVERRIDE the pane-default of 'resizable=true'
         ,   south__spacing_open:    0       // no resizer-bar when open (zero height)
         ,   south__spacing_closed:  20      // big resizer-bar when open (zero height)
         //  some pane-size settings
         ,   north__minSize:         118
+        ,   north__initClosed:      $(document).getUrlParam( 'north' )
         ,   west__minSize:          100
-        ,   east__spacing_closed:   7
+        ,   east__spacing_closed:   5
         ,   east__size:             330
         ,   east__minSize:          200
+        ,   east__initClosed:       $(document).getUrlParam( 'east' )
         ,   east__maxSize:          Math.floor(screen.availWidth / 2) // 1/2 screen width
     });
 
