@@ -132,11 +132,12 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
                 self.selectControl.unselect( clusterFeature );
             });
         });
+        
+        // mouseleave
         this.clusterPopup.mouseleave( function( ev ) {
             self.closeClusterPopup();
             self.selectControl.unselect( clusterFeature );            
         });
-
         // keyHandler
         $(document).keypress( this.keyHandler = function( ev ) { 
             if (ev.keyCode == 27) {

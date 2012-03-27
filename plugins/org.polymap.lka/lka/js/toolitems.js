@@ -207,7 +207,7 @@ var GeoRssItem = ToolItem.extend( {
         this.icon = $.i18n.prop( "tb_georss_icon" );
         
         Atlas.events.bind( "searchCompleted", 
-                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
+                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ));
     },
     
     elementCreated: function( elm ) {
@@ -227,7 +227,9 @@ var GeoRssItem = ToolItem.extend( {
             alert( $.i18n.prop( "tb_georss_disabled" ) );
             return;
         }
-        window.open( this.url );
+        var parts = this.url.split( "?" );
+        var rssUrl = parts[0] + "/atlas.kml?" + parts[1] + "&outputType=rss";
+        window.open( rssUrl );
     }
 });
 
@@ -242,7 +244,7 @@ var KmlItem = ToolItem.extend( new function KmlItemProto() {
         this.icon = $.i18n.prop( "tb_kml_icon" );
         
         Atlas.events.bind( "searchCompleted", 
-                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
+                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ));
     };
     
     this.elementCreated = function( elm ) {
@@ -255,7 +257,7 @@ var KmlItem = ToolItem.extend( new function KmlItemProto() {
         this.elm.removeAttr( 'disabled' );
     };
     
-    onClick = function() {
+    this.onClick = function() {
         if (this.url == null) {
             alert( $.i18n.prop( "tb_kml_disabled" ) );
             return;

@@ -113,7 +113,7 @@ function MeasureMode( map, elm ) {
     this.control = new OpenLayers.Control.Measure(
             OpenLayers.Handler.Path, {
                 persist: true,
-                //geodesic: true,
+                geodesic: true,
                 handlerOptions: {
                     layerOptions: {styleMap: styleMap}
                 }
