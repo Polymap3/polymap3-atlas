@@ -43,9 +43,16 @@ var BoundSearch = Class.extend( new function BoundSearchProto() {
     };
 
     this.close = function() {
-        this.popup.remove();
-        $(document).unbind( 'keypress', this.keyHandler ); 
-        $(document).unbind( 'click', this.clickHandler ); 
+        if (this.popup) {
+            var self = this;
+            this.popup.fadeOut( 1000, function() {
+                $(this).remove();
+                self.popup = null;
+
+                $(document).unbind( 'keypress', this.keyHandler ); 
+                $(document).unbind( 'click', this.clickHandler ); 
+            });
+        }
     };
     
     /**
@@ -56,12 +63,12 @@ var BoundSearch = Class.extend( new function BoundSearchProto() {
         $(document.body).append( 
                 '<div id="bound-search-popup" class="ui-widget-content ui-corner-all"' 
                 + '   style="z-index:1000; position:absolute; color:#707070;'
-                + '   left:300px; top:90px; padding:5px; box-shadow:2px 3px 3px #808080;">'
+                + '   left:300px; top:75px; padding:3px 0px; box-shadow:2px 3px 3px #808080;">'
                 //+ '<a href="#" class="close" title="Schliessen" style="float:right;"></a>'
                 //+ '<b>' + 'bound_search_heading'.i18n() + '</b><br/>'
                 //+ '<hr/>'
                 + '<div id="bound-search-content" style="overflow:auto;'
-                + '    width:350px; height:200px;">'
+                + '    width:300px; max-height:450px;">'
                 + '</div>'
                 + '</div>' );
         
@@ -70,17 +77,21 @@ var BoundSearch = Class.extend( new function BoundSearchProto() {
             self.close();
         });
         
+        // mouseleave
+        this.popup.mouseleave( function( ev ) {
+            self.close();
+        });
+
         // keyHandler
-        this.keyHandler = function( ev ) { 
+        $(document).keypress( this.keyHandler = function( ev ) { 
             if (ev.keyCode == 27) {
                 self.close();
             }
-        };
-        $(document).keypress( this.keyHandler );
+        });
         
         // clickHandler
         this.clickCount = 0;
-        this.clickHandler = function( ev ) {
+        $(document).click( this.clickHandler = function( ev ) {
             if (++self.clickCount == 1) {
                 return false;
             }
@@ -94,8 +105,7 @@ var BoundSearch = Class.extend( new function BoundSearchProto() {
             if (!popupClicked) {
                 self.close();
             }
-        };
-        $(document).click( this.clickHandler );
+        });
  
         this.createEntries( $('#bound-search-content'), this.config, 1 );
     };
