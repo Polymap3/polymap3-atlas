@@ -19,9 +19,15 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.http.HttpService;
 import org.osgi.util.tracker.ServiceTracker;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.util.Version;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 
 import org.polymap.core.runtime.DefaultSessionContext;
 import org.polymap.core.runtime.DefaultSessionContextProvider;
@@ -37,6 +43,8 @@ import org.polymap.lka.poi.SearchServlet;
  */
 public class LKAPlugin 
         extends Plugin {
+
+    private static final Log log = LogFactory.getLog( LKAPlugin.class );
 
 	// The plug-in ID
 	public static final String     PLUGIN_ID = "org.polymap.lka";
@@ -121,22 +129,29 @@ public class LKAPlugin
 	    }
 
 	    public Object addingService( ServiceReference reference ) {
-	        HttpService httpService = (HttpService)super.addingService( reference );
+	        final HttpService httpService = (HttpService)super.addingService( reference );
 	        
 	        if (httpService != null) {
-                String port = context.getProperty( "org.osgi.service.http.port" );
-                String hostname = context.getProperty( "org.osgi.service.http.hostname" );
-                System.out.println( "Found http service on hostname:" + hostname + "/ port:" + port );
+//                String port = context.getProperty( "org.osgi.service.http.port" );
+//                String hostname = context.getProperty( "org.osgi.service.http.hostname" );
+//                System.out.println( "Found http service on hostname:" + hostname + "/ port:" + port );
 
-                try {
-                    httpService.registerServlet( "/lka/search", new SearchServlet(), null, null );
-                    httpService.registerServlet( "/lka/data", new DataServlet(), null, null );
-                    httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet(), null, null );
-                    httpService.registerResources( "/lka", "/lka", null );
-                }
-                catch (Exception e) {
-                    throw new RuntimeException( e );
-                }
+                // delayed starting services in separate thread
+                new Job( "ServiceStarter" ) {
+                    protected IStatus run( IProgressMonitor monitor ) {
+                        log.info( "starting services..." );
+                        try {
+                            httpService.registerServlet( "/lka/search", new SearchServlet(), null, null );
+                            httpService.registerServlet( "/lka/data", new DataServlet(), null, null );
+                            httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet(), null, null );
+                            httpService.registerResources( "/lka", "/lka", null );
+                        }
+                        catch (Exception e) {
+                            throw new RuntimeException( e );
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule( 3000 );
             }
 	        return httpService;
 	    }
