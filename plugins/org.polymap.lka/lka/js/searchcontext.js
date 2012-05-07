@@ -210,6 +210,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         }
         else {
             $('#tab_title_result'+index).text( '<>' );
+            this.resultDiv.append( 
+                    '<div class="atlas-no-results">{0}</div>'.format( 'context_no_results'.i18n() ) );
+            this.resultDiv.find('.atlas-no-results').animate( {'backgroundColor': '#fffff' }, 500, 'swing' );
+
         }
         this.activate();
         

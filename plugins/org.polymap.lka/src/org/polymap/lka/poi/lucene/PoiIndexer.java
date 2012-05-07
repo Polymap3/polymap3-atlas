@@ -56,6 +56,7 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryParser.complexPhrase.ComplexPhraseQueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -251,7 +252,8 @@ class PoiIndexer {
     public ScoreDoc[] search( String searchStr, int maxResults )
     throws CorruptIndexException, IOException, ParseException {
 
-        QueryParser parser = new QueryParser( LKAPlugin.LUCENE_VERSION, FIELD_KEYWORDS, analyzer );
+        QueryParser parser = new ComplexPhraseQueryParser( LKAPlugin.LUCENE_VERSION, FIELD_KEYWORDS, analyzer );
+        parser.setAllowLeadingWildcard( true );
         parser.setDefaultOperator( QueryParser.AND_OPERATOR );
         Query query = parser.parse( decorateSearch( searchStr ) );
         log.info( "    ===> POI: Lucene query: " + query );

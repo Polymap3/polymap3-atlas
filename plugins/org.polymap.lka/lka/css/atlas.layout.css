@@ -104,6 +104,16 @@ body {
 .atlas-result-fields {
     color: #606060;
 }
+.atlas-no-results {
+    width: 80%;
+    padding: 10px 20px;
+    margin: 0 auto;
+    align: center;
+    text-align:center;
+    color: #e03030;
+    background: #e03030;
+    font-style: italic;
+}
 
 .atlas-result-routing {
     font-size: smaller;

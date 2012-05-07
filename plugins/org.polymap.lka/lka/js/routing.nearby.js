@@ -70,9 +70,9 @@ var Nearby = Class.extend( new function NearbyProto() {
         $('#routing-cost-type label span').css( 'padding', '1px 7px' );
         
         var buttons = $('#routing-nearby-'+index+' button');
-        buttons.button()
-                //.attr( 'disabled', 'disabled' )
-                .css( 'box-shadow', '0px 1px 1px #090909' );        
+        buttons.button();
+//                //.attr( 'disabled', 'disabled' )
+//                .css( 'box-shadow', '0px 1px 1px #090909' );        
 
         $('#routing-nearby-'+index+' button span').css( 'padding', '1px 7px' );
         //$('#routing-nearby-btn').css( 'float', 'right' );

@@ -96,7 +96,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
 
         this.elm.find( 'button' ).button()
                 //.attr( 'disabled', 'disabled' )
-                .css( 'box-shadow', '0px 1px 1px #090909' )
+                //.css( 'box-shadow', '0px 1px 1px #090909' )
                 .find( 'span').css( 'padding', '1px 7px' );
         
         this.fromInput = this.elm.find( '#routing-from-input-'+index );
