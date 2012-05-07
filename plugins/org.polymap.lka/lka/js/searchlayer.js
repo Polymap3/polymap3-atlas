@@ -114,6 +114,9 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
                 + '</div>' );
         
         this.clusterPopup = $('#cluster-popup');
+ 
+        var scrollTimeout = null;
+
         $.each( ev.feature.cluster, function( i, feature ) {
             self.clusterPopup.append( '> <a id="cluster-popup-link-{1}" href="#">{0}</a><br/>'
                     .format( feature.data.title, i ) );
@@ -121,8 +124,13 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
             
             // focus
             link.hover( function( ev ) {
-                var div = self.context.findResultDiv( feature );
-                self.context.resultDiv.scrollTo( div, 1000 );
+                if (scrollTimeout) {
+                    clearTimeout( scrollTimeout );
+                }
+                scrollTimeout = setTimeout( function() {
+                    var div = self.context.findResultDiv( feature );
+                    self.context.resultDiv.scrollTo( div, 1000 );
+                }, 1750 );
             });
             // click
             link.click( function( ev ) {
@@ -136,13 +144,15 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
         // mouseleave
         this.clusterPopup.mouseleave( function( ev ) {
             self.closeClusterPopup();
-            self.selectControl.unselect( clusterFeature );            
+            self.selectControl.unselect( clusterFeature );
+            clearTimeout( scrollTimeout );
         });
         // keyHandler
         $(document).keypress( this.keyHandler = function( ev ) { 
             if (ev.keyCode == 27) {
                 self.closeClusterPopup();
                 self.selectControl.unselect( clusterFeature );
+                clearTimeout( scrollTimeout );
             }
         });
         // clickHandler
