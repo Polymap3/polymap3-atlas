@@ -86,7 +86,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     this.search = function( searchStr ) {
         try {
             this.resultDiv.empty();
-            this.resultDiv.css( 'bottom', '0px' ).css( 'height', '100%' );
+//            this.resultDiv.css( 'bottom', '0px' ); //.css( 'height', '100%' );
             this.resultDiv.append( 
                     '<div style="width:100px; margin:0 auto; align:center; text-align:center;">' +
                     '<img src="{0}" style="margin:5px;"></img><br/>'.format( 'images/loader_small.gif') +
@@ -132,7 +132,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      */
     this.onLayerLoaded = function() {
         this.resultDiv.empty();
-        this.resultDiv.css( 'bottom', '0px' ).css( 'height', '100%' );
+//        this.resultDiv.css( 'bottom', '200px' )
+//                .css( 'top', '100px')
+//                .css( 'height', 'auto')
+//                .css( 'overflow', 'scroll' )
+//                .css( 'position', 'relative' );
         this.results = new Array( this.layer.features.length );
         
         /* maps category name into JavaScript Function. */

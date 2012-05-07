@@ -19,10 +19,10 @@ function init_layout() {
         //  some resizing/toggling settings
         ,   north__slidable:        false   // OVERRIDE the pane-default of 'slidable=true'
         //,   north__togglerLength_closed: '100%' // toggle-button is full-width of resizer-bar
-        ,   north__spacing_closed:  5       // big resizer-bar when open (zero height)
+        ,   north__spacing_closed:  3       // big resizer-bar when open (zero height)
         ,   north__resizable:       false   // OVERRIDE the pane-default of 'resizable=true'
         ,   south__spacing_open:    0       // no resizer-bar when open (zero height)
-        ,   south__spacing_closed:  20      // big resizer-bar when open (zero height)
+        ,   south__spacing_closed:  3       // big resizer-bar when open (zero height)
         //  some pane-size settings
         ,   north__minSize:         118
         ,   north__initClosed:      $(document).getUrlParam( 'north' )

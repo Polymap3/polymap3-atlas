@@ -141,6 +141,10 @@ a.close:hover {
 /**********************************************************
  * jQuery UI elements
  */
+/*.ui-state-hover {
+    box-shadow: 0px 0px 2px #80a0f0;
+}*/
+
 .ui-widget { 
     /*font-family: arial,sans-serif;*/
     font-size: 12px;
@@ -374,15 +378,19 @@ p {
  */
 .ui-layout-toggler {
 	border: 1px solid #BBB; /* match pane-border */
-	background-color: #2594c0;  //#BBB;
+	background-color: #c8dcea; /*#f8de96;*/
+}
+.ui-layout-toggler:hover {
+    background-color: #f8de96;
+    box-shadow: 0px 0px 2px #808080;
 }
 
-.ui-layout-resizer-hover .ui-layout-toggler {
+.ui-layout-resizer-hover {
 	opacity: .60;
 	filter: alpha(opacity = 60);
 }
 
-.ui-layout-resizer-hover .ui-layout-toggler-hover {
+.ui-layout-resizer-hover {
 	/* need specificity */
 	background-color: #FC6;
 	opacity: 1.00;
