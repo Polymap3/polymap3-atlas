@@ -23,9 +23,11 @@
 package org.polymap.lka.poi;
 
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 
 import javax.servlet.ServletException;
@@ -38,6 +40,7 @@ import org.json.JSONArray;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -146,15 +149,23 @@ public class SearchServlet
             // XXX do this encoding via fast, simple, scaleable pipeline and
             // (existing) processors
             try {
+                // gzipped response?
+                CountingOutputStream cout = new CountingOutputStream( response.getOutputStream() );
+                OutputStream bout = cout;
+                if (request.getHeader( "Accept-Encoding" ).toLowerCase().contains( "gzip" )) {
+                    response.setHeader( "Content-Encoding", "gzip" );
+                    bout = new GZIPOutputStream( bout, true );
+                }
+
                 ObjectOutput out = null;
                 if ("KML".equalsIgnoreCase( outputType )) {
-                    out = new KMLEncoder( response.getOutputStream(), CRS.decode( "EPSG:900913" ) );
+                    out = new KMLEncoder( bout, CRS.decode( "EPSG:900913" ) );
                     response.setContentType( "application/vnd.google-earth.kml+xml" );
                 }
                 else if ("JSON".equalsIgnoreCase( outputType )) {
                     response.setContentType( "application/json; charset=UTF-8" );
                     response.setCharacterEncoding( "UTF-8" );
-                    out = new GeoJsonEncoder( response.getOutputStream(), worldCRS );
+                    out = new GeoJsonEncoder( bout, worldCRS );
                 }
                 else {
                     // FIXME figure the real client URL (without reverse proxies)
@@ -164,7 +175,7 @@ public class SearchServlet
                     String title = (String)System.getProperties().get( "org.polymap.atlas.feed.title" );
                     String description = (String)System.getProperties().get( "org.polymap.atlas.feed.description" );
                     
-                    out = new GeoRssEncoder( response.getOutputStream(), worldCRS, baseURL, title, description );
+                    out = new GeoRssEncoder( bout, worldCRS, baseURL, title, description );
                     response.setContentType( "application/rss+xml" );
                 }
 
@@ -172,7 +183,10 @@ public class SearchServlet
                 for (SearchResult record : results) {
                     out.writeObject( record );
                 }
+
                 out.flush();
+                response.flushBuffer();
+                log.info( "    written: " + cout.getCount() + " bytes" );
             }
             catch (Exception e) {
                 log.error( e.getLocalizedMessage(), e );

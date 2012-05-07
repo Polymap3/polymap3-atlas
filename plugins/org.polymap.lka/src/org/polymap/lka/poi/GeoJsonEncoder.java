@@ -127,7 +127,6 @@ public class GeoJsonEncoder
             return;
         }
         aboutToFlush = true;
-        log.info( "flush(): ..." );
 
         try {
             FeatureJSON fjson = new FeatureJSON();
@@ -141,7 +140,7 @@ public class GeoJsonEncoder
             
             GeoJSONUtil.encode( obj, new OutputStreamWriter( this, "UTF-8" ) );
 
-            log.info( "    encoded: " + size() + " byte" );
+            log.info( "    encoded: " + size() + " bytes" );
             
             if (features != null) {
                 features.clear();
