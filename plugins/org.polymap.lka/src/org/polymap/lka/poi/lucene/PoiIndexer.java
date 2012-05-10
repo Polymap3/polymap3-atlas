@@ -1,7 +1,7 @@
 /* 
  * polymap.org
- * Copyright 2009, Polymap GmbH, and individual contributors as indicated
- * by the @authors tag.
+ * Copyright 2009-2012, Polymap GmbH, and individual contributors as
+ * indicated by the @authors tag.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -12,15 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- * $Id$
  */
-
 package org.polymap.lka.poi.lucene;
 
 import java.util.Arrays;
@@ -84,10 +76,9 @@ import org.polymap.lka.LKAPlugin;
  * Lucene based search and index methods.
  *
  * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
- * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-class PoiIndexer {
+public class PoiIndexer {
     
     private static final Log  log = LogFactory.getLog( PoiIndexer.class );
     
@@ -270,7 +261,7 @@ class PoiIndexer {
 
     
     protected String decorateSearch( String searchStr ) {
-        if (StringUtils.containsNone( searchStr, "*?~\"" )
+        if (StringUtils.containsNone( searchStr, "*?~\":" )
                 && !StringUtils.contains( searchStr, " OR " )
                 && !StringUtils.contains( searchStr, " AND " )) {
             return searchStr + "*";
@@ -387,7 +378,7 @@ class PoiIndexer {
                             String categories = layer.getKeywords() != null 
                                     ? StringUtils.join( layer.getKeywords(), "," ) : "";
                             doc.add( new Field( FIELD_CATEGORIES, categories,
-                                    Field.Store.YES, Field.Index.NO ) );
+                                    Field.Store.YES, Field.Index.ANALYZED ) );
 
                             iwriter.addDocument( doc );
                             size++;

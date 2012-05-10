@@ -14,6 +14,7 @@
  */
 package org.polymap.lka;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.http.HttpService;
@@ -94,7 +95,15 @@ public class LKAPlugin
 
 	    // register servlets
         servicesInstaller = new HttpServicesInstaller( context );
-        servicesInstaller.open();        
+        servicesInstaller.open();
+        
+        // XXX force routing to start; no other, declarative way?
+        for (Bundle bundle : context.getBundles()) {
+            if (bundle.getSymbolicName().equals( "routing-service-osgi" )
+                    && bundle.getState() != Bundle.ACTIVE) {
+                bundle.start();
+            }
+        }
 	}
 
 

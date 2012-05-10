@@ -237,7 +237,7 @@ public class GeoJsonEncoder
             this.crs = crs;
         }
         
-        public void writeJSONString( Writer out )
+        public void writeJSONString( @SuppressWarnings("hiding") Writer out )
                 throws IOException {
             // this is code is from the 'old' JSONServer
             Set<ReferenceIdentifier> ids = worldCRS.getIdentifiers();

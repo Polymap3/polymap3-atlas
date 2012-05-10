@@ -84,6 +84,7 @@ import org.polymap.core.workbench.PolymapWorkbench;
 import org.polymap.geocoder.Address;
 import org.polymap.lka.LKAPlugin;
 import org.polymap.lka.poi.SearchServlet;
+import org.polymap.lka.poi.lucene.PoiIndexer;
 
 /**
  * Lucene based search and indexing engine.
@@ -123,6 +124,8 @@ public class AddressIndexer {
     public static final String FIELD_CITY = "ort";
 
     public static final String FIELD_POSTALCODE = "plz";
+
+    public static final String FIELD_CATEGORIES = PoiIndexer.FIELD_CATEGORIES;
 
     
     private AddressProvider   provider;
@@ -480,7 +483,7 @@ public class AddressIndexer {
                     SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
 
                     Document doc = new Document();
-                    StringBuffer keywords = new StringBuffer( 1024 );
+                    StringBuilder keywords = new StringBuilder( 1024 );
 
                     String city = null;
                     String cityExt = null;
@@ -559,6 +562,9 @@ public class AddressIndexer {
 
                     doc.add( new Field( FIELD_KEYWORDS, keywords.toString(), Field.Store.NO, Field.Index.ANALYZED ) );
                     
+                    doc.add( new Field( FIELD_CATEGORIES, "address,adresse",
+                            Field.Store.YES, Field.Index.ANALYZED ) );
+
                     iwriter.addDocument( doc );
                     size++;
                 }

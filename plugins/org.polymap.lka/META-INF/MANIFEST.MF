@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: LKA
+Bundle-Name: Atlas
 Bundle-SymbolicName: org.polymap.lka;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.polymap.lka.LKAPlugin
-Bundle-Vendor: POLYMAP
+Bundle-Vendor: polymap.org
 Require-Bundle: javax.servlet;bundle-version="2.5.0",
  org.eclipse.core.runtime,
  org.eclipse.osgi.services;bundle-version="3.2.0",

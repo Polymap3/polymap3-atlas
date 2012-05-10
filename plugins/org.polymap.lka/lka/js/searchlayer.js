@@ -30,6 +30,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
     
     this.layer = null;
     
+    /** Array of Feature instances. */
     this.features;
     
     this.events = null;
@@ -193,11 +194,19 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
     /**
      * 
      */
-    this.close = function() {
-        this.map.removeLayer( this.layer );
+    this.destroy = function() {
         for (i=0; i<this.controls.length; i++) {
             this.map.removeControl( this.controls[i] );
+            this.controls[i].destroy();
         }
+
+        if (this.layer) {
+            this.map.removeLayer( this.layer );
+            //this.layer.events.destroy();
+            this.layer.destroy();
+            this.layer = null;
+        }
+        
         this.controls = [];
     };
 

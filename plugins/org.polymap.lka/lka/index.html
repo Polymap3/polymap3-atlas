@@ -54,11 +54,12 @@
 <script src="js/atlas.js" type="text/javascript"></script>
 <script src="js/toolitems.js" type="text/javascript"></script>
 <script src="js/topbar.js" type="text/javascript"></script>
-<!--script src="js/transmap.js" type="text/javascript"></script-->
+<script src="js/transmap.js" type="text/javascript"></script>
 <script src="js/measure.js" type="text/javascript"></script>
 <script src="js/searchservice.js" type="text/javascript"></script>
 <script src="js/searchlayer.js" type="text/javascript"></script>
 <script src="js/searchcontext.js" type="text/javascript"></script>
+<script src="js/searchpriority.js" type="text/javascript"></script>
 <script src="js/routing.service.js" type="text/javascript"></script>
 <script src="js/routing.nearby.js" type="text/javascript"></script>
 <script src="js/routing.shortestpath.js" type="text/javascript"></script>
@@ -69,7 +70,7 @@
 <script type="text/javascript">
 
 // the Atlas environment
-MyAtlasClass = AtlasClass.extend(  new function() {
+MyAtlasClass = AtlasClass.extend( new function() {
     this.init = function( config ) {
         Atlas = this;
         this._super( {
@@ -79,6 +80,11 @@ MyAtlasClass = AtlasClass.extend(  new function() {
             baseUrl: 'index.html',
             mapCRS: "EPSG:900913"
         });
+        
+        // init search result priorities        
+        this.priorities.push( new ExclusiveCategoriesPriority( ['buchung', 'address'] ) );
+        this.priorities.push( new OnScreenPriority() );
+        this.priorities.push( new LexicalPriority() );
         
         // load and init bound search
         $.ajax({
@@ -107,7 +113,7 @@ MyAtlasClass = AtlasClass.extend(  new function() {
         });
     
         // init translation; tweak context functions
-        //Atlas.transmap = new TransMap( 'bundle/trans_', ['de_cz'] );
+        Atlas.transmap = new TransMap( 'bundle/trans_', ['de_cz'] );
         
         Atlas.routing = new Routing(
             '../routing-service/web/v1.0', 
@@ -251,17 +257,17 @@ function pageUrl() {
             </a></li-->
         </ul>
         
-        <div id="result_body0" class="ui-layout-content ui-dialog-content">
-            result_body_red
+        <div id="result_body0" class="atlas-result-body ui-layout-content ui-dialog-content">
+            <div class="atlas-result">result_body_red</div>
         </div>
-        <div id="result_body1" class="ui-layout-content ui-dialog-content">
-            result_body_green
+        <div id="result_body1" class="atlas-result-body ui-layout-content ui-dialog-content">
+            <div class="atlas-result">result_body_green</div>
         </div>
-        <div id="result_body2" class="ui-layout-content ui-dialog-content">
-            result_body_yellow
+        <div id="result_body2" class="atlas-result-body ui-layout-content ui-dialog-content">
+            <div class="atlas-result">result_body_yellow</div>
         </div>
-        <div id="result_body3" class="ui-layout-content ui-dialog-content">
-            result_body_blue
+        <div id="result_body3" class="atlas-result-body ui-layout-content ui-dialog-content">
+            <div class="atlas-result">result_body_blue</div>
         </div>
 </div>
 

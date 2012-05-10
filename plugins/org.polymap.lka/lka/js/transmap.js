@@ -59,9 +59,7 @@ var TransMap = Class.extend( new function TransMapProto() {
         // listen to 'searchPreparing' -> tweak URL
         var self = this;
         Atlas.events.bind( 'searchPreparing', function( ev ) {
-            ev.context.searchURL = Atlas.config.searchUrl + 
-                    "?search=" + self.enhanceSearch( ev.searchStr ) + 
-                    "&outputType=JSON&srs=" + Atlas.map.getProjection();
+            ev.searchStr = self.enhanceSearch( ev.searchStr );
         });
         
         // listen to 'searchFeatureLoaded' -> translate fields

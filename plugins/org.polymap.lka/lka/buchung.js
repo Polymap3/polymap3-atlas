@@ -68,13 +68,13 @@
         });
 
     // feature click -> popup
-    context.layer.events.register( "featureselected", context.layer, function( ev ) {
+    context.events.bind( "featureselected", function( ev ) {
         if (ev.feature == feature) {
             context.openPopup( feature.id, popupHtml );
             $('#feature-details-popup-'+index).click( function( ev ) {
                 self.openDetails();
             });
-            context.resultDiv.scrollTo( div, 2000 );
+            //context.resultDiv.scrollTo( div, 2000 );
         }
     });
 

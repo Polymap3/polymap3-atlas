@@ -46,7 +46,7 @@ import org.polymap.core.project.ProjectRepository;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-public class AddressProvider {
+class AddressProvider {
 
     private static final Log log = LogFactory.getLog( AddressProvider.class );
     
@@ -77,8 +77,9 @@ public class AddressProvider {
         IMap rootMap = ProjectRepository.instance().getRootMap();
         
         for (IMap map : rootMap.getMaps()) {
-            if (map.getLabel().equalsIgnoreCase( "addresses" )
-                    || map.getLabel().equalsIgnoreCase( "adressen" )) {
+            String mapLabel = map.getLabel();
+            if (mapLabel.equalsIgnoreCase( "addresses" )
+                    || mapLabel.equalsIgnoreCase( "adressen" )) {
                 log.info( "    Addresses map found: ..." );
                 List<ILayer> layers = new ArrayList();
                 

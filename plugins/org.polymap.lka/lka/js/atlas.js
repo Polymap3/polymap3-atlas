@@ -35,8 +35,11 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
     /** @private The conciguration of the Atlas environment. */
     this.config = null;
     
-    /** Array of SearchContext instances. */
+    /** Array of {@link SearchContext} instances. */
     this.contexts = null;
+    
+    /** Array of {@link SearchPriority} instances. */
+    this.priorities = null;
 
     /** The currently active SearchContext: 0->red, 1->green... */
     this.result_index = 0;
@@ -55,6 +58,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         
         this.events = new Events();
         this.config = config;
+        this.priorities = [];
         this.initMap();
         this.initContexts();
         this.initUI();
@@ -88,7 +92,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
 
         // transform URLs in feature fields into links
         new UrlFieldFeatureResultEnhancer();
-        
+
         return this;
     };
     
@@ -221,38 +225,44 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
      * Handle URL params for preset searches. 
      */
     this.initUrlParams = function () {
-        //
-        for (var i=3; i>=0; i--) {
-            var search_str = $(document).getUrlParam( 'search'+ (i+1) );
-            if (search_str != null) {
-                this.contexts[i].search( decodeURIComponent( search_str ) );
-            }
-        }
-    
-        // wait for all context to load -> activate context[0]
+        // wait for the system to setup; especially allow registering
+        // listeners that tweak seachStr and result handling
         var self = this;
         setTimeout( function() {
-            self.contexts[0].activate();
-            
-            var bounds = null;
+            //
             for (var i=3; i>=0; i--) {
-                var context = self.contexts[i];
-                if (context.layer != null && context.layer.features.length > 0) {
-                    if (bounds == null) {
-                        bounds = context.layer.getDataExtent()
-                    } else {
-                        bounds.extend( context.layer.getDataExtent() );
+                var search_str = $(document).getUrlParam( 'search'+ (i+1) );
+                if (search_str != null) {
+                    self.contexts[i].search( decodeURIComponent( search_str ) );
+                }
+            }
+
+            // wait for all context to load -> activate context[0]
+            setTimeout( function() {
+                self.contexts[0].activate();
+
+                var bounds = null;
+                for (var i=3; i>=0; i--) {
+                    var context = self.contexts[i];
+                    if (context.layer != null && context.layer.features.length > 0) {
+                        if (bounds == null) {
+                            bounds = context.layer.getDataExtent()
+                        } else {
+                            bounds.extend( context.layer.getDataExtent() );
+                        }
                     }
                 }
-            }
-            if (bounds != null) {   
-                self.map.zoomToExtent( bounds );
-                if (self.map.getScale() < 20000) {
-                    self.map.zoomToScale( 20000, false );
+                if (bounds != null) {   
+                    self.map.zoomToExtent( bounds );
+                    if (self.map.getScale() < 20000) {
+                        self.map.zoomToScale( 20000, false );
+                    }
                 }
-            }
-        }, 2000 );        
+            }, 2000 );
+            
+        }, 1000 );        
     };
+
 });
 
 

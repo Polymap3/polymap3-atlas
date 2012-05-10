@@ -44,7 +44,7 @@ import org.polymap.geocoder.Address;
  * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
-public class AddressQueryParser {
+class AddressQueryParser {
     
     private Analyzer          analyzer;
     
