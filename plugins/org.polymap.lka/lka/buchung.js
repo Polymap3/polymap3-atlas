@@ -40,7 +40,7 @@
         }
         // fields
         resultHtml += '<p id="feature-field-' + feature.id + '" class="atlas-result-fields">';
-        resultHtml += '<b>Angebot: </b><span style="display:block; margin:3px 0px 3px 15px;">' + feature.data.Angebot + '';
+        resultHtml += '<b>Angebot: </b><span style="display:block; margin:3px 0px 3px 1.2em;">' + feature.data.Angebot + '';
         resultHtml += ' >>&nbsp;<a id="'+detailsLinkId+'" style="font-weight:bold;" href="#">Details...</a>';
         resultHtml += '</span></p>';
         return resultHtml;
@@ -58,7 +58,7 @@
             + self.createHtml( 'feature-details-popup-'+index );
     
     // result list click -> popup
-    div.find( 'b>a' )
+    title
         .attr( 'title', 'In der Karte anzeigen' )
         .click( function( ev ) {
             context.openPopup( feature.id, popupHtml );

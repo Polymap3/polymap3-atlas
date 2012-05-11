@@ -64,7 +64,7 @@
     div.append( this.createHtml() );
     
     // result list click -> popup
-    div.find( 'b>a' )
+    title
         .attr( 'title', 'result_list_entry_link'.i18n() )
         .click( function( ev ) {
             context.openPopup( feature.id, self.createPopupHtml() ); 

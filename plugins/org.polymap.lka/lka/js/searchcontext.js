@@ -214,12 +214,13 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             if (this.map.getScale() < 20000) {
                 this.map.zoomToScale( 20000, false );
             }
+            
             // render in thread so that subsequent move/scale can interrupt
             this.renderCancelled = true;
             this.renderTimeout = setTimeout( function() {
                 self.renderCancelled = false;
                 self.renderFeatures();
-            }, 2200 );
+            }, 2000 );
 
             $('#tab_title_result'+index).text( this.layer.features.length );
         }
@@ -266,12 +267,24 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 alert( 'Empty feature: ' + feature );
             }
             
+            var categories = feature.data.categories != null ? feature.data.categories.split( ',' ) : [];
+
             // basic HTML
+            var displayCats = [];
+            for (var i=0; i<categories.length; i++) {
+                if (categories[i].charAt(i) == categories[i].charAt(i).toUpperCase()) {
+                    displayCats.push( categories[i] );
+                }
+            }
             var key = feature.id.afterLast( '.' );
-            self.resultDiv.append( '<div class="atlas-result" id="feature-' + key + '" '  
-                    + 'class="ui-corner-all">'
-                    + '<b><a href="#">' + feature.data.title + '</a></b><br/>' 
+            self.resultDiv.append( 
+                      '<div class="atlas-result" id="feature-{0}" >'.format( key )  
+                    + '  <b><a href="#">{0}</a></b><br/>'.format( feature.data.title )
+                    + '  <div class="atlas-result-inner">'
+                    + '    <span class="atlas-result-categories">{0}</span>'.format( displayCats.join( ', ' ) )
+                    + '  </div>'
                     + '</div><hr/>' );
+
             // load/execute the renderer
             var categories = feature.data.categories != null ? feature.data.categories.split( ',' ) : [];
             categories.push( 'standard' );
@@ -285,7 +298,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                         'cache': false,
                         'dataType': 'text',
                         'success': function( data ) {
-                            renderer = new Function( 'context', 'feature', 'index', 'div', data );
+                            renderer = new Function( 'context', 'feature', 'index', 'div', 'title', data );
                             self.categoryRenderers[categories[j]] = renderer;
                         },
                         'error': function() {
@@ -304,10 +317,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                         div.toggleClass( 'atlas-result-offscreen', !onScreen );
                         div.find( 'a' )
                             .css( 'background', onScreen ? 'url({0}) no-repeat scroll 0px 0px'.format( self.smallMarkerImage ) : '')
-                            .css( 'padding', '0px 0px 4px 19px' );
+                            .css( 'padding', '0px 0px 4px 18px' );
 
                         // call the renderer
-                        renderer.call( {}, self, feature, i, div );
+                        renderer.call( {}, self, feature, i, div.find('.atlas-result-inner'), div.find('b>a') );
                     }
                     catch ( e ) {
                         alert( 'Renderer: ' + e );

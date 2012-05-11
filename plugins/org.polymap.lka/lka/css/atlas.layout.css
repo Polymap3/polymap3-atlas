@@ -104,8 +104,17 @@ body {
     height: 2px !important;
 }
 .atlas-result {
-   padding: 1em 1em 1em 1em;
-   margin: 0px;
+    padding: 1em 1em 1em 0.8em;
+    margin: 0px;
+}
+.atlas-result-inner {
+    margin: 0 1em 0 19px;
+}
+.atlas-result-categories {
+    /*margin-left: 19px;*/
+    color: #909090;
+    font-size: small;
+    /*font-style: italic;*/
 }
 .atlas-result-offscreen {
     background: #f0f0f0;
@@ -115,12 +124,12 @@ body {
 .atlas-result-address {
     color: #606060;
     font-style: italic;
-    margin: 5px 0px 7px 15px;
-    padding-left: 17px; /* marker icon space */
+    margin: 5px 0px 7px 1.2em;
+    /*padding-left: 18px; /* marker icon space */
 }
 .atlas-result-fields {
     color: #606060;
-    padding-left: 17px; /* marker icon space */
+    /*padding-left: 18px; /* marker icon space */
 }
 .atlas-no-results {
     width: 80%;

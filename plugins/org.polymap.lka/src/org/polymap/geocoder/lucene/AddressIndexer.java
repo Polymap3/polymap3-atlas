@@ -562,7 +562,7 @@ public class AddressIndexer {
 
                     doc.add( new Field( FIELD_KEYWORDS, keywords.toString(), Field.Store.NO, Field.Index.ANALYZED ) );
                     
-                    doc.add( new Field( FIELD_CATEGORIES, "address,adresse",
+                    doc.add( new Field( FIELD_CATEGORIES, "address Adresse",
                             Field.Store.YES, Field.Index.ANALYZED ) );
 
                     iwriter.addDocument( doc );

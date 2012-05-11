@@ -115,7 +115,9 @@ public class AddressSearcher
             
             record.setGeom( address.getPoint() );
             record.setSRS( address.getSRS() );
-            
+
+            record.addField( AddressIndexer.FIELD_CATEGORIES, "Adresse" );
+
             result.put( title, record );
         }
         return new ArrayList( result.values() );

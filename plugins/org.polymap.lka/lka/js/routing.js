@@ -22,10 +22,10 @@ var Routing = Class.extend( new function RoutingProto() {
     this.service = null;
     
     /** Array of {@link Nearby} objects. */
-    this.nearbies = [];
+    this.nearbies;
     
     /** Array of {@link ShortestPath} objects. */
-    this.routes = [];
+    this.routes;
     
     /**
      * 
@@ -35,9 +35,11 @@ var Routing = Class.extend( new function RoutingProto() {
      * @param {String} profileKey
      */
     this.init = function( baseUrl, profileKey ) {
-       this.service = new RoutingService( baseUrl, profileKey );
+        this.nearbies = [];
+        this.routes = [];
+        this.service = new RoutingService( baseUrl, profileKey );
        
-       Atlas.events.bind( 'searchResultGenerated', 
+        Atlas.events.bind( 'searchResultGenerated', 
                 callback( this.onSearchResultGenerated, {scope:this} ) );
     };
 
@@ -55,22 +57,24 @@ var Routing = Class.extend( new function RoutingProto() {
                 + html.format( 'routing_from'.i18n(), 'routing_from_tip'.i18n(), space )
                 + html.format( 'routing_nearby'.i18n(), 'routing_nearby_tip'.i18n(), space ) + '</p>' );
         
-        var elm = ev.div.find( '#routing-'+ev.index );
+        var panel = ev.div.find( '#routing-'+ev.index );
         var self = this;
         
         // nearby search
-        var btn3 = elm.find( 'a:nth-child(3)');
+        var btn3 = panel.find( 'a:nth-child(3)');
         btn3.click( function( ev2 ) {
             if (btn3.attr( 'disabled' ) == 'disabled') {
                 ev2.preventDefault();
             }
             else {
-                btn3.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
+                panel.find( 'a' ).attr( 'disabled', 'disabled' );
+                btn3.css( 'font-weight', 'bold' );
 
                 ev.div.append( '<div id="routing-nearby-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
                 var elm = $('#routing-nearby-'+ev.index);
                 closeButton( elm, function() {
-                    btn3.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
+                    panel.find( 'a' ).removeAttr( 'disabled' );
+                    btn3.css( 'font-weight', 'normal' )
                     self.nearbies[ev.index].close();
                     self.nearbies[ev.index] = null;
                 });
@@ -80,17 +84,19 @@ var Routing = Class.extend( new function RoutingProto() {
             }
         });
 
-        var btn = elm.find( 'a:nth-child(1)');
+        var btn = panel.find( 'a:nth-child(1)');
         btn.click( function( ev2 ) {
             if (btn.attr( 'disabled' ) === 'disabled') {
                 ev2.preventDefault();
             }
             else {
-                btn.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
+                panel.find( 'a' ).attr( 'disabled', 'disabled' );
+                btn.css( 'font-weight', 'bold' );
 
                 ev.div.append( '<div id="routing-to-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
-                var elm = ev.div.find( 'div' );
+                var elm = ev.div.find( '#routing-to-'+ev.index );
                 closeButton( elm, function() {
+                    panel.find( 'a' ).removeAttr( 'disabled' );
                     btn.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
                     self.routes[ev.index].close();
                     self.routes[ev.index] = null;
@@ -102,17 +108,19 @@ var Routing = Class.extend( new function RoutingProto() {
             }
         });
 
-        var btn2 = elm.find( 'a:nth-child(2)');
+        var btn2 = panel.find( 'a:nth-child(2)');
         btn2.click( function( ev2 ) {
             if (btn2.attr( 'disabled' ) === 'disabled') {
                 ev2.preventDefault();
             }
             else {
-                btn2.css( 'font-weight', 'bold' ).attr( 'disabled', 'disabled' );
+                panel.find( 'a' ).attr( 'disabled', 'disabled' );
+                btn2.css( 'font-weight', 'bold' );
 
                 ev.div.append( '<div id="routing-from-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
-                var elm = ev.div.find( 'div' );
+                var elm = ev.div.find( '#routing-from-'+ev.index );
                 closeButton( elm, function() {
+                    panel.find( 'a' ).removeAttr( 'disabled' );
                     btn2.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
                     self.routes[ev.index].close();
                     self.routes[ev.index] = null;
