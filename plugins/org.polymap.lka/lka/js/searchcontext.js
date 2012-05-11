@@ -104,7 +104,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             
             self.renderTimeout = setTimeout( function() {
                 self.renderCancelled = false;
-                self.renderFeatures();
+                self.reorderResults();
 
                 if (self.scrolledFeature) {
                     self.scrollToResultDiv( self.scrolledFeature, 100 );
@@ -216,10 +216,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             }
             
             // render in thread so that subsequent move/scale can interrupt
+            this.renderFeatures();
             this.renderCancelled = true;
             this.renderTimeout = setTimeout( function() {
                 self.renderCancelled = false;
-                self.renderFeatures();
+                self.reorderResults();
             }, 2000 );
 
             $('#tab_title_result'+index).text( this.layer.features.length );
@@ -247,15 +248,15 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * 
      */
     this.renderFeatures = function() {
-        this.resultDiv.empty();
+        //this.resultDiv.empty();
         
         // remove all feature listeners that old renderers might have registered
         this.events.unbind( 'featureselected' );
         
-        var screenBounds = this.map.getExtent();
+        this.featureMap = {};
         
         var self = this;
-        $.each( this.orderFeatures( this.layer.features ), function( i, feature ) {
+        $.each( this.layer.features, function( i, feature ) {
             // check cancel
             if (self.renderCancelled) {
                 alert( "Rendering cancelled." );
@@ -278,12 +279,12 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             }
             var key = feature.id.afterLast( '.' );
             self.resultDiv.append( 
-                      '<div class="atlas-result" id="feature-{0}" >'.format( key )  
+                      '<div class="atlas-result" id="feature-{0}" style="display:none;">'.format( key )  
                     + '  <b><a href="#">{0}</a></b><br/>'.format( feature.data.title )
                     + '  <div class="atlas-result-inner">'
                     + '    <span class="atlas-result-categories">{0}</span>'.format( displayCats.join( ', ' ) )
                     + '  </div>'
-                    + '</div><hr/>' );
+                    + '</div>' );
 
             // load/execute the renderer
             var categories = feature.data.categories != null ? feature.data.categories.split( ',' ) : [];
@@ -309,16 +310,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 // execute renderer
                 if (renderer != null && renderer != NO_RENDERER) {
                     var div = self.findResultDiv( feature );
+                    self.featureMap[div.attr('id')] = feature;
+                    
                     // new object/context for every call
                     try {
-                        // feature visible on screen?
-                        var featureBounds = feature.geometry.getBounds();
-                        onScreen = screenBounds.intersectsBounds( featureBounds );
-                        div.toggleClass( 'atlas-result-offscreen', !onScreen );
-                        div.find( 'a' )
-                            .css( 'background', onScreen ? 'url({0}) no-repeat scroll 0px 0px'.format( self.smallMarkerImage ) : '')
-                            .css( 'padding', '0px 0px 4px 18px' );
-
                         // call the renderer
                         renderer.call( {}, self, feature, i, div.find('.atlas-result-inner'), div.find('b>a') );
                     }
@@ -342,15 +337,18 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     /**
      * Order the given features using the priority comparators in {@link Atlas#priority}.
      */
-    this.orderFeatures = function( features ) {
-        // copy features
-        var result = new Array( features.length );
-        for (var i=0; i<features.length; i++) {
-            result[i] = features[i];
-        }
-
-        // sort using Atlas.priorities
-        result.sort( function( feature1, feature2 ) {
+    this.reorderResults = function() {
+        var self = this;
+        
+        var detached = this.resultDiv.find('.atlas-result').detach();
+        
+        var sorted = detached.sort( function( div1, div2 ) {
+            if (self.renderCancelled) {
+                return 0;
+            }
+            var feature1 = self.featureMap[ $(div1).attr('id') ];
+            var feature2 = self.featureMap[ $(div2).attr('id') ];
+            
             for (var i=0; i<Atlas.priorities.length; i++) {
                 var compResult = Atlas.priorities[i].compare( feature1, feature2 );
                 if (compResult != 0) {
@@ -359,7 +357,32 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             }
             return 0;
         });
-        return result;
+
+        // remove decorations, deparators, etc.
+        this.resultDiv.empty();
+        
+        
+        // re-insert
+        var screenBounds = this.map.getExtent();
+        for (var i=0; i<sorted.length; i++) {
+            if (self.renderCancelled) {
+                return 0;
+            }
+            var div = $(sorted[i]);
+            div.css( 'display', 'block' );
+
+            // feature visible on screen?
+            var feature = self.featureMap[ div.attr('id') ];
+            var featureBounds = feature.geometry.getBounds();
+            var onScreen = screenBounds.intersectsBounds( featureBounds );
+            div.toggleClass( 'atlas-result-offscreen', !onScreen );
+            div.find( 'b>a' )
+                    .css( 'background', onScreen ? 'url({0}) no-repeat scroll 0px 0px'.format( self.smallMarkerImage ) : '')
+                    .css( 'padding', '0px 0px 4px 18px' );
+
+            self.resultDiv.append( sorted[i] );
+            self.resultDiv.append( '<hr/>');
+        }
     };
     
     /**
