@@ -29,12 +29,21 @@
 <script language="javascript" src="lib/jquery.localizer.js" type="text/javascript"></script>
 <script language="javascript" src="lib/jquery.i18n.properties-1.0.9.js" type="text/javascript"></script>
 <script language="javascript" src="lib/jquery.scrollTo-1.4.2-min.js" type="text/javascript"></script>
+<script language="javascript" src="lib/jquery.combobox.js" type="text/javascript"></script>
 
 <!-- OpenLayers -->
 <!--script src="openlayers/full/OpenLayers.js" type="text/javascript"></script-->
 <script src="openlayers/2.11/OpenLayers.js" type="text/javascript"></script>
-<script src="openlayers/full/popup.js" type="text/javascript"></script>
-<!--script src="openlayers/full/tooltips.js" type="text/javascript"></script-->
+<script src="openlayers/popup.js" type="text/javascript"></script>
+<!-- script src="openlayers/proj4js-1.1.0.min.js" type="text/javascript"></script-->
+<script src="http://spatialreference.org/ref/epsg/4326/proj4js/" type="text/javascript"></script>
+<script src="http://spatialreference.org/ref/epsg/31468/proj4js/" type="text/javascript"></script>
+<script src="http://spatialreference.org/ref/epsg/31467/proj4js/" type="text/javascript"></script>
+<script src="http://spatialreference.org/ref/epsg/31469/proj4js/" type="text/javascript"></script>
+<script src="http://spatialreference.org/ref/epsg/25833/proj4js/" type="text/javascript"></script>
+<!-- script type="text/javascript">
+    Proj4js.defs["EPSG:900913"] = "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs";
+</script-->
 
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="css/custom-theme/jquery-ui-1.8.16.custom.css" />
@@ -65,6 +74,7 @@
 <script src="js/routing.shortestpath.js" type="text/javascript"></script>
 <script src="js/routing.js" type="text/javascript"></script>
 <script src="js/boundsearch.js" type="text/javascript"></script>
+<script src="js/coords.js" type="text/javascript"></script>
 
 <!-- Local config -->
 <script type="text/javascript">
@@ -138,6 +148,7 @@ MyAtlasClass = AtlasClass.extend( new function() {
             .addLeft( new ToggleLayerItem( "tb_dop", $.i18n.prop( "tb_dop_label" ), 
                     $.i18n.prop( "tb_dop_label" ), $.i18n.prop( "tb_dop_icon" ), Atlas.map, "DOP" ) )
             .addRight( new SubmitNewItem( "tb_new" ) )
+            .addRight( new CoordinateItem( "tb_coord" ) )
             .addRight( new ToggleMeasureItem( "tb_measure", Atlas.measure ) )
             .addRight( new LinkItem( "tb_link" ) )
             .addRight( new KmlItem( "tb_kml" ) )
@@ -176,7 +187,7 @@ function pageUrl() {
     
     // ?search=XY&search2=AB
     var allSearchParams = null;
-    for (i=0; i<Atlas.contexts.length; i++) {
+    for (var i=0; i<Atlas.contexts.length; i++) {
         var context = Atlas.contexts[i];
         if (context.searchStr != null && context.searchStr.length > 0) {
             allSearchParams = allSearchParams == null 

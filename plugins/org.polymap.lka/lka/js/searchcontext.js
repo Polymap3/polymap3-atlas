@@ -99,8 +99,8 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             }
             if (self.renderTimeout) {
                 clearTimeout( self.renderTimeout );
+                self.renderCancelled = true;
             }
-            self.renderCancelled = true;
             
             self.renderTimeout = setTimeout( function() {
                 self.renderCancelled = false;
@@ -139,41 +139,59 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * 
      */
     this.search = function( searchStr ) {
-        try {
+//        try {
             this.resultDiv.empty();
             this.resultDiv.append( 
                     '<div style="width:100px; margin:1em auto; align:center; text-align:center;">' +
                     '<img src="{0}" style="margin:5px;"></img><br/>'.format( 'images/loader_small.gif') +
                     '<em>{0}</em></div>'.format( 'context_loading'.i18n() ) );
             
-            this.searchStr = searchStr;
-            
-            // trigger Event
-            var ev = jQuery.Event( 'searchPreparing' );
-            ev.context = this;
-            ev.searchStr = searchStr;
-            Atlas.events.trigger( ev );
-
-            // encodeURICompoent: see SearchService for more info
-            // use ev.searchStr to allow listeners to tweak
-            this.searchURL = Atlas.config.searchUrl 
-                    + "?search=" + encodeURIComponent( ev.searchStr ) 
-                    + "&outputType=JSON&srs=" + this.map.getProjection(); 
-
             // remove old layer
             if (this.layer) {
                 this.layer.destroy();
             }
             
-            // new layer / style
-            this.layer = new SearchLayer( this, {
-                'url': this.searchURL,
-                'attribution': this.attribution,
-                'markerImage': this.markerImage,
-                'color': this.geomColor,
-                //'onFeatureHovered': callback( this.onFeatureHovered, {scope:this} ),
-                'onLoaded': callback( this.onLayerLoaded, {scope:this} ) 
-            });
+            this.searchStr = searchStr;
+            
+            // GeoJSON
+            if (searchStr.startsWith( '{' )) {
+                this.searchURL = Atlas.config.searchUrl 
+                    + "?search=" + encodeURIComponent( this.searchStr ); 
+                var feature = new OpenLayers.Format.GeoJSON().read( searchStr, 'Feature' );
+
+                // new layer / style
+                this.layer = new SearchLayer( this, {
+                    'feature': feature,
+                    'attribution': this.attribution,
+                    'markerImage': this.markerImage,
+                    'color': this.geomColor
+                });
+                this.onLayerLoaded();
+            }
+            // Lucene/server search
+            else {
+                // trigger Event
+                var ev = jQuery.Event( 'searchPreparing' );
+                ev.context = this;
+                ev.searchStr = searchStr;
+                Atlas.events.trigger( ev );
+
+                // encodeURIComponent: see SearchService for more info
+                // use ev.searchStr to allow listeners to tweak
+                this.searchURL = Atlas.config.searchUrl 
+                    + "?search=" + encodeURIComponent( ev.searchStr ) 
+                    + "&outputType=JSON&srs=" + this.map.getProjection(); 
+
+                // new layer / style
+                this.layer = new SearchLayer( this, {
+                    'url': this.searchURL,
+                    'attribution': this.attribution,
+                    'markerImage': this.markerImage,
+                    'color': this.geomColor,
+                    //'onFeatureHovered': callback( this.onFeatureHovered, {scope:this} ),
+                    'onLoaded': callback( this.onLayerLoaded, {scope:this} ) 
+                });
+            }
             
             // general feature click handler
             this.layer.events.register( 'featureselected', this, function( ev ) {
@@ -183,11 +201,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                     this.scrollToResultDiv( ev.feature );
                 }
             });
-        } 
-        catch( e ) {
-            throw e;
-            //alert( "Problem searching: " + e );
-        }
+//        } 
+//        catch( e ) {
+//            throw e;
+//            //alert( "Problem searching: " + e );
+//        }
     };
 
     /**
@@ -210,14 +228,16 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
 
         if (this.layer.features.length > 0) {
             var extent = this.map.getExtent();
-            this.map.zoomToExtent( this.layer.layer.getDataExtent() );
-            if (this.map.getScale() < 20000) {
-                this.map.zoomToScale( 20000, false );
+            var layerExtent = this.layer.layer.getDataExtent();
+            if (layerExtent != null) {
+                this.map.zoomToExtent( layerExtent );
+                if (this.map.getScale() < 20000) {
+                    this.map.zoomToScale( 20000, false );
+                }
             }
             
             // render in thread so that subsequent move/scale can interrupt
             this.renderFeatures();
-            this.renderCancelled = true;
             this.renderTimeout = setTimeout( function() {
                 self.renderCancelled = false;
                 self.reorderResults();
@@ -257,11 +277,11 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         
         var self = this;
         $.each( this.layer.features, function( i, feature ) {
-            // check cancel
-            if (self.renderCancelled) {
-                alert( "Rendering cancelled." );
-                return false;
-            }
+//            // check cancel
+//            if (self.renderCancelled) {
+//                alert( "Rendering cancelled." );
+//                return false;
+//            }
             
             // no fid -> ommitting
             if (!feature.id || !feature.data) {

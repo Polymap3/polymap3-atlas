@@ -327,13 +327,31 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
             'select': selectStyle
         });
 
-        this.layer = new OpenLayers.Layer.GML( "Suchergebnis",
-            this.config.url, { 
-            'reportError': true,
-            'format': OpenLayers.Format.GeoJSON,
-            'strategies': [this.clustered],
-            'styleMap': styleMap
-        });
+        // search URL
+        if (this.config.url) {
+            this.layer = new OpenLayers.Layer.GML( "Suchergebnis",
+                this.config.url, { 
+                'reportError': true,
+                'format': OpenLayers.Format.GeoJSON,
+                'strategies': [this.clustered],
+                'styleMap': styleMap
+            });
+        }
+        // GeoJSON feature
+        else if (this.config.feature) {
+            this.layer = new OpenLayers.Layer.Vector( "Suchergebnis", {
+                'reportError': true,
+                'strategies': [this.clustered],
+                'protocol': new OpenLayers.Protocol(),
+                'styleMap': styleMap
+            });
+            this.features = [this.config.feature];
+            this.layer.addFeatures( this.features );
+        }
+        else {
+            alert( 'Config does neither contain "url" nor "feature"!' );
+        }
+        
         this.layer.attribution = this.config.attribution;
         this.map.addLayer( this.layer );
         this.events = this.layer.events;

@@ -342,5 +342,3 @@ var SubmitNewItem = ToolItem.extend( new function SubmitNewItemProto() {
         });
     };
 });
-
-

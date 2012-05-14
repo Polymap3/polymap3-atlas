@@ -33,7 +33,7 @@ function MeasureMode( map, elm ) {
         this.map.addControl( this.control );
         this.control.activate();
         this.active = true;
-    }
+    };
     
     this.deactivate = function() {
         this.control.deactivate();
@@ -140,7 +140,7 @@ var ToggleMeasureItem = ToolItem.extend( {
     
     onClick: function() {
         if (this.enabled) {
-            this.measure.deactivate()
+            this.measure.deactivate();
             this.enabled = false;
         }
         else {
