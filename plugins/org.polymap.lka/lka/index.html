@@ -35,15 +35,19 @@
 <!--script src="openlayers/full/OpenLayers.js" type="text/javascript"></script-->
 <script src="openlayers/2.11/OpenLayers.js" type="text/javascript"></script>
 <script src="openlayers/popup.js" type="text/javascript"></script>
-<!-- script src="openlayers/proj4js-1.1.0.min.js" type="text/javascript"></script-->
-<script src="http://spatialreference.org/ref/epsg/4326/proj4js/" type="text/javascript"></script>
-<script src="http://spatialreference.org/ref/epsg/31468/proj4js/" type="text/javascript"></script>
-<script src="http://spatialreference.org/ref/epsg/31467/proj4js/" type="text/javascript"></script>
-<script src="http://spatialreference.org/ref/epsg/31469/proj4js/" type="text/javascript"></script>
-<script src="http://spatialreference.org/ref/epsg/25833/proj4js/" type="text/javascript"></script>
-<!-- script type="text/javascript">
-    Proj4js.defs["EPSG:900913"] = "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs";
-</script-->
+<script src="openlayers/proj4js-1.1.0.min.js" type="text/javascript"></script>
+<!-- Add projections from spatialreference.org/ -->
+<script type="text/javascript">
+    //Proj4js.defs["EPSG:4326"] = "+title=WGS 84 +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+    Proj4js.defs["EPSG:3857"] = "+title=Google Mercator +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs";
+    Proj4js.defs["EPSG:31467"] = "+title=Gauss-Krueger zone 3 +proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +datum=potsdam +units=m +no_defs";
+    Proj4js.defs["EPSG:31468"] = "+title=Gauss-Krueger zone 4 +proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +datum=potsdam +units=m +no_defs";
+    Proj4js.defs["EPSG:31469"] = "+title=Gauss-Krueger zone 5 +proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +datum=potsdam +units=m +no_defs";
+    Proj4js.defs["EPSG:25831"] = "+title=ETRS89 / UTM zone 31N +proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs";
+    Proj4js.defs["EPSG:25832"] = "+title=ETRS89 / UTM zone 32N +proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs";
+    Proj4js.defs["EPSG:25833"] = "+title=ETRS89 / UTM zone 33N +proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs";
+    Proj4js.defs["EPSG:2065"] = "+title=S-JTSK (Ferro) / Krovak +proj=krovak +lat_0=49.5 +lon_0=42.5 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=ferro +units=m +no_defs";
+</script>
 
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="css/custom-theme/jquery-ui-1.8.16.custom.css" />
@@ -269,16 +273,16 @@ function pageUrl() {
         </ul>
         
         <div id="result_body0" class="atlas-result-body ui-layout-content ui-dialog-content">
-            <div class="atlas-result">result_body_red</div>
+            <div style="margin:1.7em;">result_body_red</div>
         </div>
         <div id="result_body1" class="atlas-result-body ui-layout-content ui-dialog-content">
-            <div class="atlas-result">result_body_green</div>
+            <div style="margin:1.7em;">result_body_green</div>
         </div>
         <div id="result_body2" class="atlas-result-body ui-layout-content ui-dialog-content">
-            <div class="atlas-result">result_body_yellow</div>
+            <div style="margin:1.7em;">result_body_yellow</div>
         </div>
         <div id="result_body3" class="atlas-result-body ui-layout-content ui-dialog-content">
-            <div class="atlas-result">result_body_blue</div>
+            <div style="margin:1.7em;">result_body_blue</div>
         </div>
 </div>
 

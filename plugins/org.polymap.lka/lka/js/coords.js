@@ -63,18 +63,24 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         var dialog = $('#dialog');
         this.dialog = dialog;
 
-//        $.each( Proj4js.defs, function( key, value ) {
-//            var proj = new OpenLayers.Projection( key );
-//            alert( key + " : " + proj.proj.title );
-//        });
+        var projOptions = '';
+        if (Proj4js.defs) {
+            $.each( Proj4js.defs, function( key, value ) {
+                var proj = new OpenLayers.Projection( key );
+                projOptions += '<option value="{0}">{1} ({0})</option>'.format( key, proj.proj.title );
+            });
+        }
+        else {
+            projOptions += '<option value="EPSG:900913">Google-Mercator (EPSG:900913)</option>';
+            projOptions += '<option value="EPSG:4326">WGS84 (EPSG:4326)</option>';
+        }
         
         this.dialog.html( 
                 '<p style="text-align:justify; padding:10px; margin:0;">{0}</p>'.format( 'coord_msg'.i18n() ) +
                 '<div class="ui-corner-all" style="padding:10px 10px; margin-left:auto;">' +
                 '    <label>{0}</label><br/>'.format( 'coord_srs_label'.i18n() ) +
                 '    <select id="combobox" style="padding:0.2em; margin-right:10px; width:290px;">' + 
-                '        <option value="EPSG:900913">Google-Mercator (EPSG:900913)</option>' +
-                '        <option value="EPSG:4326">WGS84 (EPSG:4326)</option>' +
+                         projOptions +
                 '    </select>' +
                 '    <button id="calc" title="{0}">{0}</button>'.format( 'coord_calc_label'.i18n() ) +
                 '</div><hr/>' +

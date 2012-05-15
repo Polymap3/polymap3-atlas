@@ -300,7 +300,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             var key = feature.id.afterLast( '.' );
             self.resultDiv.append( 
                       '<div class="atlas-result" id="feature-{0}" style="display:none;">'.format( key )  
-                    + '  <b><a href="#">{0}</a></b><br/>'.format( feature.data.title )
+                    + '  <a style="font-weight:bold;" href="#">{0}</a>'.format( feature.data.title )
                     + '  <div class="atlas-result-inner">'
                     + '    <span class="atlas-result-categories">{0}</span>'.format( displayCats.join( ', ' ) )
                     + '  </div>'
@@ -335,7 +335,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                     // new object/context for every call
                     try {
                         // call the renderer
-                        renderer.call( {}, self, feature, i, div.find('.atlas-result-inner'), div.find('b>a') );
+                        renderer.call( {}, self, feature, i, div.find('.atlas-result-inner'), div.find('>a') );
                     }
                     catch ( e ) {
                         alert( 'Renderer: ' + e );
@@ -396,9 +396,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             var featureBounds = feature.geometry.getBounds();
             var onScreen = screenBounds.intersectsBounds( featureBounds );
             div.toggleClass( 'atlas-result-offscreen', !onScreen );
-            div.find( 'b>a' )
+            div.find( '>a' )
                     .css( 'background', onScreen ? 'url({0}) no-repeat scroll 0px 0px'.format( self.smallMarkerImage ) : '')
-                    .css( 'padding', '0px 0px 4px 18px' );
+                    .css( 'padding', '0px 0px 4px 18px' )
+                    .css( 'display', 'inline-block' );
 
             self.resultDiv.append( sorted[i] );
             self.resultDiv.append( '<hr/>');

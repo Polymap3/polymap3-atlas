@@ -108,7 +108,7 @@ body {
     margin: 0px;
 }
 .atlas-result-inner {
-    margin: 0 1em 0 19px;
+    margin: -4px 1em 0 18px;
 }
 .atlas-result-categories {
     /*margin-left: 19px;*/
@@ -124,7 +124,7 @@ body {
 .atlas-result-address {
     color: #606060;
     font-style: italic;
-    margin: 5px 0px 7px 1.2em;
+    margin: 0.8em 1.2em;
     /*padding-left: 18px; /* marker icon space */
 }
 .atlas-result-fields {
