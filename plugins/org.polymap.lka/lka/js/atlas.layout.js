@@ -19,7 +19,7 @@ function init_layout() {
         //  some resizing/toggling settings
         ,   north__slidable:        false   // OVERRIDE the pane-default of 'slidable=true'
         //,   north__togglerLength_closed: '100%' // toggle-button is full-width of resizer-bar
-        ,   north__spacing_closed:  3       // big resizer-bar when open (zero height)
+        ,   north__spacing_closed:  $(document).getUrlParam( 'north' ) != 'off' ? 3 : 0       // big resizer-bar when open (zero height)
         ,   north__resizable:       false   // OVERRIDE the pane-default of 'resizable=true'
         ,   south__spacing_open:    0       // no resizer-bar when open (zero height)
         ,   south__spacing_closed:  3       // big resizer-bar when open (zero height)
@@ -27,7 +27,7 @@ function init_layout() {
         ,   north__minSize:         118
         ,   north__initClosed:      $(document).getUrlParam( 'north' )
         ,   west__minSize:          100
-        ,   east__spacing_closed:   5
+        ,   east__spacing_closed:   $(document).getUrlParam( 'north' ) != 'off' ? 3 : 0
         ,   east__size:             330
         ,   east__minSize:          200
         ,   east__initClosed:       $(document).getUrlParam( 'east' )

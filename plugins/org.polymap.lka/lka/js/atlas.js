@@ -209,12 +209,13 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
             size: new OpenLayers.Size( 210, 170 ),
             mapOptions: mapOptions
         });
-        this.map.addControl( overview );
-        //overview.activate();
-        //overview.maximizeControl();
 
-        this.map.addControl( new OpenLayers.Control.LayerSwitcher() );
-        this.map.addControl( new OpenLayers.Control.PanZoomBar() );
+        if ($(document).getUrlParam( 'north' ) != 'off') {
+            this.map.addControl( new OpenLayers.Control.PanZoomBar() );
+            this.map.addControl( overview );
+            //overview.activate();
+            //overview.maximizeControl();
+        }
         var scaleLine = new OpenLayers.Control.ScaleLine();
         scaleLine.geodesic = true;
         this.map.addControl( scaleLine );

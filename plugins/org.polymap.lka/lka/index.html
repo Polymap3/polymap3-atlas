@@ -148,18 +148,25 @@ MyAtlasClass = AtlasClass.extend( new function() {
             .create();
         
         // Toolbar
-        Atlas.toolbar = new Toolbar( $('#toolbar2') )
-            .addLeft( new ToggleLayerItem( "tb_dop", $.i18n.prop( "tb_dop_label" ), 
-                    $.i18n.prop( "tb_dop_label" ), $.i18n.prop( "tb_dop_icon" ), Atlas.map, "DOP" ) )
-            .addRight( new SubmitNewItem( "tb_new" ) )
-            .addRight( new CoordinateItem( "tb_coord" ) )
-            .addRight( new ToggleMeasureItem( "tb_measure", Atlas.measure ) )
-            .addRight( new LinkItem( "tb_link" ) )
-            .addRight( new KmlItem( "tb_kml" ) )
-            .addRight( new GeoRssItem( "tb_georss" ) )
-            .addRight( new BookmarkItem( "tb_bookmark" ) )
-            //.addRight( new TestRoutingItem( "tb_routing", Atlas.routing ) )
-            .create();
+        if ($(document).getUrlParam( 'north' ) != 'off') {
+            Atlas.toolbar = new Toolbar( $('#toolbar2') )
+                .addLeft( new ToggleLayerItem( "tb_dop", $.i18n.prop( "tb_dop_label" ), 
+                        $.i18n.prop( "tb_dop_label" ), $.i18n.prop( "tb_dop_icon" ), Atlas.map, "DOP" ) )
+                .addRight( new SubmitNewItem( "tb_new" ) )
+                .addRight( new CoordinateItem( "tb_coord" ) )
+                .addRight( new ToggleMeasureItem( "tb_measure", Atlas.measure ) )
+                .addRight( new LinkItem( "tb_link" ) )
+                .addRight( new KmlItem( "tb_kml" ) )
+                .addRight( new GeoRssItem( "tb_georss" ) )
+                .addRight( new BookmarkItem( "tb_bookmark" ) )
+                //.addRight( new TestRoutingItem( "tb_routing", Atlas.routing ) )
+                .create();
+        }
+        else {
+            $('#map').css( 'top', '0' );
+            $('#map').append( '<div class="olControlBacklink"><a href="{0}" title="Kompletten Atlas in neuem Fenster öffnen" target="_blank">{1}</a></div>'
+                    .format( 'logo_link'.i18n(), 'logo_title'.i18n() ) );
+        }
         
         dialogDiv = $('#dialog');        
     
