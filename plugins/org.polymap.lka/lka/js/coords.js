@@ -98,7 +98,9 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
                 '    <label>{0}</label><br/>'.format( 'coord_link_text'.i18n() ) +
                 '    <textarea id="url-text" style="width:100%; margin-bottom:20px;" />' +
                 '    <label>{0}</label><br/>'.format( 'coord_link_url'.i18n() ) +
-                '    <input id="url" style="width:100%;"></input>' +
+                '    <input id="url" style="width:100%; margin-bottom:10px;"></input>' +
+                '    <label>{0}</label><br/>'.format( 'coord_link_html'.i18n() ) +
+                '    <input id="html" style="width:100%;"></input>' +
                 '</div>'
         );
         this.combo = dialog.find( '#combobox' ).blur();//.combobox();
@@ -131,7 +133,7 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         this.coord = Atlas.map.getLonLatFromPixel( ev.xy );
         this.calc( this.coord );
 
-        dialog.dialog({ width:450 , height: 510 , title:'Treffpunkt' });
+        dialog.dialog({ width:450 , height: 550 , title:'Treffpunkt' });
     };
     
     /**
@@ -159,6 +161,10 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         var url = location.protocol + "//" + location.host + location.pathname 
                 + '?search1=' + encodeURIComponent( json );
         this.dialog.find( '#url' ).val( url );
+        
+        this.dialog.find( '#html' ).val( 
+                '<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" ' +
+                'src="' + url + '&north=off&east=off"></iframe>' );
     };
 });
 

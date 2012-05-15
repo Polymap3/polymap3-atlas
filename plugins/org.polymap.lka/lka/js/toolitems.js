@@ -300,7 +300,7 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
         }
         var url = this.url;
         var htmlCode = '<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="'
-                + url + '"></iframe>';
+                + url + '&north=off&east=off"></iframe>';
         $.ajax({
             url: 'linkdialog.html',
             dataType: "html",
