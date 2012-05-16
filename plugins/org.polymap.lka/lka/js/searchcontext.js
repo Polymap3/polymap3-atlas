@@ -293,7 +293,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             // basic HTML
             var displayCats = [];
             for (var i=0; i<categories.length; i++) {
-                if (categories[i].charAt(i) == categories[i].charAt(i).toUpperCase()) {
+                if (categories[i].charAt(0) == categories[i].charAt(0).toUpperCase()) {
                     displayCats.push( categories[i] );
                 }
             }
