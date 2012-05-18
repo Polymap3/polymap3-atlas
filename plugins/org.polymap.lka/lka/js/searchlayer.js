@@ -219,7 +219,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
         var noClusterFilter = new OpenLayers.Filter.Comparison({
             type: OpenLayers.Filter.Comparison.EQUAL_TO,
             property: 'count',
-            value: undefined,
+            value: undefined
         });
         var inClusterFilter = new OpenLayers.Filter.Comparison({
             type: OpenLayers.Filter.Comparison.GREATER_THAN,

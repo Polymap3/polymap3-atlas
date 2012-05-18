@@ -153,18 +153,17 @@ var BookmarkItem = ToolItem.extend( {
         this._super( id, $.i18n.prop( "tb_bookmark_label" ), $.i18n.prop( "tb_bookmark_tip" ) );
         this.icon = $.i18n.prop( "tb_bookmark_icon" );
         
-        Atlas.events.bind( "searchCompleted", 
-                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
+        var self = this;
+        Atlas.events.bind( "searchCompleted", function( ev ) {
+            self.url = ev.pageURL;
+            alert( self.url );
+            self.elm.removeAttr( 'disabled' );
+        });
     },
     
     elementCreated: function( elm ) {
         this.elm = elm;
         //this.elm.attr( 'disabled', 'disabled' );
-    },
-    
-    onSearchCompleted: function( ev ) {
-        this.url = ev.searchURL;
-        this.elm.removeAttr( 'disabled' );
     },
     
     onClick: function() {
@@ -173,13 +172,9 @@ var BookmarkItem = ToolItem.extend( {
             return;
         }
         
-        var title = $.i18n.prop( "tb_bookmark_title" );
-        var comment = $.i18n.prop( "tb_bookmark_comment" );
-        var url = this.url;
-        
         if (window.sidebar) {
             // firefox
-            window.sidebar.addPanel( title, url, comment );
+            window.sidebar.addPanel( 'tb_bookmark_title'.i18n(), this.url, 'tb_bookmark_comment'.i18n() );
         } 
         else if (window.opera && window.print) {
             // opera
@@ -289,7 +284,7 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
     };
     
     this.onSearchCompleted = function( ev ) {
-        this.url = pageUrl();  //ev.pageURL;
+        this.url = ev.pageURL;  //pageUrl()
         this.elm.removeAttr( 'disabled' );
     };
     

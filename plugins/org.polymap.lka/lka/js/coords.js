@@ -191,17 +191,5 @@ OpenLayers.Control.Click = OpenLayers.Class( OpenLayers.Control, {
             'click': options.onClick,
             'dblclick': options.onDClick 
         }, this.handlerOptions );
-    }, 
-
-//    onClick: function(evt) {
-//        var output = document.getElementById(this.key + "Output");
-//        var msg = "click " + evt.xy;
-//        output.value = output.value + msg + "\r\n";
-//    },
-//
-//    onDblclick: function(evt) {  
-//        var output = document.getElementById(this.key + "Output");
-//        var msg = "dblclick " + evt.xy;
-//        output.value = output.value + msg + "\n";
-//    }   
+    }
 });

@@ -49,15 +49,16 @@
     Proj4js.defs["EPSG:2065"] = "+title=S-JTSK (Ferro) / Krovak +proj=krovak +lat_0=49.5 +lon_0=42.5 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=ferro +units=m +no_defs";
 </script>
 
-<!-- CSS -->
+<!-- Atlas CSS -->
 <link rel="stylesheet" type="text/css" href="css/custom-theme/jquery-ui-1.8.16.custom.css" />
+<!--link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.4.custom.css" /-->
 <!--link rel="stylesheet" type="text/css" href="css/redmond/jquery-ui-1.8.custom.css" /-->
 <!--link rel="stylesheet" type="text/css" href="css/ui-lightness2/jquery-ui-1.8.custom.css" /-->
-<!-- link rel="stylesheet" type="text/css" href="css/cupertino2/jquery-ui-1.8.custom.css" /-->
-<!--link rel="stylesheet" type="text/css" href="css/pepper-grinder/jquery-ui-1.8.custom.css" /-->
-<!-- link rel="stylesheet" type="text/css" href="css/dd.css" /-->
+<!--link rel="stylesheet" type="text/css" href="css/cupertino2/jquery-ui-1.8.custom.css" /-->
+<!--link rel="stylesheet" type="text/css" href="css/start/jquery-ui-1.8.custom.css" /-->
+<link rel="stylesheet" type="text/css" href="css/atlas.css" />
 <link rel="stylesheet" type="text/css" href="css/atlas.layout.css" />
-<!--link rel="stylesheet" type="text/css" href="lib/jquery.expandable.css" /-->
+<link rel="stylesheet" type="text/css" href="css/atlas.ol.css" />
 
 <!-- Atlas JavaScript -->
 <script src="js/utils.js" type="text/javascript"></script>
@@ -96,7 +97,7 @@ MyAtlasClass = AtlasClass.extend( new function() {
         });
         
         // init search result priorities        
-        this.priorities.push( new ExclusiveCategoriesPriority( ['buchung', 'address'] ) );
+        //this.priorities.push( new ExclusiveCategoriesPriority( ['buchung', 'address'] ) );
         this.priorities.push( new OnScreenPriority() );
         this.priorities.push( new LexicalPriority() );
         
@@ -238,7 +239,7 @@ function pageUrl() {
         <input title="Sucheingabe" id="search_field" size="40" maxlength="150" 
             class="ui-autocomplete-input ui-widget" />
         
-        <button id="search_btn" value="Suchen" title="Suchen"></button>
+        <button id="search_btn" value="Suchen" title="Suchen" class="ui-corner-right"></button>
     </div>
 </div>
 

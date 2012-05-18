@@ -8,6 +8,54 @@
  * http://docs.jquery.com/UI/Theming/API
  */
 
+/**********************************************************
+ * Some tweaks for Atlas 
+ */
+/*.ui-state-hover {
+    box-shadow: 0px 0px 2px #80a0f0;
+}*/
+.ui-dialog { box-shadow: 0px 5px 8px #606060; }
+.ui-dialog-content label { font-weight: bold; }
+.ui-combobox { position: relative; display: inline-block; }
+.ui-tabs-selected { background: white !important; }
+
+/* The separator, basically for the result list. */
+.ui-widget-content hr { border: none; border-top: solid 1px #d0d0d0; color: #FFFFFF; background-color: #FFFFFF; height: 1px; }  
+
+/* Links */
+.ui-widget-content a { color: #315995; text-decoration: underline; border: none; }
+.ui-widget-content a:hover { text-decoration: underline; color: #386BBE; }
+.ui-widget-content img { decoration: none; border: none; }
+
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
+    font-size: 12px;
+}
+.ui-widget input, .ui-widget textarea {
+    border: 1px solid #c0c0c0;
+    background-color: #ffffff;
+    padding: 3px;
+}
+.ui-widget input:focus, .ui-widget textarea:focus, .ui-widget select:focus {
+    border: 1px solid #a0a0a0;
+    /*box-shadow: 0 0 1px #538CE0;*/
+    background: #FFF8E1;
+}
+#search_field:focus {
+    /*border: 1px solid #a0a0a0;*/
+    /*background: #FFF8E1;*/
+}
+.ui-widget input:hover, .ui-widget textarea:hover, .ui-widget select:hover, #search_field:hover {
+    border: 1px solid #909090;
+}
+
+.ui-slider { box-shadow: 0px 1px 5px #999; }
+.ui-slider-handle { border: 2px solid #808080 !important; box-shadow: 0px 2px 8px #777; }
+
+
+/**********************************************************
+ * Original content 
+ */
+
 /* Layout helpers
 ----------------------------------*/
 .ui-helper-hidden { display: none; }
@@ -56,11 +104,13 @@
 
 /* Component containers
 ----------------------------------*/
-.ui-widget { font-family: Arial,sans-serif; font-size: 1.1em; }
+.ui-widget { font-family: Arial,sans-serif; font-size: 12px; }
 .ui-widget .ui-widget { font-size: 1em; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Arial,sans-serif; font-size: 1em; }
 .ui-widget-content { border: 1px solid #cccccc; background: #f7f7f7 url(images/ui-bg_highlight-hard_75_f7f7f7_1x100.png) 50% top repeat-x; color: #222222; }
-.ui-widget-content a { color: #222222; }
+.ui-widget-content a { color: #315995; text-decoration: none; border: none; }
+.ui-widget-content a:hover { text-decoration: underline; color: #386BBE; }
+
 .ui-widget-header { border: 1px solid #cccccc; background: #ebebeb url(images/ui-bg_highlight-hard_85_ebebeb_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
 .ui-widget-header a { color: #222222; }
 
