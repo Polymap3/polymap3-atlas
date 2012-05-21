@@ -147,7 +147,7 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         this.dop.attribution = '<a href="http://www.landesvermessung.sachsen.de/inhalt/geo/basis/basis_dienste.html#geosn">GeoSN</a>';
 
         // Mapnik *********
-        var fiveDays = 5*24*60*60;
+        var fiveDays = 7*24*3600;
         this.mapnik = new OpenLayers.Layer.OSM( "OSM Mapnik",
             // "http://tile.openstreetmap.org/${z}/${x}/${y}.png", {
             "osmcache/${z}/${x}/${y}.png?targetBaseURL=http://tile.openstreetmap.org&expires=" + fiveDays, 

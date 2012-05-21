@@ -34,7 +34,7 @@ import org.polymap.core.runtime.DefaultSessionContext;
 import org.polymap.core.runtime.DefaultSessionContextProvider;
 import org.polymap.core.runtime.SessionContext;
 
-import org.polymap.lka.osmtilecache.OsmTileCacheServlet;
+import org.polymap.lka.osmtilecache.OsmTileCacheServlet2;
 import org.polymap.lka.poi.SearchServlet;
 
 /**
@@ -152,7 +152,7 @@ public class LKAPlugin
                         try {
                             httpService.registerServlet( "/lka/search", new SearchServlet(), null, null );
                             httpService.registerServlet( "/lka/data", new DataServlet(), null, null );
-                            httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet(), null, null );
+                            httpService.registerServlet( "/lka/osmcache", new OsmTileCacheServlet2(), null, null );
                             httpService.registerResources( "/lka", "/lka", null );
                         }
                         catch (Exception e) {

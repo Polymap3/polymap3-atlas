@@ -7,6 +7,5 @@
 	<classpathentry kind="lib" path="lib-static/jdom-1.0.jar"/>
 	<classpathentry kind="lib" path="lib-static/qdparser-1.1.0.jar" sourcepath="lib-static/sources/qdparser-1.1.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib-static/rome-0.9.jar"/>
-	<classpathentry kind="lib" path="lib/ehcache-1.6.2.jar" sourcepath="lib/sources/ehcache-1.6.2-sources.zip"/>
 	<classpathentry kind="output" path="build/eclipse"/>
 </classpath>
