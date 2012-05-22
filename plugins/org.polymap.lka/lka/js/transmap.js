@@ -203,11 +203,17 @@ var WordTranslator = Class.extend( new function WordTranslator() {
     };
 
     this.enhanceSearch = function( line, context ) {
-        if (this.fromRegex == null) {
-            this.fromRegex = new RegExp( '\\b' + this.from + '\\b', 'gi' );
-        }
-        return line.replace( this.fromRegex, 
-                "(" + this.from + " OR " + this.to.split( " " ).join( " OR " ) + ")" );
+        // XXX regex doesn't seem to work with czech phrases!?
+        
+//        if (this.fromRegex == null) {
+//            this.fromRegex = new RegExp( '\\b' + this.from + '\\b', 'gi' );
+//        }
+        
+        // if this.from is a multi word phrase then we need quotes around
+        // to prevent Lucene to put an AND in between and to make sure what
+        // the OR means; see http://polymap.org/atlas/ticket/48
+        return line.replace( this.from, //this.fromRegex, 
+                '("' + this.from + '" OR "' + this.to.split( ' ' ).join( '" OR "' ) + '")' );
     };
     
     this.enhanceResult = function( line, context ) {
