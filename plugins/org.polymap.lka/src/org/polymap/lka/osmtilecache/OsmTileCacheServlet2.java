@@ -118,8 +118,9 @@ public class OsmTileCacheServlet2
             response.setStatus( 304 );
         }
         else {
+            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+            response.setHeader( "Cache-Control", "public,max-age=" + Math.round( expires/1000 ) );
             response.setDateHeader( "Last-Modified", lastModified );
-            response.setHeader( "Cache-Control", "no-cache,must-revalidate" );
 
             OutputStream out = response.getOutputStream();
             if (markerColor != null) {
@@ -174,7 +175,7 @@ public class OsmTileCacheServlet2
             // not changed
             if (get.getStatusCode() == 304) {
                 log.debug( targetPath + " :: NOT CHANGED upstream!" );
-                FileUtils.touch( cacheFile );
+                // do not change the cahcerFile so that all client caches stay valid
             }
             // read data
             else if (get.getStatusCode() == 200) {

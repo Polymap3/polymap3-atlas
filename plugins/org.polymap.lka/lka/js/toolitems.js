@@ -156,7 +156,6 @@ var BookmarkItem = ToolItem.extend( {
         var self = this;
         Atlas.events.bind( "searchCompleted", function( ev ) {
             self.url = ev.pageURL;
-            alert( self.url );
             self.elm.removeAttr( 'disabled' );
         });
     },

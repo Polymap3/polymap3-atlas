@@ -188,18 +188,20 @@ public class SearchServlet
                     log.info( "    baseURL: " + baseURL );                    
                     String title = (String)System.getProperties().get( "org.polymap.atlas.feed.title" );
                     String description = (String)System.getProperties().get( "org.polymap.atlas.feed.description" );
-                    
+
                     out = new GeoRssEncoder( bout, worldCRS, baseURL, title, description );
                     response.setContentType( "application/rss+xml" );
                 }
 
-                List<SearchResult> results = dispatcher.search( searchStr, maxResults );
-                for (SearchResult record : results) {
-                    out.writeObject( record );
+                // make sure that empty searchStr *always* results in empty reponse 
+                if (searchStr != null && searchStr.length() > 0) {
+                    List<SearchResult> results = dispatcher.search( searchStr, maxResults );
+                    for (SearchResult record : results) {
+                        out.writeObject( record );
+                    }
                 }
 
                 out.flush();
-                response.flushBuffer();
                 log.info( "    written: " + cout.getCount() + " bytes" );
             }
             catch (Exception e) {
