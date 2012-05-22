@@ -123,12 +123,17 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         dialog.find( '#calc' ).button().click( function( ev ) {
             self.calc( self.coord );
         });
-        this.dialog.find( '#url-title' ).val( '...' ).keyup( function( ev ) {
-            self.calc( self.coord );            
-        });
-        this.dialog.find( '#url-text' ).val( '...' ).keyup( function( ev ) {
-            self.calc( self.coord );            
-        });
+        this.dialog.find( '#url-title' )
+            .val( '...' )
+            .focus( function( ev ) { $(this).select(); } )
+            .keyup( function( ev ) { self.calc( self.coord ); } )
+        this.dialog.find( '#url-text' )
+            .val( '...' )
+            .focus( function( ev ) { $(this).select(); } )
+            .keyup( function( ev ) { self.calc( self.coord ); } );
+
+        this.dialog.find( '#url' ).focus( function( ev ) { $(this).select(); } );
+        this.dialog.find( '#html' ).focus( function( ev ) { $(this).select(); } ); 
         
         this.coord = Atlas.map.getLonLatFromPixel( ev.xy );
         this.calc( this.coord );
