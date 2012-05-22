@@ -45,6 +45,10 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.polymap.core.runtime.Polymap;
+import org.polymap.core.security.SecurityUtils;
+import org.polymap.core.security.UserPrincipal;
+
 import org.polymap.lka.LKAPlugin;
 
 /**
@@ -87,6 +91,15 @@ public class SearchServlet
         try {
             log.info( "Initializing SearchServlet ..." );
             LKAPlugin.getDefault().mapServiceContext();
+
+            // allow the indexers to access all maps and layers
+            // during startup
+            Polymap.instance().addPrincipal( new UserPrincipal( SecurityUtils.ADMIN_USER ) {
+                public String getPassword() {
+                    throw new RuntimeException( "not yet implemented." );
+                }
+            });
+
             dispatcher = new SearchDispatcher();
         }
         finally {
@@ -113,7 +126,8 @@ public class SearchServlet
 	            }
 	            
                 log.info( "Response: " + result.toString() );
-                response.setContentType( "text/html" );
+                response.setContentType( "application/json; charset=UTF-8" );
+                response.setCharacterEncoding( "UTF-8" );
                 response.getWriter().println( result.toString() );
             }
             catch (Exception e) {

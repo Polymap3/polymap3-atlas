@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.polymap.core.runtime.DefaultSessionContext;
 import org.polymap.core.runtime.DefaultSessionContextProvider;
 import org.polymap.core.runtime.SessionContext;
-
 import org.polymap.lka.osmtilecache.OsmTileCacheServlet2;
 import org.polymap.lka.poi.SearchServlet;
 
@@ -86,6 +85,7 @@ public class LKAPlugin
 	    // serviceContext
 	    assert serviceContext == null && contextProvider == null;
         serviceContext = new DefaultSessionContext( "lka-services" );
+        
         contextProvider = new DefaultSessionContextProvider() {
             protected DefaultSessionContext newContext( String sessionKey ) {
                 return serviceContext;
