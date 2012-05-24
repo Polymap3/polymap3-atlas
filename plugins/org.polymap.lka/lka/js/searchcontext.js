@@ -241,7 +241,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             this.renderTimeout = setTimeout( function() {
                 self.renderCancelled = false;
                 self.reorderResults();
-            }, 2000 );
+            }, 1000 );
 
             $('#tab_title_result'+index).text( this.layer.features.length );
         }

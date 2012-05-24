@@ -132,6 +132,8 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
             .focus( function( ev ) { $(this).select(); } )
             .keyup( function( ev ) { self.calc( self.coord ); } );
 
+        this.dialog.find( '#lon' ).focus( function( ev ) { $(this).select(); } );
+        this.dialog.find( '#lat' ).focus( function( ev ) { $(this).select(); } );
         this.dialog.find( '#url' ).focus( function( ev ) { $(this).select(); } );
         this.dialog.find( '#html' ).focus( function( ev ) { $(this).select(); } ); 
         
