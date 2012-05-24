@@ -51,7 +51,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
@@ -404,8 +403,8 @@ public class AddressIndexer {
             query = new AddressQueryParser( analyzer ).parse( addressStr );
         }
         else {
-            WhitespaceAnalyzer a = new WhitespaceAnalyzer( LKAPlugin.LUCENE_VERSION );
-            QueryParser parser = new QueryParser( LKAPlugin.LUCENE_VERSION, FIELD_KEYWORDS, a );
+            //WhitespaceAnalyzer a = new WhitespaceAnalyzer( LKAPlugin.LUCENE_VERSION );
+            QueryParser parser = new QueryParser( LKAPlugin.LUCENE_VERSION, FIELD_KEYWORDS, analyzer );
             parser.setDefaultOperator( QueryParser.AND_OPERATOR );
             query = parser.parse( addressStr );
         }
