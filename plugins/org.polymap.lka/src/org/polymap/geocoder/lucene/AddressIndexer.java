@@ -68,22 +68,24 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import org.polymap.core.data.pipeline.PipelineIncubationException;
 import org.polymap.core.model.event.IModelHandleable;
-import org.polymap.core.model.event.ModelStoreEvent;
 import org.polymap.core.model.event.IModelStoreListener;
+import org.polymap.core.model.event.ModelStoreEvent;
 import org.polymap.core.model.event.ModelStoreEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.workbench.PolymapWorkbench;
+
 import org.polymap.geocoder.Address;
 import org.polymap.lka.LKAPlugin;
+import org.polymap.lka.poi.SearchSPI;
 import org.polymap.lka.poi.SearchServlet;
-import org.polymap.lka.poi.lucene.PoiIndexer;
 
 /**
  * Lucene based search and indexing engine.
@@ -124,7 +126,7 @@ public class AddressIndexer {
 
     public static final String FIELD_POSTALCODE = "plz";
 
-    public static final String FIELD_CATEGORIES = PoiIndexer.FIELD_CATEGORIES;
+    public static final String FIELD_CATEGORIES = SearchSPI.FIELD_CATEGORIES;
 
     
     private AddressProvider   provider;
@@ -185,6 +187,8 @@ public class AddressIndexer {
                         Set<IMap> maps = new HashSet();
                         for (ILayer layer : AddressIndexer.this.provider.findLayers()) {
                             if (ev.hasChanged( (IModelHandleable)layer )) {
+                                LKAPlugin.getDefault().dropServiceContext();
+                                ProjectRepository.instance().addModelStoreListener( modelListener );
                                 reindex();
                                 return;
                             }
@@ -192,6 +196,8 @@ public class AddressIndexer {
                         }
                         for (IMap map : maps) {
                             if (ev.hasChanged( (IModelHandleable)map )) {
+                                LKAPlugin.getDefault().dropServiceContext();
+                                ProjectRepository.instance().addModelStoreListener( modelListener );
                                 reindex();
                                 return;
                             }

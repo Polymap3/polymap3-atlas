@@ -71,6 +71,7 @@ import org.polymap.core.workbench.PolymapWorkbench;
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.lka.LKAPlugin;
+import org.polymap.lka.poi.SearchSPI;
 
 /**
  * Lucene based search and index methods.
@@ -78,7 +79,7 @@ import org.polymap.lka.LKAPlugin;
  * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
  * @since 3.0
  */
-public class PoiIndexer {
+class PoiIndexer {
     
     private static final Log  log = LogFactory.getLog( PoiIndexer.class );
     
@@ -94,7 +95,7 @@ public class PoiIndexer {
 
     public static final String FIELD_ADDRESS = "adresse";
 
-    public static final String FIELD_CATEGORIES = "categories";
+    public static final String FIELD_CATEGORIES = SearchSPI.FIELD_CATEGORIES;
 
     private PoiProvider       provider;
     
@@ -154,6 +155,8 @@ public class PoiIndexer {
                         Set<IMap> maps = new HashSet();
                         for (ILayer layer : PoiIndexer.this.provider.findLayers()) {
                             if (ev.hasChanged( (IModelHandleable)layer )) {
+                                LKAPlugin.getDefault().dropServiceContext();
+                                ProjectRepository.instance().addModelStoreListener( modelListener );
                                 reindex();
                                 return;
                             }
@@ -161,13 +164,15 @@ public class PoiIndexer {
                         }
                         for (IMap map : maps) {
                             if (ev.hasChanged( (IModelHandleable)map )) {
+                                LKAPlugin.getDefault().dropServiceContext();
+                                ProjectRepository.instance().addModelStoreListener( modelListener );
                                 reindex();
                                 return;
                             }
                         }
                     }
                     catch (Exception e) {
-                        PolymapWorkbench.handleError( LKAPlugin.PLUGIN_ID, this, "Fehler beim ReIndizieren der POIs.", e );
+                        PolymapWorkbench.handleError( LKAPlugin.PLUGIN_ID, this, "Fehler beim Re-Indizieren der POIs.", e );
                     }
                 }
             }

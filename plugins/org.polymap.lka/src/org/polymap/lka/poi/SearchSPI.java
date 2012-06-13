@@ -1,7 +1,6 @@
 /* 
  * polymap.org
- * Copyright 2009, Polymap GmbH, and individual contributors as indicated
- * by the @authors tag.
+ * Copyright 2009-2012, Polymap GmbH. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -12,33 +11,31 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- * $Id$
  */
-
 package org.polymap.lka.poi;
 
 import java.util.List;
 
 import org.apache.lucene.queryParser.QueryParser;
 
-
 /**
  * POI searcher interface.
  *
  * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
- * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
 public interface SearchSPI {
 
     public static final char[] SEPARATOR_CHARS = { ' ', ',', ';' };
+
+    public static final String FIELD_CATEGORIES = "categories";
     
+//    /**
+//     * 
+//     * @param site
+//     */
+//    public void init( SearchSite site );
+
     /**
      * 
      * @param term A search term following the rules defined by the Lucene
@@ -59,5 +56,15 @@ public interface SearchSPI {
      */
     public List<String> autocomplete( String term, int maxResults )
     throws Exception;
+
+    
+//    /**
+//     * 
+//     */
+//    public interface SearchSite {
+//        
+//        void forceReindex();
+//        
+//    }
     
 }

@@ -30,9 +30,15 @@ import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import org.polymap.core.model.event.ModelStoreEvent;
+import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.runtime.DefaultSessionContext;
 import org.polymap.core.runtime.DefaultSessionContextProvider;
+import org.polymap.core.runtime.Polymap;
 import org.polymap.core.runtime.SessionContext;
+import org.polymap.core.security.SecurityUtils;
+import org.polymap.core.security.UserPrincipal;
+
 import org.polymap.lka.osmtilecache.OsmTileCacheServlet2;
 import org.polymap.lka.poi.SearchServlet;
 
@@ -68,12 +74,39 @@ public class LKAPlugin
 
 
 	public void mapServiceContext() {
-        contextProvider.mapContext( serviceContext.getSessionKey(), true );    
-    }
+        contextProvider.mapContext( serviceContext.getSessionKey(), true );
 
+        if (Polymap.instance().getPrincipals().isEmpty()) {
+            // allow the indexers to access all maps and layers
+            // during startup
+            Polymap.instance().addPrincipal( new UserPrincipal( SecurityUtils.ADMIN_USER ) {
+                public String getPassword() {
+                    throw new RuntimeException( "not yet implemented." );
+                }
+            });
+        }
+    }
     
+	
     public void unmapServiceContext() {
         contextProvider.unmapContext();
+    }
+
+
+    /**
+     * Destroys the current {@link SessionContext} and creates a new one.
+     * <p/>
+     * XXX This allows to indexers the reload their content from the
+     * {@link ProjectRepository} after a {@link ModelStoreEvent}. It is a hack since
+     * it drops the context without the chance for other indexers to remove their
+     * listeners.
+     */
+    public void dropServiceContext() {
+        if (serviceContext != null) {
+            contextProvider.destroyContext( serviceContext.getSessionKey() );
+        }
+        serviceContext = new DefaultSessionContext( "atlas-services" );
+        mapServiceContext();
     }
     
 
@@ -84,7 +117,7 @@ public class LKAPlugin
 
 	    // serviceContext
 	    assert serviceContext == null && contextProvider == null;
-        serviceContext = new DefaultSessionContext( "lka-services" );
+        serviceContext = new DefaultSessionContext( "atlas-services" );
         
         contextProvider = new DefaultSessionContextProvider() {
             protected DefaultSessionContext newContext( String sessionKey ) {
@@ -92,12 +125,12 @@ public class LKAPlugin
             }
         };
         SessionContext.addProvider( contextProvider );
-
+        
 	    // register servlets
         servicesInstaller = new HttpServicesInstaller( context );
         servicesInstaller.open();
         
-        // XXX force routing to start; no other, declarative way?
+        // XXX force routing to start; no other (declarative) way?
         for (Bundle bundle : context.getBundles()) {
             if (bundle.getSymbolicName().equals( "routing-service-osgi" )
                     && bundle.getState() != Bundle.ACTIVE) {

@@ -1,7 +1,6 @@
 /* 
  * polymap.org
- * Copyright 2009, Polymap GmbH, and individual contributors as indicated
- * by the @authors tag.
+ * Copyright 2009-2012, Polymap GmbH. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -12,13 +11,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- * $Id$
  */
 package org.polymap.lka.poi.lucene;
 
@@ -42,16 +34,18 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.eclipse.core.runtime.IPath;
 
 import org.polymap.core.runtime.Polymap;
+import org.polymap.core.runtime.SessionContext;
 
 import org.polymap.geocoder.Address;
+import org.polymap.lka.poi.SearchDispatcher;
 import org.polymap.lka.poi.SearchResult;
 import org.polymap.lka.poi.SearchSPI;
 
 /**
+ * Mediator of this package provisding service via the {@link SearchSPI} interface to
+ * the {@link SearchDispatcher}. This also handles the {@link SessionContext}.
  * 
- *
  * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
- * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
 public class PoiSearcher
@@ -60,6 +54,8 @@ public class PoiSearcher
     private static final Log  log = LogFactory.getLog( PoiSearcher.class );
 
     private PoiIndexer          indexer;
+    
+    private SessionContext      context;
 
 
     public PoiSearcher() 
