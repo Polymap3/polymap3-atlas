@@ -94,6 +94,9 @@ final class PoiAnalyzer
                 case '}': return false;
                 case '[': return false;
                 case ']': return false;
+                // http://polymap.org/atlas/ticket/77
+                case '(': return false;
+                case ')': return false;
                 default: return true;
             }
         }

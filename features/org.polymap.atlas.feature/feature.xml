@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.polymap.atlas.feature"
+      label="Atlas Feature"
+      version="2.0.0.qualifier"
+      provider-name="polymap.org">
+
+   <description url="http://polymap.org/atlas/">
+      The Atlas system adds support for JavaScript based public portal/client
+viewer to POLYMAP3.
+   </description>
+
+   <copyright>
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license>
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import feature="org.polymap.core.feature" version="3.1.0.qualifier"/>
+   </requires>
+
+   <plugin
+         id="org.polymap.lka"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="routing-service-osgi"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
