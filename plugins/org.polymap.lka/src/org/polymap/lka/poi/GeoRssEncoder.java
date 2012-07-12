@@ -171,7 +171,7 @@ public class GeoRssEncoder
             StringWriter buf = new StringWriter();
             output.output( feed, buf );
             buf.flush();
-            write( buf.toString().getBytes( "ISO-8859-1" ) );
+            write( buf.toString().getBytes( "UTF-8" ) );
         } 
         catch (FeedException e) {
             log.warn( "unhandled: ", e );

@@ -193,7 +193,7 @@ public class LKAPlugin
                         }
                         return Status.OK_STATUS;
                     }
-                }.schedule( 3000 );
+                }.schedule( 5000 );
             }
 	        return httpService;
 	    }

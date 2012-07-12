@@ -157,7 +157,8 @@ public class SearchServlet
                 // gzipped response?
                 CountingOutputStream cout = new CountingOutputStream( response.getOutputStream() );
                 OutputStream bout = cout;
-                if (request.getHeader( "Accept-Encoding" ).toLowerCase().contains( "gzip" )) {
+                String acceptEncoding = request.getHeader( "Accept-Encoding" );
+                if (acceptEncoding != null && acceptEncoding.toLowerCase().contains( "gzip" )) {
                     response.setHeader( "Content-Encoding", "gzip" );
                     bout = new GZIPOutputStream( bout, true );
                 }
@@ -181,7 +182,8 @@ public class SearchServlet
                     String description = (String)System.getProperties().get( "org.polymap.atlas.feed.description" );
 
                     out = new GeoRssEncoder( bout, worldCRS, baseURL, title, description );
-                    response.setContentType( "application/rss+xml" );
+                    response.setContentType( "application/rss+xml; charset=UTF-8" );
+                    response.setCharacterEncoding( "UTF-8" );
                 }
 
                 // make sure that empty searchStr *always* results in empty reponse 
