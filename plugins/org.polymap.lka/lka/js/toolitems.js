@@ -122,15 +122,18 @@ var ToggleLayerItem = ToolItem.extend( {
        
         if (this.enabled) {
             layer.setVisibility( false );
+            this.div.remove();
             this.enabled = false;
         }
         else {
             layer.setVisibility( true );
             this.enabled = true;
             
-            $('#center_pane').append( '<div id="slider" style="z-index:5000;position:absolute;top:48px;left:250px;right:250px;"></div>' );
-            $('#slider').slider({
-                value: 100,
+            $('#center_pane').append( '<div id="atlas-opacity-slider"'
+                    + ' class="atlas-opacity-slider" style="z-index:5000;"></div>' );
+            this.div = $('#center_pane').find('#atlas-opacity-slider');
+            this.div.slider( {
+                value: 50,
                 slide: function(ev, ui) {
                    ev.stopPropagation();
                    var opacity = ui.value / 100;
@@ -139,6 +142,7 @@ var ToggleLayerItem = ToolItem.extend( {
                    return true;
                 }
             });
+            layer.setOpacity( 0.5 );
         }
     }
 });
@@ -169,8 +173,7 @@ var BookmarkItem = ToolItem.extend( {
         if (this.url == null) {
             alert( $.i18n.prop( "tb_bookmark_disabled" ) );
             return;
-        }
-        
+        }        
         if (window.sidebar) {
             // firefox
             window.sidebar.addPanel( 'tb_bookmark_title'.i18n(), this.url, 'tb_bookmark_comment'.i18n() );
@@ -178,14 +181,17 @@ var BookmarkItem = ToolItem.extend( {
         else if (window.opera && window.print) {
             // opera
             var elem = document.createElement('a');
-            elem.setAttribute('href', url);
-            elem.setAttribute('title', title);
+            elem.setAttribute('href', this.url);
+            elem.setAttribute('title', 'tb_bookmark_title'.i18n());
             elem.setAttribute('rel', 'sidebar');
             elem.click();
         } 
         else if (document.all) {
             // ie
-            window.external.AddFavorite( url, title );
+            window.external.AddFavorite( this.url, 'tb_bookmark_title'.i18n() );
+        }
+        else {
+            alert( 'Ihr Browser unterstützt leider nicht das automatische Anlegen eines Bookmarks. :(' );
         }
     }
 });

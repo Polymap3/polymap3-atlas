@@ -16,6 +16,27 @@
  */
 
 /**********************************************************
+ * Layout handlers
+ */
+.ui-layout-resizer-north:hover {
+    background-color: white;
+}
+.ui-layout-toggler {
+    border: none;
+    background-color: white;
+}
+.ui-layout-toggler-north {
+    background-image: url(../images/layout-handler-north.gif);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+.ui-layout-toggler-east {
+    background-image: url(../images/layout-handler-east.png);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+/**********************************************************
  *	PANES & CONTENT-DIVs
  */
 .ui-layout-north {

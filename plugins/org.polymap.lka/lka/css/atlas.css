@@ -81,6 +81,12 @@ body {
 /**********************************************************
  * Result field, address, routing...
  */
+.atlas-opacity-slider {
+    position: absolute;
+    top: 55px;
+    left: 80px;
+    right: 60%;
+}
 .atlas-result-body {
     padding: 0 !important;
 }
