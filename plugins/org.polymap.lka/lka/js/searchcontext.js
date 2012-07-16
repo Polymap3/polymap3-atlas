@@ -259,7 +259,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         // send UI event
         var ev = jQuery.Event( "searchCompleted" ); 
         ev.searchStr = this.searchStr;
-        ev.searchURL = Atlas.config.searchUrl + "?search=" + this.searchStr; 
+        ev.searchURL = Atlas.config.searchUrl + "?search=" + encodeURIComponent( this.searchStr ); 
         ev.pageURL = pageUrl();
         Atlas.events.trigger( ev );
     };

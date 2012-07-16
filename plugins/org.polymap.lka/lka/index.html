@@ -191,26 +191,6 @@ function initLocal() {
     Atlas = new MyAtlasClass();
 }
 
-/**
- * The page URL including search params from all search contexts.
- */
-function pageUrl() {
-    var searchStr = Atlas.contexts[Atlas.result_index].searchStr;
-    
-    // ?search=XY&search2=AB
-    var allSearchParams = null;
-    for (var i=0; i<Atlas.contexts.length; i++) {
-        var context = Atlas.contexts[i];
-        if (context.searchStr != null && context.searchStr.length > 0) {
-            allSearchParams = allSearchParams == null 
-                    ? "?" : allSearchParams + "&";
-            allSearchParams += "search" + (i+1) + "=" + context.searchStr;
-        }
-    }    
-    return location.protocol + "//" 
-            + location.host + location.pathname + allSearchParams;
-};
-
 </script>
 </head>
 

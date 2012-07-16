@@ -289,7 +289,21 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
     };
     
     this.onSearchCompleted = function( ev ) {
-        this.url = ev.pageURL;  //pageUrl()
+        // the page URL including search params from all search contexts
+        var searchParams = null;
+        for (var i=0; i<Atlas.contexts.length; i++) {
+            var context = Atlas.contexts[i];
+            if (context.searchStr != null && context.searchStr.length > 0) {
+                searchParams = searchParams == null 
+                        ? "?" : searchParams + "&";
+                searchParams += "search" + (i+1) + "=" 
+                        + encodeURIComponent( context.searchStr );
+            }
+        }
+        this.url = location.protocol + "//" 
+            + location.host + location.pathname + searchParams;
+
+        //this.url = ev.pageURL;  //pageUrl()
         this.elm.removeAttr( 'disabled' );
     };
     
