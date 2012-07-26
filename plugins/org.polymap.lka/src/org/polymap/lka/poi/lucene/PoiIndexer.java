@@ -142,7 +142,7 @@ class PoiIndexer {
         }
         
         log.debug( "    creating index reader..." );
-        indexReader = IndexReader.open( directory, false ); // read-only=true
+        indexReader = IndexReader.open( directory ); // read-only=true
         
         log.debug( "    creating index searcher..." );
         searcher = new IndexSearcher( indexReader ); // read-only=true
@@ -412,7 +412,8 @@ class PoiIndexer {
         log.info( "...done." );
 
         log.info( "    creating index reader..." );
-        indexReader = IndexReader.open( directory, false ); // read-only=true
+        indexReader.close();
+        indexReader = IndexReader.open( directory ); // read-only=true
         
 //        log.info( "    creating index searcher..." );
         searcher = new IndexSearcher( indexReader ); // read-only=true
