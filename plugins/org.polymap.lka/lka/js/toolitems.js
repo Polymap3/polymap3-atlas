@@ -322,8 +322,12 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
                 var divElm = $( '#dialog' );
                 divElm.html( data );
                 
-                $("#link_input").attr( "value", url );
-                $("#html_link_input").attr( "value", htmlCode );
+                $("#link_input")
+                        .focus( function( ev ) { $(this).select(); } )
+                        .attr( "value", url );
+                $("#html_link_input")
+                        .focus( function( ev ) { $(this).select(); } )
+                        .attr( "value", htmlCode );
                 
                 divElm.dialog({ modal:true, width:450, height:200, title:'Link speichern' });
             }

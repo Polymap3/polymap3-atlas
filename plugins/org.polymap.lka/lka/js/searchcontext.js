@@ -252,7 +252,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
             this.resultDiv.append( 
                     '<div class="atlas-no-results">{0}</div>'.format( 'context_no_results'.i18n() ) );
             this.resultDiv.find('.atlas-no-results').animate( {'backgroundColor': '#fffff' }, 500, 'swing' );
-
         }
         this.activate();
         
@@ -260,7 +259,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         var ev = jQuery.Event( "searchCompleted" ); 
         ev.searchStr = this.searchStr;
         ev.searchURL = Atlas.config.searchUrl + "?search=" + encodeURIComponent( this.searchStr ); 
-        ev.pageURL = pageUrl();
         Atlas.events.trigger( ev );
     };
 
@@ -363,9 +361,9 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         var detached = this.resultDiv.find('.atlas-result').detach();
         
         var sorted = detached.sort( function( div1, div2 ) {
-            if (self.renderCancelled) {
-                return 0;
-            }
+//            if (self.renderCancelled) {
+//                return 0;
+//            }
             var feature1 = self.featureMap[ $(div1).attr('id') ];
             var feature2 = self.featureMap[ $(div2).attr('id') ];
             
@@ -381,13 +379,13 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         // remove decorations, deparators, etc.
         this.resultDiv.empty();
         
-        
         // re-insert
         var screenBounds = this.map.getExtent();
         for (var i=0; i<sorted.length; i++) {
-            if (self.renderCancelled) {
-                return 0;
-            }
+            // don't cancel as this would leave resultDiv empty
+//            if (self.renderCancelled) {
+//                return 0;
+//            }
             var div = $(sorted[i]);
             div.css( 'display', 'block' );
 
