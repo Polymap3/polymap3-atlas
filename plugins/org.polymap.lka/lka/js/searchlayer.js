@@ -136,7 +136,7 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
             // click
             link.click( function( ev ) {
                 var div = self.context.findResultDiv( feature );
-                div.find( 'b>a' ).trigger( 'click' );
+                div.find( '>a' ).trigger( 'click' );
                 self.closeClusterPopup();
                 self.selectControl.unselect( clusterFeature );
             });
@@ -336,6 +336,16 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
                 'strategies': [this.clustered],
                 'styleMap': styleMap
             });
+//            this.layer = new OpenLayers.Layer.Vector( "Suchergebnis", {
+//                'reportError': true,
+//                //'format': OpenLayers.Format.GeoJSON,
+//                'strategies': [this.clustered],
+//                'styleMap': styleMap,
+//                'protocol': new OpenLayers.Protocol.HTTP({
+//                    'url': this.config.url,
+//                    'format': new OpenLayers.Format.GeoJSON()
+//                })
+//            });
         }
         // GeoJSON feature
         else if (this.config.feature) {

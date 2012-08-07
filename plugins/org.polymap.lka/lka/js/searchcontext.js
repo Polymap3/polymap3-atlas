@@ -421,8 +421,12 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      */
     this.openPopup = function( featureOrFid, popupHtml ) {
         // remove old popup
-        if (this.popup != null && this.popup.div != null) {
+        if (this.popup && this.popup.div) {
             this.popup.destroy();
+            
+            if (this.layer && this.popup.feature) {
+                this.layer.selectControl.unselect( this.popup.feature );
+            }
         }
         
         if (popupHtml == null) {
