@@ -151,55 +151,6 @@ var ToggleLayerItem = ToolItem.extend( {
 /**
  *
  */
-var BookmarkItem = ToolItem.extend( {
-    
-    init: function( id ) {
-        this._super( id, $.i18n.prop( "tb_bookmark_label" ), $.i18n.prop( "tb_bookmark_tip" ) );
-        this.icon = $.i18n.prop( "tb_bookmark_icon" );
-        
-        var self = this;
-        Atlas.events.bind( "searchCompleted", function( ev ) {
-            self.url = ev.pageURL;
-            self.elm.removeAttr( 'disabled' );
-        });
-    },
-    
-    elementCreated: function( elm ) {
-        this.elm = elm;
-        //this.elm.attr( 'disabled', 'disabled' );
-    },
-    
-    onClick: function() {
-        if (this.url == null) {
-            alert( $.i18n.prop( "tb_bookmark_disabled" ) );
-            return;
-        }        
-        if (window.sidebar) {
-            // firefox
-            window.sidebar.addPanel( 'tb_bookmark_title'.i18n(), this.url, 'tb_bookmark_comment'.i18n() );
-        } 
-        else if (window.opera && window.print) {
-            // opera
-            var elem = document.createElement('a');
-            elem.setAttribute('href', this.url);
-            elem.setAttribute('title', 'tb_bookmark_title'.i18n());
-            elem.setAttribute('rel', 'sidebar');
-            elem.click();
-        } 
-        else if (document.all) {
-            // ie
-            window.external.AddFavorite( this.url, 'tb_bookmark_title'.i18n() );
-        }
-        else {
-            alert( 'Ihr Browser unterstützt leider nicht das automatische Anlegen eines Bookmarks. :(' );
-        }
-    }
-});
-
-
-/**
- *
- */
 var GeoRssItem = ToolItem.extend( {
     
     init: function( id ) {
@@ -207,7 +158,7 @@ var GeoRssItem = ToolItem.extend( {
         this.icon = $.i18n.prop( "tb_georss_icon" );
         
         Atlas.events.bind( "searchCompleted", 
-                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ));
+                callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ) );
     },
     
     elementCreated: function( elm ) {
@@ -283,11 +234,6 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
                 callback( this.onSearchCompleted, {scope:this, suppressArgs:false} ))
     };
     
-    this.elementCreated = function( elm ) {
-        this.elm = elm;
-        //this.elm.attr( 'disabled', 'disabled' );
-    };
-    
     this.onSearchCompleted = function( ev ) {
         // the page URL including search params from all search contexts
         var searchParams = null;
@@ -333,6 +279,52 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
             }
         });
     };
+});
+
+
+/**
+ *
+ */
+var BookmarkItem = LinkItem.extend( {
+    
+    init: function( id ) {
+        this._super( id );
+        this.label = $.i18n.prop( "tb_bookmark_label" );
+        this.tooltip = $.i18n.prop( "tb_bookmark_tip" );
+        this.icon = $.i18n.prop( "tb_bookmark_icon" );
+        
+//        var self = this;
+//        Atlas.events.bind( "searchCompleted", function( ev ) {
+//            self.url = ev.pageURL;
+//            self.elm.removeAttr( 'disabled' );
+//        });
+    },
+    
+    onClick: function() {
+        if (!this.url) {
+            alert( $.i18n.prop( "tb_bookmark_disabled" ) );
+            return;
+        }        
+        if (window.sidebar) {
+            // firefox
+            window.sidebar.addPanel( 'tb_bookmark_title'.i18n(), this.url, 'tb_bookmark_comment'.i18n() );
+        } 
+        else if (window.opera && window.print) {
+            // opera
+            var elem = document.createElement('a');
+            elem.setAttribute('href', this.url);
+            elem.setAttribute('title', 'tb_bookmark_title'.i18n());
+            elem.setAttribute('rel', 'sidebar');
+            elem.click();
+        } 
+        else if (document.all) {
+            // ie
+            window.external.AddFavorite( this.url, 'tb_bookmark_title'.i18n() );
+        }
+        else {
+            alert( 'Ihr Browser unterstützt leider nicht das automatische Anlegen eines Bookmarks. :(' );
+        }
+    }
 });
 
 
