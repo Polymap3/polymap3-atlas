@@ -20,19 +20,19 @@
  * @param map The map we are working for. 
  * @requires callback.js, utils.js
  */
-function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
+SearchContext = Class.extend( new function SearchContextProto() {
     
-    this.resultDiv = resultDiv;
+    this.resultDiv = null;
     
-    this.results = [];
+    this.results = null;
     
     /** The OpenLayers.Map we are working for. */
-    this.map = map;
+    this.map = null;
     
     this.attribution = 'Daten von <a href=\"http://polymap.org\">Test</a>';
 
     /** The index of this context. */
-    this.index = index;
+    this.index = -1;
     
     /** The string that has been searched for in this context. */
     this.searchStr = "";
@@ -42,21 +42,21 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     
     this.popup = null;
         
-    this.markerImage = markerImage;
+    this.markerImage = null;
     
-    this.smallMarkerImage = markerImage.split('.')[0] + "_small.png";
+    this.smallMarkerImage = null;
     
-    this.geomColor = geomColor;
+    this.geomColor = null;
     
     this.searchURL = "#";
 
     /** Maps category name into JavaScript Function. */
-    this.categoryRenderers = {};
+    this.categoryRenderers = null;
     
     var NO_RENDERER = {};
     
     /** Array of Functions to be used to order features. */
-    this.resultOrderComparators = [];
+    this.resultOrderComparators = null;
     
     /** The feature that was last made visible. */
     this.scrolledFeature = null;
@@ -68,10 +68,27 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
      * Supported event types:
      *   - featureselected
      */
-    this.events = new Events();
+    this.events = null;
     
     this.active = false;
 
+    
+    /**
+     * Constructs a new instance.
+     */
+    this.init = function( map, index, markerImage, resultDiv, geomColor ) {
+        this.map = map;
+        this.index = index;
+        this.resultDiv = resultDiv;
+        this.geomColor = geomColor;
+        this.markerImage = markerImage;    
+        this.smallMarkerImage = markerImage.split('.')[0] + "_small.png";
+
+        this.results = [];
+        this.categoryRenderers = {};
+        this.resultOrderComparators = [];
+        this.events = new Events();
+    };
     
     /**
      * Active this context by updating the GUI elements.
@@ -136,6 +153,16 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     };
     
     /**
+     * Creates a new SearchLayer to be used in the {@link #search()} method.
+     * Override this method in order to use another than the default implementation.
+     * 
+     * @return {SearchLayer} Newly creates SearchLayer fro this context.
+     */
+    this.newSearchLayer = function( config ) {
+        return new SearchLayer( this, config );
+    };
+    
+    /**
      * 
      */
     this.search = function( searchStr ) {
@@ -160,7 +187,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 var feature = new OpenLayers.Format.GeoJSON().read( searchStr, 'Feature' );
 
                 // new layer / style
-                this.layer = new SearchLayer( this, {
+                this.layer = this.newSearchLayer( {
                     'feature': feature,
                     'attribution': this.attribution,
                     'markerImage': this.markerImage,
@@ -183,7 +210,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                     + "&outputType=JSON&srs=" + this.map.getProjection(); 
 
                 // new layer / style
-                this.layer = new SearchLayer( this, {
+                this.layer = this.newSearchLayer( {
                     'url': this.searchURL,
                     'attribution': this.attribution,
                     'markerImage': this.markerImage,
@@ -227,12 +254,12 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         });
 
         if (this.layer.features.length > 0) {
-            var extent = this.map.getExtent();
+            var mapExtent = this.map.getExtent();
             var layerExtent = this.layer.layer.getDataExtent();
-            if (layerExtent != null) {
+            if (layerExtent && mapExtent.containsBounds( layerExtent )) {
                 this.map.zoomToExtent( layerExtent );
-                if (this.map.getScale() < 20000) {
-                    this.map.zoomToScale( 20000, false );
+                if (this.map.getScale() < 5000) {
+                    this.map.zoomToScale( 5000, false );
                 }
             }
             
@@ -243,10 +270,10 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 self.reorderResults();
             }, 1000 );
 
-            $('#tab_title_result'+index).text( this.layer.features.length );
+            $('#tab_title_result'+this.index).text( this.layer.features.length );
         }
         else {
-            $('#tab_title_result'+index).text( '<>' );
+            $('#tab_title_result'+this.index).text( '<>' );
     
             this.resultDiv.empty();
             this.resultDiv.append( 
@@ -417,7 +444,6 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
     /**
      * 
      * @param fid The fid of the feature to popup.
-     * @return null
      */
     this.openPopup = function( featureOrFid, popupHtml ) {
         // remove old popup
@@ -463,7 +489,7 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
                 );
         feature.popup = this.popup;
         this.popup.feature = feature;
-        map.addPopup( this.popup );        
+        this.map.addPopup( this.popup );        
         return null;
     };
 
@@ -485,4 +511,4 @@ function SearchContext( map, index, markerImage, resultDiv, geomColor ) {
         return feature.id ? this.resultDiv.find( '#feature-' + feature.id.afterLast('.') ) : null;
     };
     
-}
+});

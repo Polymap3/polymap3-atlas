@@ -93,7 +93,7 @@ public class LuceneGeocoder
 
     
     /**
-     * Find 'virual' city addresses. The result records describe one city each.
+     * Find 'virtual' city addresses. The result records describe one city each.
      * The do not contain numbers. The 'middle' numbers coordinate is used.
      * 
      * @param search

@@ -62,6 +62,7 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         var self = this;
         var dialog = $('#dialog');
         this.dialog = dialog;
+        this.searchContext = Atlas.contexts[Atlas.result_index];
 
         var projOptions = '';
         if (Proj4js.defs) {
@@ -79,7 +80,7 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
                 '<p style="text-align:justify; padding:10px; margin:0;">{0}</p>'.format( 'coord_msg'.i18n() ) +
                 '<div class="ui-corner-all" style="padding:10px 10px; margin-left:auto;">' +
                 '    <label>{0}</label><br/>'.format( 'coord_srs_label'.i18n() ) +
-                '    <select id="combobox" style="padding:0.2em; margin-right:10px; width:290px;">' + 
+                '    <select id="combobox" style="padding:0.2em; margin-right:10px; width:210px;">' + 
                          projOptions +
                 '    </select>' +
                 '    <button id="calc" title="{0}">{0}</button>'.format( 'coord_calc_label'.i18n() ) +
@@ -105,8 +106,8 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         );
         this.combo = dialog.find( '#combobox' ).blur();//.combobox();
         var comboInput = dialog.find( '.ui-combobox>input' ).blur()
-                .css( 'padding', '0.5em' )
-                .css( 'width', '250px' );
+                .css( 'padding', '0.5em' );
+                //.css( 'width', '130px' );
         var comboBtn = dialog.find( '.ui-combobox>a' )
                 .css( 'height', '1.9em' )
                 .css( 'margin-left', '-1px' )
@@ -116,21 +117,21 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         comboInput.keypress( function( ev ) {
             if (ev.keyCode == 13) {
                 $(this).autocomplete( "close" );
-                self.calc( self.coord );
+                self.updateUI();
             }
         });
 
         dialog.find( '#calc' ).button().click( function( ev ) {
-            self.calc( self.coord );
+            self.updateUI();
         });
         this.dialog.find( '#url-title' )
             .val( '...' )
             .focus( function( ev ) { $(this).select(); } )
-            .keyup( function( ev ) { self.calc( self.coord ); } )
+            .keyup( function( ev ) { self.deferredUpdateUI(); } )
         this.dialog.find( '#url-text' )
             .val( '...' )
             .focus( function( ev ) { $(this).select(); } )
-            .keyup( function( ev ) { self.calc( self.coord ); } );
+            .keyup( function( ev ) { self.deferredUpdateUI(); } );
 
         this.dialog.find( '#lon' ).focus( function( ev ) { $(this).select(); } );
         this.dialog.find( '#lat' ).focus( function( ev ) { $(this).select(); } );
@@ -138,25 +139,48 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         this.dialog.find( '#html' ).focus( function( ev ) { $(this).select(); } ); 
         
         this.coord = Atlas.map.getLonLatFromPixel( ev.xy );
-        this.calc( this.coord );
+        this.updateUI();
 
-        dialog.dialog({ width:450 , height: 550 , title:'Treffpunkt' });
+        dialog.dialog({ 
+            'width':370, 
+            'height': 570,
+            'position': [10,10],
+            'modal': false,
+            'title':'Treffpunkt',
+            'close': function( ev, ui ) {
+                // deactivate tool
+                self.elm.trigger( 'click' );
+            }
+        });
+    };
+    
+    /**
+     * 
+     */
+    this.deferredUpdateUI = function() {
+        if (this.updateTimeout) {
+            clearTimeout( this.updateTimeout );
+        }
+        var self = this;
+        this.updateTimeout = setTimeout( function() {
+            self.updateUI();
+        }, 3500 );
     };
     
     /**
      * Re-project coordinates to projection given by the combobox EPSG code
      * and update UI elements. 
      */
-    this.calc = function( coord ) {
+    this.updateUI = function() {
         var val = this.combo.val();
         var proj = new OpenLayers.Projection( val );
-        var transformed = coord.clone().transform( Atlas.map.projection, proj );
+        var transformed = this.coord.clone().transform( Atlas.map.projection, proj );
         
         this.dialog.find( '#lon' ).val( transformed.lon );
         this.dialog.find( '#lat' ).val( transformed.lat );
 
         var feature = new OpenLayers.Feature.Vector( 
-            new OpenLayers.Geometry.Point( coord.lon, coord.lat ), 
+            new OpenLayers.Geometry.Point( this.coord.lon, this.coord.lat ), 
             {
                 'title': this.dialog.find( '#url-title' ).val(),
                 'text': this.dialog.find( '#url-text' ).val(),
@@ -172,6 +196,9 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         this.dialog.find( '#html' ).val( 
                 '<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" ' +
                 'src="' + url + '&north=off&east=off"></iframe>' );
+        
+        // search context
+        this.searchContext.search( json );
     };
 });
 

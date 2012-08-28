@@ -39,9 +39,9 @@
 /**********************************************************
  *	PANES & CONTENT-DIVs
  */
-.ui-layout-north {
+/*.ui-layout-north {
     border-bottom: 1px solid #ddd;
-}
+}*/
 
 .ui-layout-pane { /* all 'panes' */
 	background: #FFF;
@@ -132,8 +132,8 @@
  *	TOGGLER-BUTTONS
  */
 .ui-layout-toggler {
-	border: 1px solid #BBB; /* match pane-border */
-	background-color: #c8dcea; /*#f8de96;*/
+	/*border: 1px solid #BBB; /* match pane-border */
+	/*background-color: #c8dcea; /*#f8de96;*/
 }
 .ui-layout-toggler:hover {
     background-color: #f8de96;

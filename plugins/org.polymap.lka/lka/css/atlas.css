@@ -138,9 +138,21 @@ body {
     padding: 2px;
     margin: 0;
 }
+.routing-result-list {
+    padding: 10px;
+    color: #606060;
+    /*overflow:auto; width:100%;"*/
+}
+.routing-result-entry {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.routing-result-entry:hover {
+    background: #f5f5ff;
+}
 .routing-nearby {
     background: #f5f5ff; 
-    padding: 5px 2px 5px 2px;
+    padding: 10px;
     /*border: 1px solid #efefef;*/
 }
 a.close {

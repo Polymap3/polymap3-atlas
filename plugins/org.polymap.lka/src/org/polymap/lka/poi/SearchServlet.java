@@ -159,8 +159,14 @@ public class SearchServlet
                 OutputStream bout = cout;
                 String acceptEncoding = request.getHeader( "Accept-Encoding" );
                 if (acceptEncoding != null && acceptEncoding.toLowerCase().contains( "gzip" )) {
-                    response.setHeader( "Content-Encoding", "gzip" );
-                    bout = new GZIPOutputStream( bout, true );
+                    try {
+                        bout = new GZIPOutputStream( bout, 512, true );
+                        response.setHeader( "Content-Encoding", "gzip" );
+                    }
+                    catch (NoSuchMethodError e) {
+                        // for whatever reason the syncFlush ctor is not always available
+                        log.warn( e.toString() );
+                    }
                 }
 
                 ObjectOutput out = null;

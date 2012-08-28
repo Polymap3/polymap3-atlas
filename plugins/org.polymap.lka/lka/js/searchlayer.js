@@ -18,7 +18,6 @@
  * features of a search request.
  * 
  * @requires js/inheritance.js
- * @author falko
  */
 SearchLayer = Class.extend( new function SearchLayerProto() {
     
@@ -215,119 +214,11 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
      */
     this.initLayer = function() {
         var self = this;
-        
-        var noClusterFilter = new OpenLayers.Filter.Comparison({
-            type: OpenLayers.Filter.Comparison.EQUAL_TO,
-            property: 'count',
-            value: undefined
-        });
-        var inClusterFilter = new OpenLayers.Filter.Comparison({
-            type: OpenLayers.Filter.Comparison.GREATER_THAN,
-            property: 'count',
-            value: 1
-        });
-        var clusterRule = new OpenLayers.Rule({
-            filter: inClusterFilter,
-            symbolizer: {
-                'pointRadius': '${radius}',
-                'label': '${label}',
-                'fontSize': '11px',
-                'fontColor': "#ffffff",
-                'fontWeight': 'bold'
-            }
-        });
-        var noClusterRule = new OpenLayers.Rule({
-            filter: noClusterFilter,
-            symbolizer: {
-                'externalGraphic': self.config.markerImage
-            }
-        });
-        var defaultStyle = new OpenLayers.Style({
-            'graphicTitle': '${tooltip}',
-            'graphicHeight': 28,
-            'graphicWidth': 36,
-            'graphicXOffset': -10.5,
-            'graphicYOffset': -12.5,
-            'strokeWidth': 3,
-            'strokeColor': self.config.color,
-            'fillOpacity': '${opacity}',  //0.7,
-            'fillColor': self.config.color  //'#a0a0a0'
-        }, { 
-            'context': {
-                'radius': function( feature ) {
-                    return feature.cluster ? Math.min(feature.attributes.count, 15) + 9 : 0;
-                },
-                'graphic': function( feature ) {
-                    return feature.cluster ? undefined : self.config.markerImage;
-                },
-                'tooltip': function( feature ) {
-                    return feature.cluster 
-                            ? feature.attributes.count 
-                            : feature.attributes.title;
-                },
-                'opacity': function( feature ) {
-                    if (feature.cluster) {
-                        return 0.6;
-                    } else {
-                        return feature.geometry instanceof OpenLayers.Geometry.Point ? 0.80 : 0.35;
-                    }
-                },
-                'label': function( feature ) {
-                    return feature.cluster ? feature.attributes.count : '';
-                }
-            } 
-        });
-        defaultStyle.addRules( [noClusterRule, clusterRule] );
 
-        var selectStyle = new OpenLayers.Style({
-            'strokeColor': '#A000A0',
-            'strokeWidth': 4,
-            'fillOpacity': 0.8,
-            'fillColor': '#a0a0a0',
-            'graphicHeight': 36,
-            'graphicWidth': 46
-        }, { 
-            'context': {
-                'radius': function( feature ) {
-                    return feature.cluster ? Math.min(feature.attributes.count, 10) + 12 : 0;
-                },
-                'tooltip': function( feature ) {
-                    return feature.cluster 
-                            ? feature.attributes.count 
-                            : feature.attributes.title;
-                },
-                'label': function( feature ) {
-                    return feature.cluster 
-                            ? feature.attributes.count 
-                            : 'X';
-                }
-            } 
-        });
-        selectStyle.addRules([
-            new OpenLayers.Rule({
-                'filter': noClusterFilter,
-                'symbolizer': {
-                    'externalGraphic': 'images/marker_selected.png'
-                }
-            }),
-            new OpenLayers.Rule({
-                'filter': inClusterFilter,
-                'symbolizer': {
-                    'pointRadius': '${radius}',
-                    'label': '${label}',
-                    'fontSize': '12px',
-                    'fontColor': "#ffffff",
-                    'fontWeight': 'bold'
-                }
-            })
-        ]);
+        // StyleMap
+        var styleMap = this.newStyleMap();
 
-        var styleMap = new OpenLayers.StyleMap({
-            'default': defaultStyle,
-            'select': selectStyle
-        });
-
-        // search URL
+        // search: URL
         if (this.config.url) {
             this.layer = new OpenLayers.Layer.GML( "Suchergebnis",
                 this.config.url, { 
@@ -346,8 +237,8 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
 //                    'format': new OpenLayers.Format.GeoJSON()
 //                })
 //            });
-        }
-        // GeoJSON feature
+        }        
+        // search: GeoJSON feature
         else if (this.config.feature) {
             this.layer = new OpenLayers.Layer.Vector( "Suchergebnis", {
                 'reportError': true,
@@ -374,6 +265,18 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
         });
     };
     
+    /**
+     * Creates a new StyleMap for this layer.
+     * 
+     * @returns {OpenLayers.StyleMap} The StyleMap to be used for our layer. 
+     */
+    this.newStyleMap = function() {
+        return new SearchLayerStyle( this ).newStyleMap();
+    }
+    
+    /**
+     * 
+     */
     this.onLayerLoaded = function() {
         var self = this;
 
@@ -397,36 +300,4 @@ SearchLayer = Class.extend( new function SearchLayerProto() {
     this.getDataExtent = function() {
         return this.layer ? this.layer.getDataExtent() : null;
     }
-});
-
-
-/**
- * 
- */
-OpenLayers.Strategy.AtlasCluster = OpenLayers.Class( OpenLayers.Strategy.Cluster, {
-    
-    /**
-     * Method: shouldCluster
-     * Determine whether to include a feature in a given cluster.
-     * 
-     * Only Point geometries are clustered. All other geometry types are never
-     * clustered.
-     *
-     * Parameters:
-     * cluster - {<OpenLayers.Feature.Vector>} A cluster.
-     * feature - {<OpenLayers.Feature.Vector>} A feature.
-     *
-     * Returns:
-     * {Boolean} The feature should be included in the cluster.
-     */
-    shouldCluster: function( cluster, feature ) {
-        if (!(feature.geometry instanceof OpenLayers.Geometry.Point)) {
-            return false;
-        }
-        else {
-            return OpenLayers.Strategy.Cluster.prototype.shouldCluster.apply( this, arguments );
-        }
-    },
-    
-    CLASS_NAME: "OpenLayers.Strategy.AtlasCluster" 
 });
