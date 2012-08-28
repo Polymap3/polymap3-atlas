@@ -106,11 +106,16 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
         $('#tabs').bind( 'tabsselect', function( ev, ui ) {
             //ui.tab     // anchor element of the selected (clicked) tab
             //ui.panel   // element, that contains the selected/clicked tab contents
-            self.contexts[self.result_index].searchStr = $('#search_field').val();
-            self.contexts[self.result_index].deactivate();     
-
-            self.result_index = ui.index;   // zero-based index of the selected (clicked) tab
-            self.contexts[self.result_index].activate();
+            var context = self.contexts[self.result_index];
+            if (context) {
+                context.searchStr = $('#search_field').val();
+                context.deactivate();
+            }
+            context = self.contexts[ui.index];
+            if (context) {
+                self.result_index = ui.index;   // zero-based index of the selected (clicked) tab
+                context.activate();
+            }
         });
 
         // search field
@@ -259,9 +264,8 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
                         self.map.zoomToScale( 20000, false );
                     }
                 }
-            }, 2000 );
-            
-        }, 1000 );        
+            }, 1500 );
+        }, 1500 );        
     };
 
 });

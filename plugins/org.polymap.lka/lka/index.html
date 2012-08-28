@@ -72,9 +72,10 @@
 <script src="js/measure.js" type="text/javascript"></script>
 <script src="js/searchservice.js" type="text/javascript"></script>
 <script src="js/searchlayer.js" type="text/javascript"></script>
+<script src="js/searchlayerstyle.js" type="text/javascript"></script>
 <script src="js/searchcontext.js" type="text/javascript"></script>
 <script src="js/searchpriority.js" type="text/javascript"></script>
-<script src="js/routing.service.js" type="text/javascript"></script>
+<script src="js/routing.service-osm2po.js" type="text/javascript"></script>
 <script src="js/routing.nearby.js" type="text/javascript"></script>
 <script src="js/routing.shortestpath.js" type="text/javascript"></script>
 <script src="js/routing.js" type="text/javascript"></script>
@@ -84,8 +85,14 @@
 <!-- Local config -->
 <script type="text/javascript">
 
-// the Atlas environment
+/**
+ * The Atlas environment with individual settings.
+ */
 MyAtlasClass = AtlasClass.extend( new function() {
+    
+    /**
+     *
+     */
     this.init = function( config ) {
         Atlas = this;
         this._super( {
@@ -131,7 +138,7 @@ MyAtlasClass = AtlasClass.extend( new function() {
         Atlas.transmap = new TransMap( 'bundle/trans_', ['de_cz'] );
         
         Atlas.routing = new Routing(
-            '../routing-service/web/v1.0', 
+            'http://10.0.15.2:8888/Osm2poService', // '../routing-service/web/v1.0', 
             'a27fb9d8ace734e3b4395ec342ddb35c' );
             //'f4c8d0c39ff58a705a9677f38fbee7af' );
         
@@ -182,6 +189,7 @@ MyAtlasClass = AtlasClass.extend( new function() {
             $('#search_field').focus();
         }, 1000 );
     };
+    
 });
 
 var Atlas;
@@ -230,34 +238,34 @@ function initLocal() {
             <li>
                 <a href="#result_body0" id="tab_title_result0"
                    style="border:none; width:28px; color:#ffffff; text-shadow: 1px 1px 2px #666; padding:0.4em 0.5em 0.4em 1.5em; background:url(images/marker_red.png) no-repeat scroll 5px 50% transparent;">
-                    <!--img src="images/marker_red.png" width="24" height="14" style="border: none;" /-->
                     &lt;&gt;
                 </a>
             </li>
             <li>
                 <a href="#result_body1" id="tab_title_result1"
                    style="border:none; width:28px; color:#ffffff; text-shadow: 1px 1px 2px #666; padding:0.4em 0.5em 0.4em 1.5em; background:url(images/marker_green.png) no-repeat scroll 5px 50% transparent;">
-                    <!--img src="images/marker_red.png" width="24" height="14" style="border: none;" /-->
                     &lt;&gt;
                 </a>
             </li>
             <li>
                 <a href="#result_body2" id="tab_title_result2"
                    style="border:none; width:28px; color:#ffffff; text-shadow: 1px 1px 2px #666; padding:0.4em 0.5em 0.4em 1.5em; background:url(images/marker_yellow.png) no-repeat scroll 5px 50% transparent;">
-                    <!--img src="images/marker_red.png" width="24" height="14" style="border: none;" /-->
                     &lt;&gt;
                 </a>
             </li>
             <li>
                 <a href="#result_body3" id="tab_title_result3"
                    style="border:none; width:28px; color:#ffffff; text-shadow: 1px 1px 2px #666; padding:0.4em 0.5em 0.4em 1.5em; background:url(images/marker_blue.png) no-repeat scroll 5px 50% transparent;">
-                    <!--img src="images/marker_red.png" width="24" height="14" style="border: none;" /-->
                     &lt;&gt;
                 </a>
             </li>
-            <!--li><a href="#result_body1">
-                <img src="images/marker_green.png" width="24" height="14" style="border: none;" />
-            </a></li-->
+            <li>
+                <a href="#result_body_routing" id="tab_title_result_routing"
+                   title="Routing"
+                   style="border:none; width:28px; color:#ffffff; text-shadow: 1px 1px 2px #666; padding:0.4em 0.5em 0.4em 1.5em; background:url(images/flag_yellow.png) no-repeat scroll 5px 50% transparent;">
+                   &nbsp;
+                </a>
+            </li>
         </ul>
         
         <div id="result_body0" class="atlas-result-body ui-layout-content ui-dialog-content">
@@ -271,6 +279,9 @@ function initLocal() {
         </div>
         <div id="result_body3" class="atlas-result-body ui-layout-content ui-dialog-content">
             <div style="margin:1.7em;">result_body_blue</div>
+        </div>
+        <div id="result_body_routing" class="atlas-result-body ui-layout-content ui-dialog-content">
+            <div style="margin:1.7em;">Routing...</div>
         </div>
 </div>
 

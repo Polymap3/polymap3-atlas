@@ -82,7 +82,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         var self = this;
         
         this.elm.append( (
-                '<div style="background:#f5f5ff; padding:5px; font-size:10px;">'
+                '<div>'
                 + '<b>{0}</b><br/> <input id="{1}" style="width:85%; margin: 1px 0px 1px 0px;"></input>'
                 + '    <span id="{7}" style="color:#606060; margin:0px 5px;"></span><br/>'
                 + '<b>{2}</b><br/> <input id="{3}" style="width:85%; margin: 1px 50x 1px 0px;"></input>'
@@ -103,7 +103,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         this.toInput = this.elm.find( '#routing-to-input-'+index );
 
         // set default value
-        this.fromInput.val( this.fromSearchStr != null ? this.fromSearchStr : null );
+        this.fromInput.val( this.fromSearchStr != null ? this.fromSearchStr : 'frauensteiner 44 freiberg' );
         this.toInput.val( this.toSearchStr != null ? this.toSearchStr : null );
         
         this.createSearchPicklist( 
@@ -201,7 +201,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             var searchUrl = self.searchService.searchUrl( _inputElm.val() );
             self.searchService.search( searchUrl, function( features ) {
                 _parentElm.text( features.length );
-                _parentElm.attr( 'title', features.length + ' mögliche Orte'  );
+                _parentElm.attr( 'title', features.length + ' m&ouml;gliche Orte'  );
                 if (features.length == 1 /*&& features[0].data.title == _inputElm.val()*/) {
                     callback.call( self, features[0] );
                 }
@@ -218,7 +218,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         $(document.body).append( '<div id="routing-picklist-dialog"></div>' );
         var dialogDiv = $( '#routing-picklist-dialog' );
 
-        dialogDiv.append( '<span style="color:#808080;">Mögliche Orte:</span>'
+        dialogDiv.append( '<span style="color:#808080;">M&ouml;gliche Orte:</span>'
                 + '<select id="routing-result-list" name="list1" size="15"'
                 + '    style="width:100%; height:100%;" />' );
                     
@@ -234,7 +234,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         });
 
         this.searchService.search( searchUrl, function( features ) {
-            dialogDiv.find( '>span' ).text( 'Mögliche Orte (' + features.length + ')' );
+            dialogDiv.find( '>span' ).text( 'M&ouml;gliche Orte (' + features.length + ')' );
             
             var selectElm = dialogDiv.find( '#routing-result-list' );
             selectElm.click( function( ev ) {
@@ -279,7 +279,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 'protocol': new OpenLayers.Protocol(),
                 'styleMap': defaultStyleMap()
             });
-            self.layer.attribution = 'Routing by <b><a href="http://pgrouting.org">PGRouting</a></b>';
+            self.layer.attribution = self.service.attribution;
 
             var vectors = new Array( features.length+2 );
             $.each( features, function( i, feature ) {
@@ -289,6 +289,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             // flags
             vectors[features.length] = new OpenLayers.Feature.Vector( toPoint, {title:'Ziel'} );
             vectors[features.length+1] = new OpenLayers.Feature.Vector( fromPoint, {title:'Start'} );
+            
             self.layer.addFeatures( vectors );
             Atlas.map.addLayer( self.layer );
 
@@ -311,8 +312,8 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             Atlas.map.addControl( self.hoverControl );
             self.hoverControl.activate();      
 
-            // tooltip
-            self.tooltip = new RoutingTooltip( self, status, vectors );            
+            // result panel
+            self.tooltip = new RoutingResultPanel( self.elm.parent(), self, status, vectors );            
             self.layer.events.register( "featureselected", self.layer, function( ev ) {
                 self.tooltip.highlight( ev.feature );
             });
@@ -357,72 +358,63 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
  * 
  * @author <a href="http://polymap.de">Falko Bräutigam</a>
  */
-var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
+var RoutingResultPanel = Class.extend( new function RoutingResultPanelProto() {
+    
+    this.parent = null;
     
     this.shortestPath = null;
-    
-    this.tooltip = null;
     
     this.highlighted = null;
     
     this.defaultStyle = null;
     
-    this.init = function( shortestPath, status, features ) {
+    this.init = function( parent, shortestPath, status, features ) {
+        this.parent = parent;
         this.shortestPath = shortestPath;
-        $(document.body).append( 
-                '<div id="routing-tooltip" class="ui-widget-content ui-corner-all"' 
-                + '   style="z-index:1000; position:absolute; color:#707070; border:0px solid black;'
-                + '   left:50px; top:200px; padding:5px; background:#FFFFCF; box-shadow:2px 3px 3px #808080;">'
-                + '<a href="#" class="close" title="Schliessen" style="float:right;"></a>'
+        this.parent.append( '<hr/><div>'
+                + '<div class="routing-result-entry">'
                 + '<b>' + 'routing_total_length'.i18n() + '</b> <span id="routing-total-length" /> km<br/>'
                 + '<b>' + 'routing_total_cost'.i18n() + '</b> <span id="routing-total-cost" /> min.<br/>'
-                + '<hr/>'
-                + '<div id="routing-tooltip-list" style="overflow:auto;'
-                + '    width:180px; height:300px;">'
                 + '</div>'
+                + '<div id="routing-tooltip-list" class="routing-result-list"></div>'
                 + '</div>' );
-        this.tooltip = $('#routing-tooltip');
         
-        this.tooltip.find( '>a' ).click( function( ev) {
-            shortestPath.close();
-        });
-        
-        var list = this.tooltip.find('#routing-tooltip-list');
+        var list = this.parent.find('#routing-tooltip-list');
         var totalLength = 0;
-        var totalCost = 0;
+        var totalTime = 0;
         var self = this;
         
-        var street = {'name': 'Start', 'length':0, 'cost':0, 'features':[], 'index':0};
+        var street = {'name': 'Start', 'length':0, 'time':0, 'features':[], 'index':0};
         this.streets = [street];
         $.each( features, function( i, feature ) {
             
-            if (feature.data.length && feature.data.cost) {
+            if (feature.data.length && feature.data.time) {
                 if (street.name != feature.data.name) {
-                    list.append( '<div style="padding:3px; margin-right:5px;">'
+                    list.append( '<div class="routing-result-entry">'
                             + '<b>' + (street.name.length > 0 ? street.name : '-') + '</b><br/>'
-                            + 'L&auml;nge: ' + (street.length/1000).toFixed( 2 ) + ' km <br/>' 
-                            + 'Zeit: ' + (street.cost/60).toFixed( 2 ) + ' min. <br/>'
-                            + '</div>' );
+                            + '<span style="float:right;">'
+                            + (street.length).toFixed( 2 ) + ' km <br/>' 
+                            //+ (street.time/60).toFixed( 2 ) + ' min. <br/>'
+                            + '</span></div>' );
 
-                    street = {'name': feature.data.name, 'length':0, 'cost':0, 'features':[feature], 'index':self.streets.length};
+                    street = {'name': feature.data.name, 'length':0, 'time':0, 'features':[feature], 'index':self.streets.length};
                     self.streets.push( street );
                 }
                 else {
                     street.features.push( feature );
                     street.length += feature.data.length;
-                    street.cost += feature.data.cost;
+                    street.time += feature.data.time;
                 }
                 
                 totalLength += feature.data.length;
-                totalCost += feature.data.cost;
+                totalTime += feature.data.time;
             }
         });
-        this.tooltip.find( '#routing-total-length' ).text( (totalLength/1000).toFixed(2) );
-        this.tooltip.find( '#routing-total-cost' ).text( (totalCost/60).toFixed(2) );
+        this.parent.find( '#routing-total-length' ).text( (totalLength).toFixed(2) );
+        this.parent.find( '#routing-total-cost' ).text( (totalTime/60).toFixed(2) );
     };
     
     this.close = function() {
-        if (this.tooltip != null) { this.tooltip.remove(); }
     };
     
     this.highlight = function( feature ) {
@@ -443,7 +435,7 @@ var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
             }
         }
         if (found) {
-            var list = this.tooltip.find( '#routing-tooltip-list' );
+            var list = this.parent.find( '#routing-tooltip-list' );
             this.highlighted = list.find( ':nth-child({0})'.format( found.index+1 ) );
 
             this.defaultStyle = {
@@ -451,10 +443,10 @@ var RoutingTooltip = Class.extend( new function RoutingTooltipProto() {
                     border: this.highlighted.css( 'border' ),
                     color: this.highlighted.css( 'color' ) };
 
-            this.highlighted.css( 'background', '#FFFFAF' )
-            .css( 'color', '#222' )
-            .css( 'border', '1px solid #d0d0d0')
-            .addClass( 'ui-corner-all' );
+            this.highlighted.css( 'background', '#FFFFC0' );
+//            .css( 'color', '#222' )
+//            .css( 'border', '1px solid #d0d0d0')
+//            .addClass( 'ui-corner-all' );
             list.scrollTo( this.highlighted, 1000 );
         }
     };

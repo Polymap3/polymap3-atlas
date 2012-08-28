@@ -63,49 +63,42 @@ var Routing = Class.extend( new function RoutingProto() {
         // nearby search
         var btn3 = panel.find( 'a:nth-child(3)');
         btn3.click( function( ev2 ) {
-            if (btn3.attr( 'disabled' ) == 'disabled') {
-                ev2.preventDefault();
-            }
-            else {
-                panel.find( 'a' ).attr( 'disabled', 'disabled' );
-                btn3.css( 'font-weight', 'bold' );
+            $('#tabs').tabs( 'select', '#result_body_routing' );
 
-                ev.div.append( '<div id="routing-nearby-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
-                var elm = $('#routing-nearby-'+ev.index);
-                closeButton( elm, function() {
-                    panel.find( 'a' ).removeAttr( 'disabled' );
-                    btn3.css( 'font-weight', 'normal' )
-                    self.nearbies[ev.index].close();
-                    self.nearbies[ev.index] = null;
-                });
-                self.nearbies[ev.index] = new Nearby( self.service );
-                self.nearbies[ev.index].createControl( elm, ev.index, ev.feature.geometry.getCentroid() );
-                elm.fadeIn( 1000 );
-            }
+            //var body = ev.div;
+            $('#result_body_routing').empty()
+                    .append( '<div id="routing-nearby-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
+                    
+            var elm = $('#routing-nearby-'+ev.index);
+            closeButton( elm, function() {
+                panel.find( 'a' ).removeAttr( 'disabled' );
+                btn3.css( 'font-weight', 'normal' )
+                self.nearbies[ev.index].close();
+                self.nearbies[ev.index] = null;
+            });
+            self.nearbies[ev.index] = new Nearby( self.service );
+            self.nearbies[ev.index].createControl( elm, ev.index, ev.feature.geometry.getCentroid() );
+            elm.fadeIn( 1000 );
         });
 
         var btn = panel.find( 'a:nth-child(1)');
         btn.click( function( ev2 ) {
-            if (btn.attr( 'disabled' ) === 'disabled') {
-                ev2.preventDefault();
-            }
-            else {
-                panel.find( 'a' ).attr( 'disabled', 'disabled' );
-                btn.css( 'font-weight', 'bold' );
+            $('#tabs').tabs( 'select', '#result_body_routing' );
 
-                ev.div.append( '<div id="routing-to-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
-                var elm = ev.div.find( '#routing-to-'+ev.index );
-                closeButton( elm, function() {
-                    panel.find( 'a' ).removeAttr( 'disabled' );
-                    btn.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
-                    self.routes[ev.index].close();
-                    self.routes[ev.index] = null;
-                });
-                self.routes[ev.index] = new ShortestPath( self.service );
-                self.routes[ev.index].createControl( elm, ev.index, 
-                        null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
-                elm.fadeIn( 1000 );
-            }
+            $('#result_body_routing').empty()
+                    .append( '<div id="routing-to-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
+                    
+            var elm = $('#routing-to-'+ev.index);
+            closeButton( elm, function() {
+                panel.find( 'a' ).removeAttr( 'disabled' );
+                btn.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
+                self.routes[ev.index].close();
+                self.routes[ev.index] = null;
+            });
+            self.routes[ev.index] = new ShortestPath( self.service );
+            self.routes[ev.index].createControl( elm, ev.index, 
+                    null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
+            elm.fadeIn( 1000 );
         });
 
         var btn2 = panel.find( 'a:nth-child(2)');
