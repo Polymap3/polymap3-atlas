@@ -16,12 +16,7 @@ package org.polymap.routing.gt;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import java.net.URL;
-
 import net.refractions.udig.catalog.memory.ActiveMemoryDataStore;
-import net.refractions.udig.catalog.memory.internal.MemoryGeoResourceImpl;
-import net.refractions.udig.catalog.memory.internal.MemoryServiceImpl;
-
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -54,7 +49,6 @@ import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.operation.DefaultFeatureOperation;
 import org.polymap.core.data.util.ProgressListenerAdaptor;
 import org.polymap.core.project.ILayer;
-import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.runtime.Timer;
 
@@ -113,25 +107,29 @@ public class TestGraphOperation
     
     protected void buildTempLayer( Graph graph, IProgressMonitor monitor )
     throws Exception {
-        ILayer layer = ProjectRepository.instance().newEntity( ILayer.class, null );
-        layer.setLabel( "Graph" );
-        layer.setOrderKey( 100 );
-        layer.setOpacity( 100 );
+//        ILayer layer = ProjectRepository.instance().newEntity( ILayer.class, null );
+//        layer.setLabel( "Graph" );
+//        layer.setOrderKey( 100 );
+//        layer.setOpacity( 100 );
+//
+//        MemoryServiceImpl service = new MemoryServiceImpl( new URL( "http://polymap.org/graph") );
+//        ActiveMemoryDataStore ds = service.resolve( ActiveMemoryDataStore.class, null );
+//        
+//        String graphTypeName = "graph";
+//        MemoryGeoResourceImpl geores = new MemoryGeoResourceImpl( graphTypeName, service );
+//        layer.setGeoResource( geores );
+//        
+//        IMap map = context.adapt( ILayer.class ).getMap();
+//        map.addLayer( layer );
 
-        MemoryServiceImpl service = new MemoryServiceImpl( new URL( "http://polymap.org/graph") );
-        ActiveMemoryDataStore ds = service.resolve( ActiveMemoryDataStore.class, null );
-        
-        String graphTypeName = "graph";
-        MemoryGeoResourceImpl geores = new MemoryGeoResourceImpl( graphTypeName, service );
-        layer.setGeoResource( geores );
-        
-        IMap map = context.adapt( ILayer.class ).getMap();
-        map.addLayer( layer );
+        ILayer layer = ProjectRepository.instance().newTempLayer( "graph", context.adapt( ILayer.class ).getMap() );
+
+        ActiveMemoryDataStore ds = layer.getGeoResource().resolve( ActiveMemoryDataStore.class, null );
         
         // graph schema ***
         SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();
         tb.add( "geom", LineString.class, context.featureSource().getSchema().getCoordinateReferenceSystem() );
-        tb.setName( graphTypeName );
+        tb.setName( "graph" );
         
         SimpleFeatureType graphSchema = tb.buildFeatureType();
         ds.createSchema( graphSchema );

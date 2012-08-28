@@ -17,4 +17,12 @@
             label="Routing-Graph erstellen">
       </featureOperation>
    </extension>
+   <extension
+         point="org.polymap.core.http.servlets">
+      <servlet
+            class="org.polymap.routing.osm2po.Osm2poServlet"
+            name="Osm2poService"
+            path="/Osm2poService">
+      </servlet>
+   </extension>
 </plugin>
