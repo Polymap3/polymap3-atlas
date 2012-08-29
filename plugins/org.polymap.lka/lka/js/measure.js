@@ -15,6 +15,32 @@
  */
 
 /**
+ * The tool item to be used in a toolbar to toggle a MeasureMode.
+ */
+var ToggleMeasureItem = ToolItem.extend( {
+    
+    init: function( id, measure ){
+        this._super( id, $.i18n.prop( "tb_measure_label" ), $.i18n.prop( "tb_measure_tip" ) );
+        this.icon = $.i18n.prop( "tb_measure_icon" );
+        this.mode = "toggle";
+        this.measure = measure;
+        this.enabled = false;
+    },
+    
+    onClick: function() {
+        if (this.enabled) {
+            this.measure.deactivate();
+            this.enabled = false;
+        }
+        else {
+            this.measure.activate();
+            this.enabled = true;
+        }
+    }
+});
+
+
+/**
  * This controls a map and a GUI control to provide a measure mode.
  * <p>
  * needs: callback.js
@@ -66,7 +92,17 @@ function MeasureMode( map, elm ) {
 //        }
         
         $('#dialog').html( "Gesamtlänge: <b>" + measure + "</b>" );
-        $('#dialog').dialog({ width:250 , height: 100 , title:"Ergebnis" });
+        $('#dialog').dialog({ 
+            'width': 250, 
+            'height': 100, 
+            'title': 'Ergebnis'
+//            'close': function( ev, ui ) {
+//                // remove everything, including this handler
+//                //self.dialog.remove();
+//                // deactivate tool
+//                self.elm.trigger( 'click' );
+//            }
+        });
 
 //      var anchor = {
 //      size: new OpenLayers.Size(10,10), 
@@ -123,32 +159,5 @@ function MeasureMode( map, elm ) {
         //"measurepartial": callback( this.onMeasure, {scope:this} )
     });
 };
-
-
-/**
- * The tool item to be used in a toolbar to toggle a MeasureMode.
- */
-var ToggleMeasureItem = ToolItem.extend( {
-    
-    init: function( id, measure ){
-        this._super( id, $.i18n.prop( "tb_measure_label" ), $.i18n.prop( "tb_measure_tip" ) );
-        this.icon = $.i18n.prop( "tb_measure_icon" );
-        this.mode = "toggle";
-        this.measure = measure;
-        this.enabled = false;
-    },
-    
-    onClick: function() {
-        if (this.enabled) {
-            this.measure.deactivate();
-            this.enabled = false;
-        }
-        else {
-            this.measure.activate();
-            this.enabled = true;
-        }
-    }
-});
-
 
 

@@ -5,6 +5,11 @@
  *   - tweaks for OpenLayers elements
  */
 
+/* coords.js */
+.olControlClickActive {
+   cursor: crosshair;
+}
+
 /**********************************************************
  * OpenLayers OVERVIEW
  */
