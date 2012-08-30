@@ -14,7 +14,8 @@
  */
 
 /**
- * Integration of the Routing service into the Atlas UI.
+ * Catch 'searchResultGenerated' event and enhance search result
+ * with routing UI.
  */
 var Routing = Class.extend( new function RoutingProto() {
 
@@ -28,7 +29,7 @@ var Routing = Class.extend( new function RoutingProto() {
     this.routes;
     
     /**
-     * 
+     * Constructs a new instance. 
      * 
      * @public
      * @param {String} baseUrl http://<domain>:<port>/<root>/<version>/
@@ -39,8 +40,10 @@ var Routing = Class.extend( new function RoutingProto() {
         this.routes = [];
         this.service = new RoutingService( baseUrl, profileKey );
        
-        Atlas.events.bind( 'searchResultGenerated', 
-                callback( this.onSearchResultGenerated, {scope:this} ) );
+        var self = this;
+        Atlas.events.bind( 'searchResultGenerated', function( ev ) {
+            self.onSearchResultGenerated( ev )
+        });
     };
 
     /**
@@ -63,44 +66,24 @@ var Routing = Class.extend( new function RoutingProto() {
         // nearby search
         var btn3 = panel.find( 'a:nth-child(3)');
         btn3.click( function( ev2 ) {
-            $('#tabs').tabs( 'select', '#result_body_routing' );
-
-            //var body = ev.div;
-            $('#result_body_routing').empty()
-                    .append( '<div id="routing-nearby-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
-                    
-            var elm = $('#routing-nearby-'+ev.index);
-            closeButton( elm, function() {
-                panel.find( 'a' ).removeAttr( 'disabled' );
-                btn3.css( 'font-weight', 'normal' )
-                self.nearbies[ev.index].close();
-                self.nearbies[ev.index] = null;
-            });
-            self.nearbies[ev.index] = new Nearby( self.service );
-            self.nearbies[ev.index].createControl( elm, ev.index, ev.feature.geometry.getCentroid() );
-            elm.fadeIn( 1000 );
+            var index = Atlas.result_index + 1;
+            var context = new RoutingSearchContext( index );
+            var router = new Nearby( self.service );
+            router.createControl( context.elm, ev.index, ev.feature.geometry.getCentroid() );
+            context.createControl( router );
         });
 
+        // 
         var btn = panel.find( 'a:nth-child(1)');
         btn.click( function( ev2 ) {
-            $('#tabs').tabs( 'select', '#result_body_routing' );
-
-            $('#result_body_routing').empty()
-                    .append( '<div id="routing-to-'+ev.index+'" class="routing-nearby ui-corner-all" style="display:none;"></div>');
-                    
-            var elm = $('#routing-to-'+ev.index);
-            closeButton( elm, function() {
-                panel.find( 'a' ).removeAttr( 'disabled' );
-                btn.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
-                self.routes[ev.index].close();
-                self.routes[ev.index] = null;
-            });
-            self.routes[ev.index] = new ShortestPath( self.service );
-            self.routes[ev.index].createControl( elm, ev.index, 
-                    null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
-            elm.fadeIn( 1000 );
+            var index = Atlas.result_index + 1;
+            var context = new RoutingSearchContext( index );
+            var router = new ShortestPath( service );
+            router.createControl( context.elm, index, null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
+            context.createControl( router );
         });
 
+        //
         var btn2 = panel.find( 'a:nth-child(2)');
         btn2.click( function( ev2 ) {
             if (btn2.attr( 'disabled' ) === 'disabled') {
@@ -141,6 +124,91 @@ var Routing = Class.extend( new function RoutingProto() {
         });
     }
 
+});
+
+
+/**
+ * Special routing search context to replace the original SearchContext in the
+ * Atlas#context array.
+ */
+RoutingSearchContext = Class.extend( new function RoutingSearchContextProto() {
+    
+    /** The original {@link SearchContext} we are replacing. */
+    this.original = null;
+    
+    /** This is used by LinkItem to generate URL. */
+    this.searchStr = null;
+
+    /** The index in the Atlas.contexts array. */
+    this.index = -1;
+    
+    /** {@link ShortestPath} The routing UI. */
+    this.router = null;
+    
+    this.elm = null;
+    
+    /**
+     * Constructs a new object. Retrieves and substitutes the original
+     * {@link SearchContext}. Creates a new <div> in the target resultBody and
+     * initializes a new {@link ShortestPath} router.
+     * 
+     * @param contextIndex {int} The index of the SearchContext to replace.
+     * @param server {@link RoutingService}
+     * @param feature {@link OpenLayers.Feature}
+     * @param isStart {boolean} True if the given feature is the starting point for routing.
+     */
+    this.init = function( contextIndex ) {
+        var self = this;
+        this.index = contextIndex;
+        this.original = Atlas.contexts[this.index];
+        this.searchStr = '-';
+        $('#tab_title_result'+this.index).text( '<->' );
+        
+        // substitute context
+        Atlas.contexts[this.index] = this;
+
+        // activate tab (calling #activate())
+        var resultBodyId = '#result_body' + this.index;
+        $('#tabs').tabs( 'select', resultBodyId );
+
+        // UI
+        $(resultBodyId).empty().append( 
+                '<div id="routing-'+this.index+'" class="routing-nearby ui-corner-all" style="display:none;">' +
+                '<a href="#" class="close" title="Schliessen" style="float:right;"></a>' +
+                '</div>' );
+
+        this.elm = $('#routing-'+this.index);
+        this.elm.find( 'a' ).click( function( ev ) {
+            self.router.close();
+            Atlas.contexts[self.index] = self.original;
+            self.original.activate();
+        });
+    };
+    
+    this.createControl = function( router ) {
+        this.router = router;
+        this.router.markerImage = this.original.markerImage;
+        this.router.pathColor = this.original.geomColor;
+        this.elm.fadeIn( 1000 );        
+    };
+    
+    this.activate = function() {
+        this.active = true;
+        $('#search_field').val( this.searchStr );
+        $('#search_img').attr( "src", this.original.markerImage );
+    };
+
+    this.deactivate = function() {
+        this.active = false;        
+    };
+
+    this.search = function( searchStr ) {
+        this.router.close();
+        Atlas.contexts[this.original.index] = this.original;
+        this.original.activate();
+        this.original.search( searchStr );
+    };
+    
 });
 
 

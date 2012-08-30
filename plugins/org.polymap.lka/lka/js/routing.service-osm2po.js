@@ -29,7 +29,7 @@ var RoutingService = Class.extend( new function RoutingProto() {
        this.baseUrl = baseUrl;
        this.profileKey = profileKey;
        this.projection = new OpenLayers.Projection( "EPSG:4326" );
-       this.attribution = 'Routing by <b><a href="http://osm2po.de">osm2po</a></b>';
+       this.attribution = 'Routing <b><a target="_blank" href="http://osm2po.de">osm2po</a></b> by Carsten Möller' ;
     };
 
     /**
@@ -39,22 +39,33 @@ var RoutingService = Class.extend( new function RoutingProto() {
      * @param callback {Function}
      */
     this.driveTimePolygon = function( point, distance, mode, callback ) {
-        var param = '{'
-                + 'point: "POINT(' + point.x + ' ' + point.y + ')",'
-                + 'distance: ' + distance + ','
-                + 'mode: "' + (mode != null ? mode : 'length') + '",'
-                + 'projection: "EPSG:4326"'
-                + '}';
-        var url = this.baseUrl + "/catch.json?json=" + param + "&key=" + this.profileKey;
+        var params = 'cmd=fx&format=geojson'
+                + '&source=' + point.x + ',' + point.y 
+                + '&maxCost=0.02' /* distance*/; 
+        
+        var url = this.baseUrl + '?' + params;
 
         $.ajax( {
             url: url,
             dataType: "html",
             success: function( data ) {
-                var json = new OpenLayers.Format.JSON().read( data );
-                var temp = new OpenLayers.Format.JSON().write( json.features[0] );
-                var feature = new OpenLayers.Format.GeoJSON().read( temp );
-                callback.call( callback, json.status, feature[0] );
+                var featureJson = '{' +
+                    '"type": "Feature",' +
+                    '"geometry": ' + data + ',' +
+                    '"properties": {"name": "DriveTimePolygone"}}';
+
+                var features = new OpenLayers.Format.GeoJSON().read( featureJson );
+                var feature = features[0];
+                var geom = feature.geometry;
+                var ring = new OpenLayers.Geometry.LinearRing( [geom.components[0]]);
+                for (var i=0; i<geom.components.length; i++) {
+                    var point = geom.components[i];
+                    if (!ring.intersects( point )) {
+                        ring.addComponent( point );
+                    }
+                }
+                feature.geometry = ring;  //new OpenLayers.Geometry.LinearRing( feature.geometry.components );
+                callback.call( callback, true, feature );
             }
         });
     };
@@ -64,6 +75,7 @@ var RoutingService = Class.extend( new function RoutingProto() {
      * 
      * @param fromPoint {OpenLayers.Geometry.Point}
      * @param toPoint {OpenLayers.Geometry.Point}
+     * @param callback {function} called when ready.
      */
     this.shortestPath = function( fromPoint, toPoint, callback ) {
         var params = 'cmd=fr&format=geojson'
@@ -72,7 +84,6 @@ var RoutingService = Class.extend( new function RoutingProto() {
         
         var url = this.baseUrl + '?' + params;
         
-        url = 'shortestPath-osm2po.json';
         $.ajax( {
             url: url,
             dataType: "html",

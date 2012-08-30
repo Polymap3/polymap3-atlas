@@ -303,7 +303,6 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
         this.url = location.protocol + "//" 
             + location.host + location.pathname + searchParams;
 
-        //this.url = ev.pageURL;  //pageUrl()
         this.elm.removeAttr( 'disabled' );
     };
     

@@ -121,7 +121,7 @@ var Nearby = Class.extend( new function NearbyProto() {
                     strategies: [new OpenLayers.Strategy.Fixed()],
                     protocol: new OpenLayers.Protocol()
             });
-            self.layer.attribution = 'Routing by <b><a href="#">PGRouting</a></b>';
+            self.layer.attribution = self.service.attribution;
             var vector = new OpenLayers.Feature.Vector( feature.geometry.transform( 
                     self.service.projection, Atlas.map.getProjectionObject() ), {} );
             self.layer.addFeatures( [vector] );

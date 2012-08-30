@@ -16,7 +16,7 @@
 /**
  * Atlas UI for shortest path routing.
  * 
- * @author <a href="http://polymap.de">Falko Br�utigam</a>
+ * @author <a href="http://polymap.de">Falko Bräutigam</a>
  */
 var ShortestPath = Class.extend( new function ShortestPathProto() {
     
@@ -44,10 +44,15 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     
     /** {RoutingTooltip} */
     this.tooltip;
+    
+    this.markerImage = null;
+    this.pathColor = null;
 
     /** */
     this.init = function( service ) {
         this.service = service;
+        this.markerImage = 'images/marker_b.png';
+        this.pathColor = '#4444ff';
         
         this.searchService = new SearchService( {
             baseUrl: Atlas.config.searchUrl,
@@ -201,7 +206,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             var searchUrl = self.searchService.searchUrl( _inputElm.val() );
             self.searchService.search( searchUrl, function( features ) {
                 _parentElm.text( features.length );
-                _parentElm.attr( 'title', features.length + ' m&ouml;gliche Orte'  );
+                _parentElm.attr( 'title', features.length + ' mögliche Orte'  );
                 if (features.length == 1 /*&& features[0].data.title == _inputElm.val()*/) {
                     callback.call( self, features[0] );
                 }
@@ -218,7 +223,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         $(document.body).append( '<div id="routing-picklist-dialog"></div>' );
         var dialogDiv = $( '#routing-picklist-dialog' );
 
-        dialogDiv.append( '<span style="color:#808080;">M&ouml;gliche Orte:</span>'
+        dialogDiv.append( '<span style="color:#808080;">Mögliche Orte:</span>'
                 + '<select id="routing-result-list" name="list1" size="15"'
                 + '    style="width:100%; height:100%;" />' );
                     
@@ -234,7 +239,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         });
 
         this.searchService.search( searchUrl, function( features ) {
-            dialogDiv.find( '>span' ).text( 'M&ouml;gliche Orte (' + features.length + ')' );
+            dialogDiv.find( '>span' ).text( 'Mögliche Orte (' + features.length + ')' );
             
             var selectElm = dialogDiv.find( '#routing-result-list' );
             selectElm.click( function( ev ) {
@@ -277,7 +282,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
                 'reportError': true,
                 'strategies': [new OpenLayers.Strategy.Fixed()],
                 'protocol': new OpenLayers.Protocol(),
-                'styleMap': defaultStyleMap()
+                'styleMap': self.defaultStyleMap()
             });
             self.layer.attribution = self.service.attribution;
 
@@ -328,15 +333,16 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     /** 
      * Create the default style map for the route layer. 
      */
-    function defaultStyleMap() {
+    this.defaultStyleMap = function() {
+        var self = this;
         var defaultStyle = new OpenLayers.Style({
-            externalGraphic: 'images/marker_b.png',
+            externalGraphic: self.markerImage,  //'images/marker_b.png',
             graphicHeight: 28,
             graphicWidth: 36,
 //            graphicXOffset: -10.5,
 //            graphicYOffset: -12.5,
             strokeWidth: 5,
-            strokeColor: '#4444FF',
+            strokeColor: '#4444FF',  //self.pathColor
             strokeOpacity: 0.7,
             fillOpacity: 1
         });
@@ -349,14 +355,14 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         return new OpenLayers.StyleMap({
             'default': defaultStyle,
             'select': selectStyle });
-    }
+    };
     
 });
 
 /**
  * Route and segment display over the map.
  * 
- * @author <a href="http://polymap.de">Falko Br�utigam</a>
+ * @author <a href="http://polymap.de">Falko Bräutigam</a>
  */
 var RoutingResultPanel = Class.extend( new function RoutingResultPanelProto() {
     
