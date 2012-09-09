@@ -69,6 +69,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
@@ -173,11 +175,11 @@ public class AddressIndexer {
             reindex();
         }
         
-        log.info( "    creating index searcher..." );
-        searcher = new IndexSearcher( directory, true ); // read-only=true
-
         log.info( "    creating index reader for autocomplete..." );
-        indexReader = IndexReader.open( directory, false ); // read-only=true
+        indexReader = IndexReader.open( directory );
+
+        log.info( "    creating index searcher..." );
+        searcher = new IndexSearcher( indexReader );
 
         // listen to model changes
         modelListener = new IModelStoreListener() {
@@ -397,7 +399,7 @@ public class AddressIndexer {
 //    }
     
     
-    public List<Address> find( String addressStr, int maxResults )
+    public Iterable<Address> find( String addressStr, int maxResults )
     throws CorruptIndexException, IOException, ParseException {
 
         Query query = null;
@@ -416,12 +418,22 @@ public class AddressIndexer {
         }
 
         log.info( "    ===> Address: Lucene query: " + query );
+//        Sort asc = new Sort( 
+//                new SortField( FIELD_CITY, SortField.STRING ), 
+//                new SortField( FIELD_STREET, SortField.STRING ) );
+        
         ScoreDoc[] hits = searcher.search( query, null, maxResults ).scoreDocs;
-        List<Address> result = new LinkedList();
-        for (ScoreDoc scoreDoc : hits) {
-            result.add( buildAddress( scoreDoc ) );
-        }
-        return result;
+        
+        return Iterables.transform( Arrays.asList( hits ), new Function<ScoreDoc,Address>() {
+            public Address apply( ScoreDoc scoreDoc ) {
+                try {
+                    return buildAddress( scoreDoc );
+                }
+                catch (Exception e) {
+                    throw new RuntimeException( e );
+                }
+            }
+        });
     }
     
     
@@ -589,9 +601,9 @@ public class AddressIndexer {
 
         // XXX hack to get index reloaded
         log.info( "    creating index reader..." );
-        indexReader = IndexReader.open( directory, false ); // read-only=true
+        indexReader = IndexReader.open( directory );
         log.info( "    creating index searcher..." );
-        searcher = new IndexSearcher( indexReader ); // read-only=true
+        searcher = new IndexSearcher( indexReader );
         log.info( "Index reloaded." );
     }
 

@@ -1,7 +1,6 @@
 /* 
  * polymap.org
- * Copyright 2009, Polymap GmbH, and individual contributors as indicated
- * by the @authors tag.
+ * Copyright 2009-2012, Polymap GmbH. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -12,33 +11,31 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- * $Id$
  */
-
 package org.polymap.lka.poi;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.base.Function;
+import static com.google.common.collect.Iterables.*;
+
+import org.polymap.core.runtime.Polymap;
 
 /**
  * The dispatcher for the registered {@link SearchSPI service providers}.
  *
  * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
- * @version POLYMAP3 ($Revision$)
  * @since 3.0
  */
 public class SearchDispatcher
@@ -46,6 +43,8 @@ public class SearchDispatcher
 
     private static final Log  log = LogFactory.getLog( SearchServlet.class );
 
+    private ExecutorService             executorService = Polymap.executorService();
+    
     private List<SearchSPI>             searchers = new ArrayList();
     
 
@@ -58,68 +57,92 @@ public class SearchDispatcher
     }
 
     
-    public List<String> autocomplete( String term, int maxResults )
+    public Iterable<String> autocomplete( final String term, final int maxResults, final CoordinateReferenceSystem worldCRS )
     throws Exception {
-        List<String> result = new ArrayList( maxResults );
-
+        // call searches in separate threads
         // XXX score results
-        for (SearchSPI searcher : searchers) {
-            try {
-                List<String> records = searcher.autocomplete( term, maxResults );
-                Iterator<String> it = records.iterator();
-                while (it.hasNext() && result.size() <= maxResults) {
-                    String record = it.next();
-                    // has the record any result anyway?
-                    if (StringUtils.containsNone( term, SEPARATOR_CHARS ) || !search( record, 1 ).isEmpty()) {
-                        result.add( record );
+        List<Future<List<String>>> results = new ArrayList();
+        for (final SearchSPI searcher : searchers) {
+            results.add( executorService.submit( new Callable<List<String>>() {
+            
+                public List<String> call() throws Exception {
+                    log.info( "Searcher started: " + searcher.getClass().getSimpleName() );
+                    Iterable<String> records = searcher.autocomplete( term, maxResults, null );
+                    
+                    // use real list (not Iterables) in order to make sure
+                    // this processing is done inside the thread
+                    List<String> result = new ArrayList( maxResults );
+                    Iterator<String> it = records.iterator();
+                    while (it.hasNext() && result.size() <= maxResults) {
+                        String record = it.next();
+                        // has the record any result anyway?
+                        if (StringUtils.containsNone( term, SEPARATOR_CHARS ) 
+                                || !search( record, 1, worldCRS ).iterator().hasNext()) {
+                            result.add( record );
+                        }
                     }
-                }
-            }
-            catch (Exception e) {
-                log.warn( "", e );
-            }
-        }
-        return result;
-    }
-
-
-    public List<SearchResult> search( String term, int maxResults )
-    throws Exception {
-        // sort and accept equal keys
-        TreeMap<Float,SearchResult> results = new TreeMap( new Comparator<Float>() {
-            public int compare( Float o1, Float o2 ) {
-                return o1.equals( o2 ) ? -1 : o1.compareTo( o2 );
-            }
-        });
-        // searchers
-        for (SearchSPI searcher : searchers) {
-            try {
-                List<SearchResult> records = searcher.search( term, maxResults );
-                for (SearchResult record : records) {
-                    results.put( record.getScore(), record );
-                }
-            }
-            catch (Exception e) {
-                log.warn( "", e );
-            }            
+                    return result;
+                }                
+            }));
         }
         
-        List<SearchResult> result = new ArrayList( maxResults );
-        int i = maxResults;
-        for (Iterator it=results.values().iterator(); it.hasNext() && i>0; i--) {
-            result.add( (SearchResult)it.next() );
-        }
-        return result;
+        // wait for threads; concat all records
+        return concat( transform( results, new Function<Future<List<String>>,List<String>>() {
+            public List<String> apply( Future<List<String>> future ) {
+                try {
+                    return future.get();
+                }
+                catch (Exception e) {
+                    log.warn( "", e );
+                    return new ArrayList();
+                }
+            }
+        }));
     }
 
 
-//    Internal internal() {
-//        return new Internal();    
-//    }
-//    
-//    
-//    class Internal {
-//        
-//    }
-    
+    public Iterable<SearchResult> search( final String term, final int maxResults, final CoordinateReferenceSystem worldCRS )
+    throws Exception {
+        // call searches in separate threads
+        // XXX score results
+        List<Future<Iterable<SearchResult>>> results = new ArrayList();
+        for (final SearchSPI searcher : searchers) {
+            results.add( executorService.submit( new Callable<Iterable<SearchResult>>() {
+            
+                public Iterable<SearchResult> call() throws Exception {
+                    log.info( "Searcher started: " + searcher.getClass().getSimpleName() );
+                    return searcher.search( term, maxResults, worldCRS );
+                }                
+            }));
+        }
+        
+        // wait for threads; concat all SearchResults, limit to maxResults
+        return limit( concat( transform( results, new Function<Future<Iterable<SearchResult>>,Iterable<SearchResult>>() {
+            public Iterable<SearchResult> apply( Future<Iterable<SearchResult>> future ) {
+                try {
+                    return future.get();
+                }
+                catch (Exception e) {
+                    log.warn( "", e );
+                    return new ArrayList();
+                }
+            }
+        })), maxResults );
+
+
+//        // searchers
+//        for (SearchSPI searcher : searchers) {
+//            try {
+//                for (SearchResult record : searcher.search( term, maxResults, worldCRS )) {
+//                    results.put( record.getScore(), record );
+//                }
+//            }
+//            catch (Exception e) {
+//                log.warn( "", e );
+//            }            
+//        }
+//
+//        return Iterables.limit( results.values(), maxResults );
+    }
+
 }

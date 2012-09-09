@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.common.base.Supplier;
 
+import de.cm.osm2po.Utils;
 import de.cm.osm2po.model.Coords;
 import de.cm.osm2po.routing.DefaultRouter;
 import de.cm.osm2po.routing.Graph;
@@ -97,7 +98,7 @@ public class Osm2poServlet
         log.info( "Opening graph file: " + graphFile );
 
         // graph: lazy, cached, auto closed
-        graphRef = new CachedLazyInit( 10*1024*1024, new Supplier<Graph>() {
+        graphRef = new CachedLazyInit( (int)graphFile.length(), new Supplier<Graph>() {
             public Graph get() {
                 log.info( "Loading graph into memory..." );
                 return new Graph( graphFile ) {
@@ -121,9 +122,6 @@ public class Osm2poServlet
             resp.setContentType( "text/plain; charset=UTF-8" );
             resp.setCharacterEncoding( "UTF-8" );
 
-            // param: source, target
-            int sourceId = PARAM_SOURCE.get( req, graphRef.get() );
-
             // gzip encoding
             rout = resp.getOutputStream();
             out = rout;
@@ -132,9 +130,10 @@ public class Osm2poServlet
                 out = new GZIPOutputStream( rout, 512, true );
                 resp.setHeader( "Content-Encoding", "gzip" );
             }
-            
-            // param: cmd
+
+            // params
             String cmd = PARAM_CMD.get( req );
+            int sourceId = PARAM_SOURCE.get( req, graphRef.get() );
             
             // command: find route
             if (cmd.equalsIgnoreCase( "fr" )) {
@@ -194,11 +193,12 @@ public class Osm2poServlet
         params.setProperty( "findShortestPath", "false" );
         params.setProperty( "ignoreRestrictions", "false" );
         params.setProperty( "ignoreOneWays", "false" );
-        params.setProperty( "heuristicFactor", "0.0" ); // 0.0 Dijkstra, 1.0 good A*
+        params.setProperty( "heuristicFactor", "1.0" ); // 0.0 Dijkstra, 1.0 good A*
     
         MultiPathRouter router = new DefaultRouter();
         router.traverse( graphRef.get(), sourceId, 0, maxCost, params );
-        return router.getVisited();
+        
+        return Utils.convexHull( router.getVisited(), graphRef.get().getLats(), graphRef.get().getLons() );
     }
 
 

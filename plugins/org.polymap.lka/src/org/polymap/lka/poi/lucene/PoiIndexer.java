@@ -254,6 +254,7 @@ class PoiIndexer {
         Query query = parser.parse( decorateSearch( searchStr ) );
         log.info( "    ===> POI: Lucene query: " + query );
 
+//        Sort asc = new Sort( new SortField( FIELD_TITLE, SortField.STRING ) );
         ScoreDoc[] hits = searcher.search( query, null, maxResults ).scoreDocs;
         return hits;
         

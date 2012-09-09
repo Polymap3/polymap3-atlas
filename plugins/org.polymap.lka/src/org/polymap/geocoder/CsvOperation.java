@@ -23,8 +23,6 @@
 package org.polymap.geocoder;
 
 import java.util.Arrays;
-import java.util.List;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -32,6 +30,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Point;
 
 
@@ -135,11 +134,11 @@ public class CsvOperation
             Address address = new Address( values[streetField], values[numberField], 
                     null /*values.get( codeField )*/, values[cityField], null );
             logOut.println( "    -> " + address );
-            List<Address> found = geocoder.find( address, 3 );
+            Address found = Iterables.getFirst( geocoder.find( address, 3 ), null );
             logOut.println( "    => " + found );
             
-            if (found != null && found.size() > 0) {
-                Point point = found.get( 0 ).getPoint();
+            if (found != null) {
+                Point point = found.getPoint();
                 values[xField] = importer.getNumberFormat().format( point.getX() );
                 values[yField] = importer.getNumberFormat().format( point.getY() );
             }

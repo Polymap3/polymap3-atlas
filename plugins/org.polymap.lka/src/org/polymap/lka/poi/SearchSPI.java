@@ -14,7 +14,7 @@
  */
 package org.polymap.lka.poi;
 
-import java.util.List;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.lucene.queryParser.QueryParser;
 
@@ -42,7 +42,7 @@ public interface SearchSPI {
      *        {@link QueryParser}.
      * @return List of search results.
      */
-    public List<SearchResult> search( String term, int maxResults )
+    public Iterable<SearchResult> search( String term, int maxResults, CoordinateReferenceSystem worldCRS )
     throws Exception;
 
 
@@ -50,11 +50,12 @@ public interface SearchSPI {
      * 
      * @param term A search term following the rules defined by the Lucene
      *        {@link QueryParser}.
+     * @param worldCRS XXX
      * @return List of possible completions of the given search term. The
      *         completions should include the complete prfix if the search uses
      *         the last word for completion only.
      */
-    public List<String> autocomplete( String term, int maxResults )
+    public Iterable<String> autocomplete( String term, int maxResults, CoordinateReferenceSystem worldCRS )
     throws Exception;
 
     

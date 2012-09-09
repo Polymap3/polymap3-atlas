@@ -36,14 +36,26 @@ var SearchService = Class.extend( new function SearchServiceProto() {
 
     /**
      * 
+     * @param searchStr
+     * @param outputType
+     * @param srs
+     * @param bounds {OpenLayers.Geometry}
      */
-    this.searchUrl = function( searchStr, outputType, srs ) {
+    this.searchUrl = function( searchStr, outputType, srs, bounds ) {
         var template = '{0}?search={1}&outputType={2}&srs={3}';
-        if (outputType == null) {
-            outputType = this.config.outputType;
-        }
-        if (srs == null) {
-            srs = this.config.srs;
+
+        if (bounds) {
+            var json = new OpenLayers.Format.GeoJSON().write( bounds );
+//            var obj = {
+//                'type': 'LinearRing',
+//                'coordinates': []
+//            }
+//         "coordinates": [
+//           [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+//             [100.0, 1.0], [100.0, 0.0] ]
+//           ]
+//       },
+            searchStr += ' bounds:' + json;
         }
         // all those functions do not work, at least for me
         //search_str = escape( search_str );
@@ -51,6 +63,9 @@ var SearchService = Class.extend( new function SearchServiceProto() {
         //search_str = $.URLEncode( search_str );
         //search_str = jQuery.param( search_str, true );
         searchStr = encodeURIComponent( searchStr );
+        outputType = outputType ? outputType : this.config.outputType;
+        srs = srs ? srs : this.config.srs;
+
         return template.format( this.config.baseUrl, searchStr, outputType, srs );
     };
 

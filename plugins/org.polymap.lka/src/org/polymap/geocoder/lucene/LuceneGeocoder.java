@@ -78,7 +78,7 @@ public class LuceneGeocoder
 
 
     /**
-     * Find 'virual' street addresses. The result records describe one street each.
+     * Find 'virtual' street addresses. The result records describe one street each.
      * The do not contain numbers. The 'middle' numbers coordinate is used.
 
      * @param search
@@ -109,7 +109,7 @@ public class LuceneGeocoder
     }
 
     
-    public List<Address> find( String addressString, int maxResults )
+    public Iterable<Address> find( String addressString, int maxResults )
             throws Exception {
         return indexer.find( addressString, maxResults );
     }

@@ -45,6 +45,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
 import org.opengis.filter.identity.FeatureId;
 
+import com.google.common.collect.Iterables;
 import com.twicom.qdparser.Element;
 import com.twicom.qdparser.TaggedElement;
 import com.twicom.qdparser.TextElement;
@@ -231,12 +232,12 @@ public class DataServlet
         }
         log.info( "    Address: " + search );
         Geocoder geocoder = Geocoder.instance();
-        List<Address> addresses = geocoder.find( search, 1 );
+        Address address = Iterables.getFirst( geocoder.find( search, 1 ), null );
         
-        if (addresses.isEmpty()) {
+        if (address == null) {
             throw new IOException( "Adresse ist nicht eindeutig." );
         }
-        featureBuilder.set( type.getGeometryDescriptor().getLocalName(), addresses.get( 0 ).getPoint() );
+        featureBuilder.set( type.getGeometryDescriptor().getLocalName(), address.getPoint() );
 
         // save feature *** ***
 //        Transaction tx = new DefaultTransaction( "create" );
@@ -329,7 +330,7 @@ public class DataServlet
             // geocode
             log.info( "Search: " + search );
             Geocoder geocoder = Geocoder.instance();
-            List<Address> result = geocoder.find( search, 50 );
+            Iterable<Address> result = geocoder.find( search, 50 );
             
             // encode result addresses
             TaggedElement addressesElm = new TaggedElement( "addresses" );

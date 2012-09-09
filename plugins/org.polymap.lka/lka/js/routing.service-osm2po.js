@@ -19,6 +19,15 @@
  */
 var RoutingService = Class.extend( new function RoutingProto() {
 
+    /** {@link OpenLayers.Projection} EPSG:4326 */
+    this.projection = null;
+    
+    /** 
+     * {@link OpenLayers.Projection} The projection of the Geometry arguments of
+     * the methods. 
+     */
+    this.mapProjection = null;
+    
     /**
      * URL: http://<domain>:<port>/<root>/<version>/<profile key>/catch.<output>?json={<parameter>}
      * 
@@ -29,6 +38,7 @@ var RoutingService = Class.extend( new function RoutingProto() {
        this.baseUrl = baseUrl;
        this.profileKey = profileKey;
        this.projection = new OpenLayers.Projection( "EPSG:4326" );
+       this.mapProjection = Atlas.map.getProjectionObject();
        this.attribution = 'Routing <b><a target="_blank" href="http://osm2po.de">osm2po</a></b> by Carsten Möller' ;
     };
 
@@ -36,15 +46,26 @@ var RoutingService = Class.extend( new function RoutingProto() {
      * @param point {OpenLayers.Geometry.Point}
      * @param distance {Number}
      * @param mode {String} 'length' or 'cost'
-     * @param callback {Function}
+     * @param callback {Function} Function with 2 arguments: {boolean} status,
+     *            {OpenLayer.Feature.Vector} feature
      */
     this.driveTimePolygon = function( point, distance, mode, callback ) {
+        var mapProjection = Atlas.map.getProjectionObject();
+        var projection = this.projection;
+        
+        var transformed = point.clone().transform( mapProjection, projection );
+
+        var maxCost = mode == 'cost'
+                ? +(distance) / 60     // minutes -> hours
+                : +(distance) / 1000;  // m -> km
+        
         var params = 'cmd=fx&format=geojson'
-                + '&source=' + point.x + ',' + point.y 
-                + '&maxCost=0.02' /* distance*/; 
+                + '&source=' + transformed.x + ',' + transformed.y 
+                + '&maxCost=' + maxCost; 
         
         var url = this.baseUrl + '?' + params;
 
+        var self = this;
         $.ajax( {
             url: url,
             dataType: "html",
@@ -52,20 +73,23 @@ var RoutingService = Class.extend( new function RoutingProto() {
                 var featureJson = '{' +
                     '"type": "Feature",' +
                     '"geometry": ' + data + ',' +
-                    '"properties": {"name": "DriveTimePolygone"}}';
+                    '"properties": {"name": "DriveTimePolygon"}}';
 
                 var features = new OpenLayers.Format.GeoJSON().read( featureJson );
                 var feature = features[0];
-                var geom = feature.geometry;
-                var ring = new OpenLayers.Geometry.LinearRing( [geom.components[0]]);
-                for (var i=0; i<geom.components.length; i++) {
-                    var point = geom.components[i];
-                    if (!ring.intersects( point )) {
-                        ring.addComponent( point );
-                    }
-                }
-                feature.geometry = ring;  //new OpenLayers.Geometry.LinearRing( feature.geometry.components );
-                callback.call( callback, true, feature );
+                
+//                var points = [];
+//                for (var i =0; i<feature.geometry.components.length; i++) {
+//                    var point = feature.geometry.components[i];
+//                    points.push( new OpenLayers.Geometry.Point( point.x, point.y ) );
+//                }
+                var points = feature.geometry.components;
+                var geom = new OpenLayers.Geometry.Polygon( [new OpenLayers.Geometry.LinearRing( points )] );
+                //var geom = feature.geometry;
+                geom.transform( projection, mapProjection );
+                var vector = new OpenLayers.Feature.Vector( geom, {} );
+
+                callback.call( callback, true, vector );
             }
         });
     };
@@ -78,9 +102,17 @@ var RoutingService = Class.extend( new function RoutingProto() {
      * @param callback {function} called when ready.
      */
     this.shortestPath = function( fromPoint, toPoint, callback ) {
+        var mapProjection = Atlas.map.getProjectionObject();
+        var projection = this.projection;
+        
+        var fromTransformed = //new OpenLayers.Geometry.Point( fromPoint.x, fromPoint.y )
+                fromPoint.clone().transform( mapProjection, projection );
+        var toTransformed = //new OpenLayers.Geometry.Point( toPoint.x, toPoint.y )
+                toPoint.clone().transform( mapProjection, projection );
+        
         var params = 'cmd=fr&format=geojson'
-                + '&source=' + fromPoint.x + ',' + fromPoint.y 
-                + '&target=' + toPoint.x + ',' + toPoint.y; 
+                + '&source=' + fromTransformed.x + ',' + fromTransformed.y 
+                + '&target=' + toTransformed.x + ',' + toTransformed.y; 
         
         var url = this.baseUrl + '?' + params;
         
@@ -89,7 +121,14 @@ var RoutingService = Class.extend( new function RoutingProto() {
             dataType: "html",
             success: function( data ) {
                 var features = new OpenLayers.Format.GeoJSON().read( data );
-                callback.call( callback, true, features );
+                
+                var vectors = new Array( features.length );
+                $.each( features, function( i, feature ) {
+                    vectors[i] = new OpenLayers.Feature.Vector( feature.geometry
+                            .transform( projection, mapProjection ), feature.data );
+                });
+
+                callback.call( callback, true, vectors );
             }
         });
     };

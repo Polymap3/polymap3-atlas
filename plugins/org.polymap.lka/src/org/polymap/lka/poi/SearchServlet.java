@@ -14,7 +14,6 @@
  */
 package org.polymap.lka.poi;
 
-import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import java.io.IOException;
@@ -103,6 +102,18 @@ public class SearchServlet
     throws ServletException, IOException {
         log.info( "Request: " + request.getQueryString() );
 
+        String srsParam = request.getParameter( "srs" );
+        CoordinateReferenceSystem worldCRS = DEFAULT_WORLD_CRS;
+        if (srsParam != null) {
+            try {
+                worldCRS = CRS.decode( srsParam );
+            } 
+            catch (Exception e) {
+                worldCRS =  DEFAULT_WORLD_CRS;
+            }
+        }
+        log.debug( "worldCRS: " + worldCRS );
+
 	   	// completion request *****************************
 	   	if (request.getParameter( "term" ) != null) {
             String searchStr = request.getParameter( "term" );
@@ -111,7 +122,7 @@ public class SearchServlet
 	        try {
 	            JSONArray result = new JSONArray();
 
-	            for (String record : dispatcher.autocomplete( searchStr, 7 )) {
+	            for (String record : dispatcher.autocomplete( searchStr, 7, worldCRS )) {
 	                //result.put( StringEscapeUtils.escapeHtml( record ) );
 	                result.put( record );
 	            }
@@ -139,18 +150,6 @@ public class SearchServlet
                     ? Integer.parseInt( request.getParameter( "maxResults" ) )
                     : DEFAULT_MAX_SEARCH_RESULTS;
             
-            String srsParam = request.getParameter( "srs" );
-            CoordinateReferenceSystem worldCRS = DEFAULT_WORLD_CRS;
-            if (srsParam != null) {
-                try {
-                    worldCRS = CRS.decode( srsParam );
-                } 
-                catch (Exception e) {
-                    worldCRS =  DEFAULT_WORLD_CRS;
-                }
-            }
-            log.debug( "worldCRS: " + worldCRS );
-
             // XXX do this encoding via fast, simple, scaleable pipeline and
             // (existing) processors
             try {
@@ -180,7 +179,7 @@ public class SearchServlet
                     out = new GeoJsonEncoder( bout, worldCRS );
                 }
                 else {
-                    // FIXME figure the real client URL (without reverse proxies)
+                    // XXX figure the real client URL (without reverse proxies)
                     //String baseURL = StringUtils.substringBeforeLast( request.getRequestURL().toString(), "/" ) + "/index.html";
                     String baseURL = (String)System.getProperties().get( "org.polymap.atlas.feed.url" );
                     log.info( "    baseURL: " + baseURL );                    
@@ -194,8 +193,7 @@ public class SearchServlet
 
                 // make sure that empty searchStr *always* results in empty reponse 
                 if (searchStr != null && searchStr.length() > 0) {
-                    List<SearchResult> results = dispatcher.search( searchStr, maxResults );
-                    for (SearchResult record : results) {
+                    for (SearchResult record : dispatcher.search( searchStr, maxResults, worldCRS )) {
                         out.writeObject( record );
                     }
                 }

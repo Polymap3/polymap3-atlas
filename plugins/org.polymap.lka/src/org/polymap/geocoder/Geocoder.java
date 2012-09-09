@@ -22,8 +22,6 @@
  */
 package org.polymap.geocoder;
 
-import java.util.List;
-
 import org.polymap.geocoder.lucene.LuceneGeocoder;
 
 /**
@@ -44,7 +42,7 @@ public abstract class Geocoder {
      * @param addressString
      * @throws Exception
      */
-    public abstract List<Address> find( String addressString, int maxResults )
+    public abstract Iterable<Address> find( String addressString, int maxResults )
     throws Exception;
     
     /**
@@ -53,7 +51,7 @@ public abstract class Geocoder {
      * @param maxResults 
      * @throws Exception
      */
-    public abstract List<Address> find( Address fragment, int maxResults )
+    public abstract Iterable<Address> find( Address fragment, int maxResults )
     throws Exception;
     
     

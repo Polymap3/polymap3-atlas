@@ -20,8 +20,10 @@
  */
 var ShortestPath = Class.extend( new function ShortestPathProto() {
     
+    /** {@link RoutingService} */
     this.service = null;
     
+    /** {@link SearchService} */
     this.searchService = null;
     
     /** The document element to create the UI into. */
@@ -62,7 +64,10 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     
     /** */
     this.close = function() {
-        if (this.elm != null) { this.elm.remove(); }
+        if (this.elm != null) { 
+            this.elm.remove(); 
+            this.elm.parent().empty();
+        }
         if (this.selectControl != null) { Atlas.map.removeControl( this.selectControl ); }
         if (this.hoverControl != null) { Atlas.map.removeControl( this.hoverControl ); }
         if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
@@ -108,7 +113,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         this.toInput = this.elm.find( '#routing-to-input-'+index );
 
         // set default value
-        this.fromInput.val( this.fromSearchStr != null ? this.fromSearchStr : 'frauensteiner 44 freiberg' );
+        this.fromInput.val( this.fromSearchStr != null ? this.fromSearchStr : null /*'frauensteiner 44 freiberg'*/ );
         this.toInput.val( this.toSearchStr != null ? this.toSearchStr : null );
         
         this.createSearchPicklist( 
@@ -264,14 +269,9 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
         if (this.tooltip != null) { this.tooltip.close(); }
 
-        var fromTransformed = new OpenLayers.Geometry.Point( fromPoint.x, fromPoint.y )
-                .transform( Atlas.map.getProjectionObject(), this.service.projection );
-        var toTransformed = new OpenLayers.Geometry.Point( toPoint.x, toPoint.y )
-                .transform( Atlas.map.getProjectionObject(), this.service.projection );
-
         // execute search request
         var self = this;
-        self.service.shortestPath( fromTransformed, toTransformed, function( status, features ) {
+        self.service.shortestPath( fromPoint, toPoint, function( status, features ) {
             if (features.length == 0) {
                 alert( 'routing_no_result'.i18n() );
             }
@@ -286,16 +286,11 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             });
             self.layer.attribution = self.service.attribution;
 
-            var vectors = new Array( features.length+2 );
-            $.each( features, function( i, feature ) {
-                vectors[i] = new OpenLayers.Feature.Vector( feature.geometry.transform( 
-                        self.service.projection, Atlas.map.getProjectionObject() ), feature.data );
-            });
             // flags
-            vectors[features.length] = new OpenLayers.Feature.Vector( toPoint, {title:'Ziel'} );
-            vectors[features.length+1] = new OpenLayers.Feature.Vector( fromPoint, {title:'Start'} );
+            features.push( new OpenLayers.Feature.Vector( toPoint, {title:'Ziel'} ) );
+            features.push( new OpenLayers.Feature.Vector( fromPoint, {title:'Start'} ) );
             
-            self.layer.addFeatures( vectors );
+            self.layer.addFeatures( features );
             Atlas.map.addLayer( self.layer );
 
             // hover features
@@ -318,7 +313,7 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             self.hoverControl.activate();      
 
             // result panel
-            self.tooltip = new RoutingResultPanel( self.elm.parent(), self, status, vectors );            
+            self.tooltip = new RoutingResultPanel( self.elm.parent(), self, status, features );            
             self.layer.events.register( "featureselected", self.layer, function( ev ) {
                 self.tooltip.highlight( ev.feature );
             });

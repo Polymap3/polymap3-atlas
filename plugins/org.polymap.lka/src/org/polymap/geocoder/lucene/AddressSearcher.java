@@ -1,7 +1,6 @@
 /* 
  * polymap.org
- * Copyright 2009, Polymap GmbH, and individual contributors as indicated
- * by the @authors tag.
+ * Copyright 2009-2012, Polymap GmbH. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -12,26 +11,36 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- * $Id$
  */
 package org.polymap.geocoder.lucene;
 
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.limit;
+import static com.google.common.collect.Iterables.transform;
+
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import java.io.StringReader;
+
+import org.geotools.geojson.geom.GeometryJSON;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 import org.polymap.geocoder.Address;
@@ -49,7 +58,9 @@ public class AddressSearcher
         implements SearchSPI {
 
     private static final Log  log = LogFactory.getLog( AddressIndexer.class );
-    
+
+    static final GeometryJSON       jsonDecoder = new GeometryJSON();
+
     private LuceneGeocoder          geocoder = LuceneGeocoder.instance();
     
 
@@ -57,7 +68,7 @@ public class AddressSearcher
     }
    
     
-    public List<String> autocomplete( String term, int maxResults )
+    public Iterable<String> autocomplete( String term, int maxResults, CoordinateReferenceSystem worldCRS )
     throws Exception {
         // search for the last term in the search
         String addressStr = term.toLowerCase();
@@ -100,27 +111,70 @@ public class AddressSearcher
     }
 
 
-    public List<SearchResult> search( String term, int maxResults )
+    public Iterable<SearchResult> search( String term, final int maxResults, final CoordinateReferenceSystem worldCRS )
     throws Exception {
-        List<Address> addresses = geocoder.find( term, maxResults );
+        String boundsJson = null;
+        String searchTerm = term;
+
+        // extract bounds:{...} param from search term
+        Pattern pattern = Pattern.compile( "bounds:[^ ]+ " );
+        Matcher matcher = pattern.matcher( term );
+        if (matcher.find()) {
+            String boundsParam = term.substring( matcher.start(), matcher.end() );
+            boundsJson = StringUtils.substringAfter( boundsParam, "bounds:" );
+            searchTerm = StringUtils.remove( searchTerm, boundsParam );
+        }
+
+        // search database
+        Iterable<Address> addresses = geocoder.find( searchTerm, 10000 /*maxResults*/ );
 
         GeometryFactory gf = new GeometryFactory();
+
+        // build SearchResults
+        Iterable<SearchResult> result = transform( addresses, new Function<Address,SearchResult>() {            
+            public SearchResult apply( Address address ) {
+                String title = address.getStreet() + ", " + address.getCity();
+                SearchResult record = new SearchResult( address.getScore(), title );
+                record.setAddress( address );
+                
+                record.setGeom( address.getPoint() );
+                record.setSRS( address.getSRS() );
+
+                record.addField( AddressIndexer.FIELD_CATEGORIES, "Adresse" );
+                return record;
+            }
+        });
         
-        // avoid record with same city/street
-        Map<String,SearchResult> result = new HashMap( maxResults );
-        for (Address address : addresses) {
-            String title = address.getStreet() + ", " + address.getCity();
-            SearchResult record = new SearchResult( address.getScore(), title );
-            record.setAddress( address );
-            
-            record.setGeom( address.getPoint() );
-            record.setSRS( address.getSRS() );
+        // filter bounds
+        if (boundsJson != null) {
+            final Geometry bounds = jsonDecoder.read( new StringReader( boundsJson ) );
 
-            record.addField( AddressIndexer.FIELD_CATEGORIES, "Adresse" );
-
-            result.put( title, record );
+            result = filter( result, new Predicate<SearchResult>() {
+                public boolean apply( SearchResult record ) {
+                    try {
+                        CoordinateReferenceSystem recordCRS = CRS.decode( record.getSRS() );
+                        MathTransform transform = CRS.findMathTransform( recordCRS, worldCRS, true );
+                        Geometry transformed = JTS.transform( record.getGeom(), transform );
+                        return bounds.contains( transformed );
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException( e );
+                    }
+                }
+            });
         }
-        return new ArrayList( result.values() );
+        // filter equal titles
+        result = filter( result, new Predicate<SearchResult>() {
+
+            private Set<String> titles = new HashSet();
+            
+            public boolean apply( SearchResult input ) {
+                return titles.add( input.getTitle() );
+            }
+        });
+
+        // limit results to maxResults
+        return limit( result, maxResults );
     }
 
 }

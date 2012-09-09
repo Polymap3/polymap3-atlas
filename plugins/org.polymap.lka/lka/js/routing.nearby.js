@@ -20,24 +20,49 @@
  */
 var Nearby = Class.extend( new function NearbyProto() {
     
+    /** {@link RoutingService} */
     this.service = null;
+    
+    /** The {@link SearchContext} to be used for nearby searches. */  
+    this.searchContext = null;
     
     /** The UI element. */
     this.elm = null;
     
+    /** The {@link OpenLayers.Geometry.Point} to start search from. */
     this.point = null;
     
+    /** The {@link OpenLayers.Layer.Vector} layers that displays to polygon. */
     this.layer = null;
     
-    /** */
-    this.init = function( service ) {
+    
+    /**
+     * 
+     * @param searvice
+     * @param searchContext The {@link SearchContext} to be used for nearby searches.  
+     */
+    this.init = function( service, searchContext ) {
         this.service = service;
+        this.searchContext = searchContext;
+        
+        this.searchService = new SearchService( {
+            baseUrl: Atlas.config.searchUrl,
+            outputType: 'JSON',
+            srs: Atlas.map.getProjection() } );
     };
     
-    /** */
+    /** 
+     * 
+     */
     this.close = function() {
-        if (this.elm != null) { this.elm.remove(); }
-        if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
+        if (this.elm != null) { 
+            this.elm.remove(); 
+            this.elm.parent().empty();
+        }
+        if (this.layer != null) { 
+            Atlas.map.removeLayer( this.layer ); 
+        }
+        this.searchContext.resultDiv = this.origResultDiv;
     };
     
     /**
@@ -49,53 +74,75 @@ var Nearby = Class.extend( new function NearbyProto() {
     this.createControl = function( elm, index, point ) {
         this.elm = elm;
         this.point = point;
-        this.elm.append( ('<div class="routing-nearby">'
-                + 'routing_cost_input'.i18n() 
-                + '    <input id="routing-cost-input-'+index+'" style="width:50px; margin:3px;"></input>'
+        this.elm.append( ('<div id="routing-nearby-'+index+'">'
+                + '<b>' + 'routing_cost_input'.i18n() + '</b><br/>' 
+                + '<input id="routing-cost-input-'+index+'" style="text-align:right; width:37%; margin:3px;"></input>'
                 + '<span id="routing-cost-type">'
-                + '    <input id="cost-length" value="length" type="radio" name="cost-radios" checked="checked"/>'
+                + '    <input id="cost-length" disabled="disabled" value="length" type="radio" name="cost-radios"/>'
                 + '      <label for="cost-length" title="Angabe ist Wegstrecke in Metern">Meter</label>'
-                + '    <input id="cost-time" value="cost" type="radio" name="cost-radios"/>'
-                + '      <label for="cost-time" title="Angabe ist Fahrzeit in Minuten">Min.</label>'
+                + '    <input id="cost-time" disabled="disabled" value="cost" type="radio" name="cost-radios" checked="checked"/>'
+                + '      <label for="cost-time" title="Angabe der Wegzeit in Minuten">Min.</label>'
                 + '</span>'
-                + '<center>'
                 + '    <button id="routing-nearby-btn-'+index + '" title="{1}">{0}</button>' 
+                + '<br/><br/><hr/><br/>'
+                + '<b>' + 'routing_search_input'.i18n() + '</b><br/>'
+                + '<input id="routing-search-input-'+index+'" style="width:70%; margin:3px;"></input>'
                 + '    <button id="routing-nearby-btn2-"'+index +'" title="{3}">{2}</button>' 
-                + '</center>'
-                + '</div>')
+                + '</div>' )
                 .format( 'routing_nearby_show'.i18n(), 'routing_nearby_show_tip'.i18n(),
                         'routing_nearby_search'.i18n(), 'routing_nearby_search_tip'.i18n() ) );
-        
+
         $('#routing-cost-type').buttonset();
         $('#routing-cost-type label span').css( 'padding', '1px 7px' );
-        
+//        $('#routing-cost-type input').attr( 'disabled' , true );
+
+
+        // tweak target div in SearchContext
+        this.elm.parent().append( '<hr/><div id="fake-result-body-'+index+'"></div>' );
+        this.origResultDiv = this.searchContext.resultDiv;
+        this.searchContext.resultDiv = $('#fake-result-body-'+index);
+
+        // autocomplete
+        var searchInput = this.elm.find('#routing-search-input-'+index)
+            .autocomplete({ source: Atlas.config.autocompleteUrl, zIndex: 1000, delay: 500 })
+            .keyup( function( ev ) {
+                if (ev.keyCode == 13) {
+                    buttons.eq( 1 ).trigger( 'click' );
+                    $(ev.target).autocomplete( 'close' );
+                }
+            });
+
+        // buttons
         var buttons = $('#routing-nearby-'+index+' button');
         buttons.button();
-//                //.attr( 'disabled', 'disabled' )
-//                .css( 'box-shadow', '0px 1px 1px #090909' );        
-
         $('#routing-nearby-'+index+' button span').css( 'padding', '1px 7px' );
-        //$('#routing-nearby-btn').css( 'float', 'right' );
 
         var self = this;
-        $('#routing-cost-input-'+index).val( '1000' ).focus()
+        $('#routing-cost-input-'+index)
+            .val( '10' )
+            .focus()
             .keyup( function( ev ) {
-                if ($(this).val().length != 0) {
-                    buttons.removeAttr( 'disabled' );
-                } else {
-                    buttons.attr( 'disabled', 'disabled' );
-                }
                 if (ev.keyCode == 13) {
-                    var mode = $('input[name="cost-radios"]:checked').val();
-                    self.doNearbySearch( point, mode, $(this).val(), index );
+                    buttons.eq( 0 ).trigger( 'click' );
                 }
             });
         
-        $('#routing-nearby-btn-'+index).click( function() {
+        buttons.eq( 0 ).click( function() {
             var mode = $('input[name="cost-radios"]:checked').val();
             var cost = $('#routing-cost-input-'+index).val();
             self.doNearbySearch( point, mode, cost, index );
         });
+        
+        buttons.eq( 1 ).click( function() {
+            var mode = $('input[name="cost-radios"]:checked').val();
+            var cost = $('#routing-cost-input-'+index).val();
+            var searchText = searchInput.val();
+            self.doNearbySearch( point, mode, cost, index, searchText );
+        });
+        
+        // show polygon right after init
+        self.doNearbySearch( point, 'cost', '10', index );
+        
         return this;
     };
     
@@ -104,15 +151,13 @@ var Nearby = Class.extend( new function NearbyProto() {
      * <p/>
      * Handles geometry transformation to/from map/routing CRS.
      */
-    this.doNearbySearch = function( point, mode, cost, index ) {
+    this.doNearbySearch = function( point, mode, cost, index, searchStr ) {
         if (this.layer != null) {
             Atlas.map.removeLayer( this.layer );
         }
-        var transformed = new OpenLayers.Geometry.Point( point.x, point.y )
-                .transform( Atlas.map.getProjectionObject(), this.service.projection );
         
         var self = this;
-        this.service.driveTimePolygon( transformed, cost, mode, function( status, feature ) {
+        this.service.driveTimePolygon( point, cost, mode, function( status, feature ) {
             // XXX handle status
             self.layer = new OpenLayers.Layer.Vector( "Nearby", {
                     isBaseLayer: false,
@@ -122,14 +167,18 @@ var Nearby = Class.extend( new function NearbyProto() {
                     protocol: new OpenLayers.Protocol()
             });
             self.layer.attribution = self.service.attribution;
-            var vector = new OpenLayers.Feature.Vector( feature.geometry.transform( 
-                    self.service.projection, Atlas.map.getProjectionObject() ), {} );
-            self.layer.addFeatures( [vector] );
+            self.layer.addFeatures( [feature] );
             Atlas.map.addLayer( self.layer );
             
             if (self.layer.features.length > 0) {
                 Atlas.map.zoomToExtent( self.layer.getDataExtent() );
                 Atlas.map.zoomOut();
+            }
+            
+            if (searchStr) {
+                var bounds = feature.geometry;
+                searchStr += ' bounds:' + new OpenLayers.Format.GeoJSON().write( bounds );
+                self.searchContext.search( searchStr )
             }
         });
     };

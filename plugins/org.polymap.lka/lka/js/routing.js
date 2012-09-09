@@ -19,7 +19,7 @@
  */
 var Routing = Class.extend( new function RoutingProto() {
 
-    /** */ 
+    /** {@link RoutingService} */
     this.service = null;
     
     /** Array of {@link Nearby} objects. */
@@ -68,7 +68,7 @@ var Routing = Class.extend( new function RoutingProto() {
         btn3.click( function( ev2 ) {
             var index = Atlas.result_index + 1;
             var context = new RoutingSearchContext( index );
-            var router = new Nearby( self.service );
+            var router = new Nearby( self.service, context.original );
             router.createControl( context.elm, ev.index, ev.feature.geometry.getCentroid() );
             context.createControl( router );
         });
@@ -78,7 +78,7 @@ var Routing = Class.extend( new function RoutingProto() {
         btn.click( function( ev2 ) {
             var index = Atlas.result_index + 1;
             var context = new RoutingSearchContext( index );
-            var router = new ShortestPath( service );
+            var router = new ShortestPath( self.service );
             router.createControl( context.elm, index, null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
             context.createControl( router );
         });
@@ -86,26 +86,11 @@ var Routing = Class.extend( new function RoutingProto() {
         //
         var btn2 = panel.find( 'a:nth-child(2)');
         btn2.click( function( ev2 ) {
-            if (btn2.attr( 'disabled' ) === 'disabled') {
-                ev2.preventDefault();
-            }
-            else {
-                panel.find( 'a' ).attr( 'disabled', 'disabled' );
-                btn2.css( 'font-weight', 'bold' );
-
-                ev.div.append( '<div id="routing-from-'+ev.index+'" class="routing ui-corner-all" style="display:none;"></div>');
-                var elm = ev.div.find( '#routing-from-'+ev.index );
-                closeButton( elm, function() {
-                    panel.find( 'a' ).removeAttr( 'disabled' );
-                    btn2.css( 'font-weight', 'normal' ).removeAttr( 'disabled', null );
-                    self.routes[ev.index].close();
-                    self.routes[ev.index] = null;
-                });
-                self.routes[ev.index] = new ShortestPath( self.service );
-                self.routes[ev.index].createControl( elm, ev.index, 
-                        ev.feature.geometry.getCentroid(), ev.feature.data.title, null, null );
-                elm.fadeIn( 1000 );
-            }
+            var index = Atlas.result_index + 1;
+            var context = new RoutingSearchContext( index );
+            var router = new ShortestPath( self.service );
+            router.createControl( context.elm, index, ev.feature.geometry.getCentroid(), ev.feature.data.title );
+            context.createControl( router );
         });
     };
 
@@ -164,6 +149,12 @@ RoutingSearchContext = Class.extend( new function RoutingSearchContextProto() {
         this.searchStr = '-';
         $('#tab_title_result'+this.index).text( '<->' );
         
+        // check if original is RoutingSearchContext itself
+        if (this.original.original) {
+            this.original.close();
+            this.original = Atlas.contexts[this.index];
+        }
+        
         // substitute context
         Atlas.contexts[this.index] = this;
 
@@ -185,6 +176,12 @@ RoutingSearchContext = Class.extend( new function RoutingSearchContextProto() {
         });
     };
     
+    this.close = function() {
+        this.router.close();
+        Atlas.contexts[this.original.index] = this.original;
+        this.original.activate();
+    };
+    
     this.createControl = function( router ) {
         this.router = router;
         this.router.markerImage = this.original.markerImage;
@@ -203,9 +200,7 @@ RoutingSearchContext = Class.extend( new function RoutingSearchContextProto() {
     };
 
     this.search = function( searchStr ) {
-        this.router.close();
-        Atlas.contexts[this.original.index] = this.original;
-        this.original.activate();
+        this.close();
         this.original.search( searchStr );
     };
     
