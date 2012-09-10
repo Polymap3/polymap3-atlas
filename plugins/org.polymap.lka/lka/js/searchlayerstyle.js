@@ -67,7 +67,7 @@ SearchLayerStyle = Class.extend( new function SearchLayerStyleProto() {
             'graphicHeight': 28,
             'graphicWidth': 36,
             'graphicXOffset': -10.5,
-            'graphicYOffset': -28,
+            'graphicYOffset': -20,
             'strokeWidth': 3,
             'strokeColor': self.config.color,
             'fillOpacity': '${opacity}',  //0.7,

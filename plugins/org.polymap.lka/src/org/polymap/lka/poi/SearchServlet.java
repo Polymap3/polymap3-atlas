@@ -159,7 +159,7 @@ public class SearchServlet
                 String acceptEncoding = request.getHeader( "Accept-Encoding" );
                 if (acceptEncoding != null && acceptEncoding.toLowerCase().contains( "gzip" )) {
                     try {
-                        bout = new GZIPOutputStream( bout, 512, true );
+                        bout = new GZIPOutputStream( bout );
                         response.setHeader( "Content-Encoding", "gzip" );
                     }
                     catch (NoSuchMethodError e) {
@@ -198,7 +198,8 @@ public class SearchServlet
                     }
                 }
 
-                out.flush();
+                // make sure that streams and deflaters are flushed
+                out.close();
                 log.info( "    written: " + cout.getCount() + " bytes" );
             }
             catch (Exception e) {

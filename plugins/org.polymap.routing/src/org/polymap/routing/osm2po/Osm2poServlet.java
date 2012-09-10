@@ -127,7 +127,7 @@ public class Osm2poServlet
             out = rout;
             String acceptEncoding = req.getHeader( "Accept-Encoding" );
             if (acceptEncoding != null && acceptEncoding.toLowerCase().contains( "gzip" )) {
-                out = new GZIPOutputStream( rout, 512, true );
+                out = new GZIPOutputStream( rout );
                 resp.setHeader( "Content-Encoding", "gzip" );
             }
 
@@ -180,7 +180,7 @@ public class Osm2poServlet
             resp.sendError( 422, e.getLocalizedMessage() );
         }
         finally {
-            if (out != null) { out.flush(); }
+            if (out != null) { out.close(); }
             resp.flushBuffer();
             log.info( "Response time: " + timer.elapsedTime() + "ms" );
         }
