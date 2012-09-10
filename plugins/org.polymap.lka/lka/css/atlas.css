@@ -41,12 +41,6 @@ body {
 }
 #search_field {
     font-size: 138%;
-    /*margin:8px 0px 0px 0px;*/ 
-    /*border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #999;
-    border-bottom: 1px solid #999;*/
-    
     border: 1px solid #ccc;
     
     height: 20px;
@@ -59,7 +53,6 @@ body {
     background-color: #ffffff; 
     line-height: 20px;
     vertical-align: middle; 
-    with: 100%;
 }
 #search_btn {
     width: 100px;
@@ -102,9 +95,8 @@ body {
     margin: -4px 1em 0 18px;
 }
 .atlas-result-categories {
-    /*margin-left: 19px;*/
     color: #909090;
-    font-size: small;
+    font-size: 10px;
     /*font-style: italic;*/
 }
 .atlas-result-offscreen {
@@ -163,7 +155,10 @@ a.close {
 a.close:hover {
     background: url(../images/close-hover.gif) no-repeat top left;
 }
-
+/* Erläuterungstexte in Treffpunkt- und Link-Dialog */
+.atlas-description {
+    color: #858585; 
+}
 /* Popup and results */
 p {
     margin-top: 7px;

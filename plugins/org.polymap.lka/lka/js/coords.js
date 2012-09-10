@@ -47,6 +47,11 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         if (this.enabled) {
             this.control.deactivate();
             Atlas.map.removeControl( this.control );
+
+            if (this.dialog) {
+                this.dialog.remove();
+                this.dialog = null;
+            }
         }
         else {
             Atlas.map.addControl( this.control );
@@ -60,8 +65,14 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
      */
     this.openDialog = function( ev ) {
         var self = this;
-        var dialog = $('#dialog');
-        this.dialog = dialog;
+
+        if (this.dialog) {
+            this.dialog.remove();
+            this.dialog = null;
+        }
+
+        $(document.body).append( '<div id="coords-dialog"></div>' );
+        var dialog = this.dialog = $('#coords-dialog');
         this.searchContext = Atlas.contexts[Atlas.result_index];
 
         var projOptions = '';
@@ -77,7 +88,7 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         }
         
         this.dialog.html( 
-                '<p style="text-align:justify; padding:10px; margin:0;">{0}</p>'.format( 'coord_msg'.i18n() ) +
+                '<p class="atlas-description" style="text-align:justify; padding:10px; margin:0;">{0}</p>'.format( 'coord_msg'.i18n() ) +
                 '<div class="ui-corner-all" style="padding:10px 10px; margin-left:auto;">' +
                 '    <label>{0}</label><br/>'.format( 'coord_srs_label'.i18n() ) +
                 '    <select id="combobox" style="padding:0.2em; margin-right:10px; width:210px;">' + 
@@ -93,7 +104,7 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
                 '    <td><input id="lat"></input></td>' +
                 '</tr></table><hr/>' +
                 '<div class="ui-corner-all" style="border:0px solid #d0d0e0; padding:0px 10px;"><tr>' +
-                '    <p style="text-align:justify; margin:10px 0;">{0}</p>'.format( 'coord_link_msg'.i18n() ) +
+                '    <p class="atlas-description" style="text-align:justify; margin:10px 0;">{0}</p>'.format( 'coord_link_msg'.i18n() ) +
                 '    <label>{0}</label><br/>'.format( 'coord_link_title'.i18n() ) +
                 '    <input id="url-title" style="width:100%; margin-bottom:10px;" />' +
                 '    <label>{0}</label><br/>'.format( 'coord_link_text'.i18n() ) +
@@ -143,13 +154,17 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
 
         dialog.dialog({ 
             'width':370, 
-            'height': 570,
+            'height': 590,
             'position': [10,10],
             'modal': false,
             'title':'Treffpunkt',
             'close': function( ev, ui ) {
                 // deactivate tool
                 self.elm.trigger( 'click' );
+                // the above does not seem to reach the callback
+                if (self.enabled) {
+                    self.onClick();
+                }
             }
         });
     };
@@ -225,5 +240,7 @@ OpenLayers.Control.Click = OpenLayers.Class( OpenLayers.Control, {
             'click': options.onClick,
             'dblclick': options.onDClick 
         }, this.handlerOptions );
-    }
+    },
+
+    CLASS_NAME: "OpenLayers.Control.Click" 
 });

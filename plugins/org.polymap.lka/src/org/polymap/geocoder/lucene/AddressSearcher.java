@@ -46,6 +46,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import org.polymap.geocoder.Address;
 import org.polymap.lka.poi.SearchResult;
 import org.polymap.lka.poi.SearchSPI;
+import org.polymap.lka.poi.lucene.PoiSearcher;
 
 /**
  * 
@@ -60,6 +61,8 @@ public class AddressSearcher
     private static final Log  log = LogFactory.getLog( AddressIndexer.class );
 
     static final GeometryJSON       jsonDecoder = new GeometryJSON();
+
+    public static final Pattern     boundsPattern = PoiSearcher.boundsPattern;
 
     private LuceneGeocoder          geocoder = LuceneGeocoder.instance();
     
@@ -117,8 +120,7 @@ public class AddressSearcher
         String searchTerm = term;
 
         // extract bounds:{...} param from search term
-        Pattern pattern = Pattern.compile( "bounds:[^ ]+ " );
-        Matcher matcher = pattern.matcher( term );
+        Matcher matcher = boundsPattern.matcher( term );
         if (matcher.find()) {
             String boundsParam = term.substring( matcher.start(), matcher.end() );
             boundsJson = StringUtils.substringAfter( boundsParam, "bounds:" );

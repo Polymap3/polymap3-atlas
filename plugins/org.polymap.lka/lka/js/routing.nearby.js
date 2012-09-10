@@ -159,12 +159,26 @@ var Nearby = Class.extend( new function NearbyProto() {
         var self = this;
         this.service.driveTimePolygon( point, cost, mode, function( status, feature ) {
             // XXX handle status
+            
+            var defaultStyle = new OpenLayers.Style({
+                'strokeWidth': 2,
+                'strokeColor': '#808080',
+                'strokeOpacity': 0.80,
+                'fillOpacity': 0.08,
+                'fillColor': '#4444FF'
+            });
+            var styles = new OpenLayers.StyleMap({
+                'default': defaultStyle,
+                'select': defaultStyle
+            });
+
             self.layer = new OpenLayers.Layer.Vector( "Nearby", {
                     isBaseLayer: false,
                     visibility: true,
                     reportError: true,
                     strategies: [new OpenLayers.Strategy.Fixed()],
-                    protocol: new OpenLayers.Protocol()
+                    protocol: new OpenLayers.Protocol(),
+                    styleMap: styles
             });
             self.layer.attribution = self.service.attribution;
             self.layer.addFeatures( [feature] );
