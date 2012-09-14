@@ -103,7 +103,7 @@ public class PoiSearcher
             searchTerm = StringUtils.remove( searchTerm, boundsParam );
         }
                 
-        ScoreDoc[] scoreDocs = indexer.search( searchTerm, 10000 /*maxResults*/ );
+        ScoreDoc[] scoreDocs = indexer.search( searchTerm, boundsJson != null ? 10000 : maxResults );
         
         // create SearchResults
         Iterable<SearchResult> result = transform( Arrays.asList( scoreDocs ), new Function<ScoreDoc,SearchResult>() {
@@ -135,9 +135,10 @@ public class PoiSearcher
                     }
                 }
             });
+            // limit results to maxResults
+            result = limit( result, maxResults );
         }        
-        // limit results to maxResults
-        return limit( result, maxResults );
+        return result;
     }
 
     

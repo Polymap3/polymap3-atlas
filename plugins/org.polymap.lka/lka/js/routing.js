@@ -55,12 +55,12 @@ var Routing = Class.extend( new function RoutingProto() {
     this.onSearchResultGenerated = function( ev ) {
         var space = '&nbsp;&nbsp';
         var html = '<a href="#" title="{1}">{0}</a>{2}';
-        ev.div.append( '<p id="routing-'+ev.index + '" class="atlas-result-routing">'
+        ev.div.append( '<p id="routing-bar-'+ev.index + '" class="atlas-result-routing">'
                 + html.format( 'routing_to'.i18n(), 'routing_to_tip'.i18n(), space )
                 + html.format( 'routing_from'.i18n(), 'routing_from_tip'.i18n(), space )
                 + html.format( 'routing_nearby'.i18n(), 'routing_nearby_tip'.i18n(), space ) + '</p>' );
         
-        var panel = ev.div.find( '#routing-'+ev.index );
+        var panel = ev.div.find( '#routing-bar-'+ev.index );
         var self = this;
         
         // nearby search
@@ -78,7 +78,7 @@ var Routing = Class.extend( new function RoutingProto() {
         btn.click( function( ev2 ) {
             var index = Atlas.result_index + 1;
             var context = new RoutingSearchContext( index );
-            var router = new ShortestPath( self.service );
+            var router = new ShortestPath( self.service, context.original );
             router.createControl( context.elm, index, null, null, ev.feature.geometry.getCentroid(), ev.feature.data.title );
             context.createControl( router );
         });
@@ -88,7 +88,7 @@ var Routing = Class.extend( new function RoutingProto() {
         btn2.click( function( ev2 ) {
             var index = Atlas.result_index + 1;
             var context = new RoutingSearchContext( index );
-            var router = new ShortestPath( self.service );
+            var router = new ShortestPath( self.service, context.original );
             router.createControl( context.elm, index, ev.feature.geometry.getCentroid(), ev.feature.data.title );
             context.createControl( router );
         });
@@ -158,11 +158,8 @@ RoutingSearchContext = Class.extend( new function RoutingSearchContextProto() {
         // substitute context
         Atlas.contexts[this.index] = this;
 
-        // activate tab (calling #activate())
-        var resultBodyId = '#result_body' + this.index;
-        $('#tabs').tabs( 'select', resultBodyId );
-
         // UI
+        var resultBodyId = '#result_body' + this.index;
         $(resultBodyId).empty().append( 
                 '<div id="routing-'+this.index+'" class="routing-nearby ui-corner-all" style="display:none;">' +
                 '<a href="#" class="close" title="Schliessen" style="float:right;"></a>' +
@@ -174,6 +171,9 @@ RoutingSearchContext = Class.extend( new function RoutingSearchContextProto() {
             Atlas.contexts[self.index] = self.original;
             self.original.activate();
         });
+        
+        // activate tab (calling #activate())
+        $('#tabs').tabs( 'select', resultBodyId );
     };
     
     this.close = function() {

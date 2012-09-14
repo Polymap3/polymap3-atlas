@@ -128,7 +128,7 @@ public class AddressSearcher
         }
 
         // search database
-        Iterable<Address> addresses = geocoder.find( searchTerm, 10000 /*maxResults*/ );
+        Iterable<Address> addresses = geocoder.find( searchTerm, boundsJson != null ? 10000 : maxResults );
 
         GeometryFactory gf = new GeometryFactory();
 
@@ -164,7 +164,10 @@ public class AddressSearcher
                     }
                 }
             });
+            // limit results to maxResults
+            result = limit( result, maxResults );
         }
+        
         // filter equal titles
         result = filter( result, new Predicate<SearchResult>() {
 
@@ -174,9 +177,7 @@ public class AddressSearcher
                 return titles.add( input.getTitle() );
             }
         });
-
-        // limit results to maxResults
-        return limit( result, maxResults );
+        return result;
     }
 
 }

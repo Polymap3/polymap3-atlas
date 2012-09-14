@@ -51,8 +51,10 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
     this.pathColor = null;
 
     /** */
-    this.init = function( service ) {
+    this.init = function( service, searchContext ) {
         this.service = service;
+        this.searchContext = searchContext;
+
         this.markerImage = 'images/marker_b.png';
         this.pathColor = '#4444ff';
         
@@ -68,6 +70,8 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
             this.elm.remove(); 
             this.elm.parent().empty();
         }
+        this.searchContext.resultDiv = this.origResultDiv;
+
         if (this.selectControl != null) { Atlas.map.removeControl( this.selectControl ); }
         if (this.hoverControl != null) { Atlas.map.removeControl( this.hoverControl ); }
         if (this.layer != null) { Atlas.map.removeLayer( this.layer ); }
@@ -91,6 +95,12 @@ var ShortestPath = Class.extend( new function ShortestPathProto() {
         this.toSearchStr = toSearchStr;
         var self = this;
         
+        // tweak target div in SearchContext, prevent it to mess with resultDiv
+        // while we are controlling it
+        this.elm.parent().append( '<hr/><div id="fake-result-body-'+index+'"></div>' );
+        this.origResultDiv = this.searchContext.resultDiv;
+        this.searchContext.resultDiv = $('#fake-result-body-'+index);
+
         this.elm.append( (
                 '<div>'
                 + '<b>{0}</b><br/> <input id="{1}" style="width:85%; margin: 1px 0px 1px 0px;"></input>'
@@ -372,7 +382,7 @@ var RoutingResultPanel = Class.extend( new function RoutingResultPanelProto() {
     this.init = function( parent, shortestPath, status, features ) {
         this.parent = parent;
         this.shortestPath = shortestPath;
-        this.parent.append( '<hr/><div>'
+        this.parent.append( '<div id="routing-result-panel">'
                 + '<div class="routing-result-entry">'
                 + '<b>' + 'routing_total_length'.i18n() + '</b> <span id="routing-total-length" /> km<br/>'
                 + '<b>' + 'routing_total_cost'.i18n() + '</b> <span id="routing-total-cost" /> min.<br/>'
@@ -380,6 +390,7 @@ var RoutingResultPanel = Class.extend( new function RoutingResultPanelProto() {
                 + '<div id="routing-tooltip-list" class="routing-result-list"></div>'
                 + '</div>' );
         
+        this.resultDiv = this.parent.find('#routing-result-panel');
         var list = this.parent.find('#routing-tooltip-list');
         var totalLength = 0;
         var totalTime = 0;
@@ -416,6 +427,7 @@ var RoutingResultPanel = Class.extend( new function RoutingResultPanelProto() {
     };
     
     this.close = function() {
+        this.resultDiv.remove();
     };
     
     this.highlight = function( feature ) {

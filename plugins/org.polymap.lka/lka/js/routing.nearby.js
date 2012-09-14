@@ -76,7 +76,7 @@ var Nearby = Class.extend( new function NearbyProto() {
         this.point = point;
         this.elm.append( ('<div id="routing-nearby-'+index+'">'
                 + '<b>' + 'routing_cost_input'.i18n() + '</b><br/>' 
-                + '<input id="routing-cost-input-'+index+'" style="text-align:right; width:37%; margin:3px;"></input>'
+                + '<input id="routing-cost-input-'+index+'" style="text-align:right; width:35%; margin:3px;"></input>'
                 + '<span id="routing-cost-type">'
                 + '    <input id="cost-length" disabled="disabled" value="length" type="radio" name="cost-radios"/>'
                 + '      <label for="cost-length" title="Angabe ist Wegstrecke in Metern">Meter</label>'
@@ -86,7 +86,7 @@ var Nearby = Class.extend( new function NearbyProto() {
                 + '    <button id="routing-nearby-btn-'+index + '" title="{1}">{0}</button>' 
                 + '<br/><br/><hr/><br/>'
                 + '<b>' + 'routing_search_input'.i18n() + '</b><br/>'
-                + '<input id="routing-search-input-'+index+'" style="width:70%; margin:3px;"></input>'
+                + '<input id="routing-search-input-'+index+'" style="width:69%; margin:3px;"></input>'
                 + '    <button id="routing-nearby-btn2-"'+index +'" title="{3}">{2}</button>' 
                 + '</div>' )
                 .format( 'routing_nearby_show'.i18n(), 'routing_nearby_show_tip'.i18n(),
@@ -162,10 +162,11 @@ var Nearby = Class.extend( new function NearbyProto() {
             
             var defaultStyle = new OpenLayers.Style({
                 'strokeWidth': 2,
-                'strokeColor': '#808080',
-                'strokeOpacity': 0.80,
-                'fillOpacity': 0.08,
-                'fillColor': '#4444FF'
+                'strokeColor': '#808080',  //'#F08F17',   // '#808080',
+                'strokeDashstyle': 'dash',
+                'strokeOpacity': 1,
+                'fillOpacity': 0.13,
+                'fillColor': '#808080'  //'#FFA126'      //'#4444FF'
             });
             var styles = new OpenLayers.StyleMap({
                 'default': defaultStyle,

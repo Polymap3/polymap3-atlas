@@ -68,7 +68,8 @@ var RoutingService = Class.extend( new function RoutingProto() {
         var self = this;
         $.ajax( {
             url: url,
-            dataType: "html",
+            contentType: "application/json; charset=UTF-8",
+            dataType: 'text',
             success: function( data ) {
                 var featureJson = '{' +
                     '"type": "Feature",' +
@@ -118,7 +119,8 @@ var RoutingService = Class.extend( new function RoutingProto() {
         
         $.ajax( {
             url: url,
-            dataType: "html",
+            contentType: 'application/json; charset=ISO-8859-1',
+            dataType: 'text',
             success: function( data ) {
                 var features = new OpenLayers.Format.GeoJSON().read( data );
                 

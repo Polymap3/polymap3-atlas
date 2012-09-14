@@ -229,7 +229,8 @@ public class Osm2poServlet
     throws Exception {
         assert path != null;
         OutputStreamWriter writer = new OutputStreamWriter( out, "ISO-8859-1" );
-        writer.append( GraphPathFormatter.createPathAsFeatureCollection( graphRef.get(), path ) );
+        String json = GraphPathFormatter.createPathAsFeatureCollection( graphRef.get(), path );
+        writer.write( json );
         writer.flush();
     }
 
