@@ -73,7 +73,7 @@ public class AddressSearcher
     
     public Iterable<String> autocomplete( String term, int maxResults, CoordinateReferenceSystem worldCRS )
     throws Exception {
-        // search for the last term in the search
+        // find the last term
         String addressStr = term.toLowerCase();
         String prefix = "";
         if (StringUtils.contains( addressStr, " " )) { 
@@ -84,14 +84,14 @@ public class AddressSearcher
         List<String> result = new ArrayList();
         
         // streets
-        String[] terms = geocoder.indexer.searchTerms( 
-                AddressIndexer.FIELD_STREET, addressStr, 5000 );
-        for (int i=0; i<maxResults && i<terms.length; ) {
-            log.info( "   Street: " + terms[i] );
+        String[] terms = geocoder.indexer.searchTerms( AddressIndexer.FIELD_STREET, addressStr, 1000 );
+        
+        for (int termIndex=0, resultCount=0; resultCount<maxResults && termIndex<terms.length; termIndex++) {
+            log.info( "   Street: " + terms[termIndex] );
 
             // find possible streets
-            List<Address> addrs = geocoder.findStreets( new Address( terms[i], null, null, null, null ), maxResults );
-            for (Iterator it=addrs.iterator(); it.hasNext() && i<maxResults; i++) {
+            List<Address> addrs = geocoder.findStreets( new Address( terms[termIndex], null, null, null, null ), maxResults );
+            for (Iterator it=addrs.iterator(); it.hasNext() && resultCount<maxResults; resultCount++) {
                 Address address = (Address)it.next();
                 result.add( prefix + address.getStreet() + ", " + address.getCity() );
             }
