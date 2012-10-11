@@ -231,16 +231,22 @@ var AtlasClass = Class.extend( new function AtlasClassProto() {
      * Handle URL params for preset searches. 
      */
     this.initUrlParams = function () {
+        var self = this;
+
         // wait for the system to setup; especially allow registering
         // listeners that tweak seachStr and result handling
-        var self = this;
         setTimeout( function() {
-            //
+            // search[0,1,2,3]=
             for (var i=3; i>=0; i--) {
-                var search_str = $(document).getUrlParam( 'search'+ (i+1) );
-                if (search_str != null) {
+                var search_str = $(document).getUrlParam( 'search' + (i+1) );
+                if (search_str) {
                     self.contexts[i].search( decodeURIComponent( search_str ) );
                 }
+            }
+            // search= (without index)
+            var search_str = $(document).getUrlParam( 'search' );
+            if (search_str) {
+                self.contexts[0].search( decodeURIComponent( search_str ) );
             }
 
             // wait for all context to load -> activate context[0]
