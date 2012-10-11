@@ -1,7 +1,6 @@
 /*
  * polymap.org
- * Copyright 2011, Falko Bräutigam, and individual contributors as
- * indicated by the @authors tag. All rights reserved.
+ * Copyright 2011-2012, Falko Bräutigam. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -91,11 +90,11 @@ function MeasureMode( map, elm ) {
 //            }
 //        }
         
-        $('#dialog').html( "Gesamtlänge: <b>" + measure + "</b>" );
+        $('#dialog').html( 'measure_dialog_msg'.i18n().format( measure ) );  //"Gesamtlänge: <b>" + measure + "</b>" );
         $('#dialog').dialog({ 
             'width': 250, 
             'height': 100, 
-            'title': 'Ergebnis'
+            'title': 'measure_dialog_title'.i18n()
 //            'close': function( ev, ui ) {
 //                // remove everything, including this handler
 //                //self.dialog.remove();
@@ -159,5 +158,3 @@ function MeasureMode( map, elm ) {
         //"measurepartial": callback( this.onMeasure, {scope:this} )
     });
 };
-
-
