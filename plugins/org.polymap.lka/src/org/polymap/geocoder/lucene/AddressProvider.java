@@ -64,7 +64,12 @@ class AddressProvider {
     throws PipelineIncubationException, IOException {
         List<FeatureSource> result = new ArrayList();
         for (ILayer layer : findLayers()) {
-            result.add( PipelineFeatureSource.forLayer( layer, false ) );
+            try {
+                result.add( PipelineFeatureSource.forLayer( layer, false ) );
+            }
+            catch (Exception e) {
+                log.warn( "Unable to create FeatureSource for layer: " + layer.getLabel() );
+            }
         }
         return result;
     }
