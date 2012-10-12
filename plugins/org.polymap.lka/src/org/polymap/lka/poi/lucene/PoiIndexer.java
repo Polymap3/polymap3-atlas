@@ -15,10 +15,12 @@
  */
 package org.polymap.lka.poi.lucene;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -29,6 +31,7 @@ import java.io.StringWriter;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.geojson.geom.GeometryJSON;
+import org.json.JSONException;
 import org.opengis.feature.Property;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -55,7 +58,10 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+
 import com.vividsolutions.jts.geom.Geometry;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
@@ -66,6 +72,7 @@ import org.polymap.core.model.event.ModelStoreEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
+import org.polymap.core.runtime.UIJob;
 import org.polymap.core.workbench.PolymapWorkbench;
 
 import org.polymap.geocoder.Address;
@@ -283,7 +290,7 @@ class PoiIndexer {
     
     
     public void reindex()
-    throws CorruptIndexException, IOException, PipelineIncubationException {
+    throws CorruptIndexException, IOException {
         log.info( "Re-indexing..." );
 
         IndexWriter iwriter = null;
@@ -293,117 +300,20 @@ class PoiIndexer {
             config.setOpenMode( OpenMode.CREATE );
             iwriter = new IndexWriter( directory, config );
 
+            // start jobs
+            List<LayerIndexJob> jobs = new ArrayList();
             for (ILayer layer : provider.findLayers()) {
-                FeatureCollection fc = null;
-                Iterator it = null;
-                try {                    
-                    PipelineFeatureSource fs = PipelineFeatureSource.forLayer( layer, false );
-
-                    // SRS
-                    CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
-                    String dataSRS = layer.getCRSCode();
-
-                    log.debug( "    found FeatureSource: " + fs + ", SRS=" + dataSRS );
-                    fc = fs.getFeatures();
-                    it = fc.iterator();
-                
-                    int size = 0;        
-                    int indexed = 0;
-                    String layerKeywords = layer.getKeywords() != null ? StringUtils.join( layer.getKeywords(), " " ) : "";
-
-                    GeometryJSON jsonEncoder = new GeometryJSON( 4 );
-                    
-                    while (it.hasNext()) {
-                        try {
-                            SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
-
-                            Document doc = new Document();
-                            StringBuffer keywords = new StringBuffer( 1024 );
-                            Address address = new Address();
-                            for (Property prop : feature.getProperties()) {
-                                String propName = prop.getName().getLocalPart();
-                                //log.debug( "        prop: " + propName );
-
-                                // no value
-                                if (prop.getValue() == null) {
-                                    continue;
-                                }
-                                // Geometry
-                                else if (Geometry.class.isAssignableFrom( prop.getValue().getClass() ) ) {
-                                    Geometry geom = (Geometry)prop.getValue();
-                                    StringWriter out = new StringWriter( 1024 );
-                                    jsonEncoder.write( geom, out );
-                                    log.debug( "    GEOM: " + geom );
-                                    log.debug( "    JSON: " + out.toString() );
-                                    doc.add( new Field( FIELD_GEOM, out.toString(),
-                                            Field.Store.YES, Field.Index.NO ) );
-                                    
-                                    doc.add( new Field( FIELD_SRS, dataSRS,
-                                            Field.Store.YES, Field.Index.NO ) );
-                                }
-                                // address fields
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_CITY, propName.toLowerCase() )) {
-                                    address.setCity( prop.getValue().toString() );
-                                    keywords.append( prop.getValue().toString() ).append( ' ' );
-                                }
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_STREET, propName.toLowerCase() )) {
-                                    address.setStreet( prop.getValue().toString() );
-                                    keywords.append( prop.getValue().toString() ).append( ' ' );
-                                }
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_POSTALCODE, propName.toLowerCase() )) {
-                                    address.setPostalCode( prop.getValue().toString() );
-                                    keywords.append( prop.getValue().toString() ).append( ' ' );
-                                }
-                                else if (ArrayUtils.contains( AddressIndexer.PROP_NUMBER, propName.toLowerCase() )) {
-                                    address.setNumber( prop.getValue().toString() );
-                                    keywords.append( prop.getValue().toString() ).append( ' ' );
-                                }
-                                // other
-                                else {
-                                    propName = propName.equalsIgnoreCase( FIELD_TITLE ) ? FIELD_TITLE : propName;
-                                    String propValue = prop.getValue().toString();
-                                    // ommit empty name field
-                                    if (propName.equals( FIELD_TITLE ) && propValue.length() == 0) {
-                                        log.warn( "Empty name field: ..." );
-                                        continue;
-                                    }
-                                    doc.add( new Field( propName, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
-
-                                    keywords.append( prop.getValue().toString() ).append( ' ' );
-                                }
-                                indexed++;
-                            }
-                            
-                            keywords.append( layerKeywords );
-                            doc.add( new Field( FIELD_KEYWORDS, keywords.toString(),
-                                    Field.Store.NO, Field.Index.ANALYZED ) );
-
-                            doc.add( new Field( FIELD_ADDRESS, address.toJSON(),
-                                    Field.Store.YES, Field.Index.ANALYZED ) );
-
-                            String categories = layer.getKeywords() != null 
-                                    ? StringUtils.join( layer.getKeywords(), "," ) : "";
-                            doc.add( new Field( FIELD_CATEGORIES, categories,
-                                    Field.Store.YES, Field.Index.ANALYZED ) );
-
-                            iwriter.addDocument( doc );
-                            size++;
-                        }
-                        catch (Exception e) {
-                            log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
-                            log.debug( e.getLocalizedMessage(), e );
-                        }
-                    }
-                    log.info( "    document: count=" + size + " indexed=" + indexed );
+                LayerIndexJob job = new LayerIndexJob( iwriter, layer );
+                jobs.add( job );
+                job.schedule();
+            }
+            
+            // wait for jobs to complete
+            for (LayerIndexJob job : jobs) {
+                try {
+                    job.join();
                 }
-                catch (Exception e) {
-                    log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
-                    log.debug( e.getLocalizedMessage(), e );
-                }
-                finally {
-                    if (fc != null && it != null) {
-                        fc.close( it );
-                    }
+                catch (InterruptedException e) {
                 }
             }
         }
@@ -421,4 +331,145 @@ class PoiIndexer {
         log.info( "Index reloaded." );
     }
 
+    
+    /**
+     * Performs indexing for one layer.
+     */
+    class LayerIndexJob
+            extends UIJob {
+
+        private IndexWriter     writer;
+        
+        private ILayer          layer;
+        
+        
+        public LayerIndexJob( IndexWriter writer, ILayer layer ) {
+            super( "Indexing: " + layer.getLabel() );
+            this.writer = writer;
+            this.layer = layer;
+        }
+
+
+        @Override
+        protected void runWithException( IProgressMonitor monitor )
+        throws Exception {
+            PipelineFeatureSource fs = PipelineFeatureSource.forLayer( layer, false );
+            FeatureCollection fc = null;
+            Iterator it = null;
+            
+            try {
+                log.info( layer.getLabel() + ": indexing..." );
+                // SRS
+                CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
+                String dataSRS = layer.getCRSCode();
+                log.debug( "    " + layer.getLabel() + ": found FeatureSource: " + fs + ", SRS=" + dataSRS );
+                
+                // start indexing
+                fc = fs.getFeatures();
+                it = fc.iterator();
+                monitor.beginTask( getName(), IProgressMonitor.UNKNOWN );
+                reindex( it, dataSRS, monitor );
+            }
+            catch (Exception e) {
+                log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
+                log.debug( e.getLocalizedMessage(), e );
+                throw e;
+            }
+            finally {
+                if (fc != null && it != null) {
+                    fc.close( it );
+                }
+                monitor.done();
+            }
+        }
+
+
+        protected void reindex( Iterator it, String dataSRS, IProgressMonitor monitor )
+        throws IOException, JSONException {
+            int size = 0;        
+            int indexed = 0;
+            String layerKeywords = layer.getKeywords() != null ? StringUtils.join( layer.getKeywords(), " " ) : "";
+
+            GeometryJSON jsonEncoder = new GeometryJSON( 4 );
+
+            while (it.hasNext() && !monitor.isCanceled()) {
+                SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
+
+                Document doc = new Document();
+                StringBuffer keywords = new StringBuffer( 1024 );
+                Address address = new Address();
+                for (Property prop : feature.getProperties()) {
+                    String propName = prop.getName().getLocalPart();
+                    //log.debug( "        prop: " + propName );
+
+                    // no value
+                    if (prop.getValue() == null) {
+                        continue;
+                    }
+                    // Geometry
+                    else if (Geometry.class.isAssignableFrom( prop.getValue().getClass() ) ) {
+                        Geometry geom = (Geometry)prop.getValue();
+                        StringWriter out = new StringWriter( 1024 );
+                        jsonEncoder.write( geom, out );
+                        log.debug( "    GEOM: " + geom );
+                        log.debug( "    JSON: " + out.toString() );
+                        doc.add( new Field( FIELD_GEOM, out.toString(),
+                                Field.Store.YES, Field.Index.NO ) );
+
+                        doc.add( new Field( FIELD_SRS, dataSRS,
+                                Field.Store.YES, Field.Index.NO ) );
+                    }
+                    // address fields
+                    else if (ArrayUtils.contains( AddressIndexer.PROP_CITY, propName.toLowerCase() )) {
+                        address.setCity( prop.getValue().toString() );
+                        keywords.append( prop.getValue().toString() ).append( ' ' );
+                    }
+                    else if (ArrayUtils.contains( AddressIndexer.PROP_STREET, propName.toLowerCase() )) {
+                        address.setStreet( prop.getValue().toString() );
+                        keywords.append( prop.getValue().toString() ).append( ' ' );
+                    }
+                    else if (ArrayUtils.contains( AddressIndexer.PROP_POSTALCODE, propName.toLowerCase() )) {
+                        address.setPostalCode( prop.getValue().toString() );
+                        keywords.append( prop.getValue().toString() ).append( ' ' );
+                    }
+                    else if (ArrayUtils.contains( AddressIndexer.PROP_NUMBER, propName.toLowerCase() )) {
+                        address.setNumber( prop.getValue().toString() );
+                        keywords.append( prop.getValue().toString() ).append( ' ' );
+                    }
+                    // other
+                    else {
+                        propName = propName.equalsIgnoreCase( FIELD_TITLE ) ? FIELD_TITLE : propName;
+                        String propValue = prop.getValue().toString();
+                        // ommit empty name field
+                        if (propName.equals( FIELD_TITLE ) && propValue.length() == 0) {
+                            log.warn( "Empty name field: ..." );
+                            continue;
+                        }
+                        doc.add( new Field( propName, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
+
+                        keywords.append( prop.getValue().toString() ).append( ' ' );
+                    }
+                    indexed++;
+                }
+
+                keywords.append( layerKeywords );
+                doc.add( new Field( FIELD_KEYWORDS, keywords.toString(),
+                        Field.Store.NO, Field.Index.ANALYZED ) );
+
+                doc.add( new Field( FIELD_ADDRESS, address.toJSON(),
+                        Field.Store.YES, Field.Index.ANALYZED ) );
+
+                String categories = layer.getKeywords() != null 
+                ? StringUtils.join( layer.getKeywords(), "," ) : "";
+                doc.add( new Field( FIELD_CATEGORIES, categories,
+                        Field.Store.YES, Field.Index.ANALYZED ) );
+
+                writer.addDocument( doc );
+                size++;
+                monitor.worked( 1 );
+            }
+            log.info( "    " + layer.getLabel() + ": count=" + size + " indexed=" + indexed );
+        }
+    }
+    
 }
