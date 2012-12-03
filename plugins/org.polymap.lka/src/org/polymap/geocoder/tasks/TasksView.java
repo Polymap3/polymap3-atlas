@@ -47,7 +47,6 @@ import org.eclipse.core.commands.ExecutionException;
 
 import org.polymap.core.model.event.ModelChangeEvent;
 import org.polymap.core.model.event.IModelChangeListener;
-import org.polymap.core.model.event.IEventFilter;
 import org.polymap.core.operation.OperationSupport;
 import org.polymap.core.runtime.Polymap;
 import org.polymap.core.workbench.PolymapWorkbench;
@@ -91,7 +90,7 @@ public class TasksView
         private TableViewer         viewer;
         
         public ViewContentProvider() {
-            TaskRepository.instance().addModelChangeListener( this, IEventFilter.ALL );
+            TaskRepository.instance().addEntityListener( this );
         }
         
         public void inputChanged( Viewer v, Object oldInput, Object newInput ) {
@@ -99,7 +98,7 @@ public class TasksView
         }
 
         public void dispose() {
-            TaskRepository.instance().removeModelChangeListener( this );
+            TaskRepository.instance().removeEntityListener( this );
         }
 
         public Object[] getElements( Object parent ) {

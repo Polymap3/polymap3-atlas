@@ -30,12 +30,12 @@ import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import org.polymap.core.model.event.ModelStoreEvent;
 import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.runtime.DefaultSessionContext;
 import org.polymap.core.runtime.DefaultSessionContextProvider;
 import org.polymap.core.runtime.Polymap;
 import org.polymap.core.runtime.SessionContext;
+import org.polymap.core.runtime.entity.EntityStateEvent;
 import org.polymap.core.security.SecurityUtils;
 import org.polymap.core.security.UserPrincipal;
 
@@ -97,7 +97,7 @@ public class LKAPlugin
      * Destroys the current {@link SessionContext} and creates a new one.
      * <p/>
      * XXX This allows to indexers the reload their content from the
-     * {@link ProjectRepository} after a {@link ModelStoreEvent}. It is a hack since
+     * {@link ProjectRepository} after a {@link EntityStateEvent}. It is a hack since
      * it drops the context without the chance for other indexers to remove their
      * listeners.
      */

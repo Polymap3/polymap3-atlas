@@ -75,13 +75,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import org.polymap.core.data.pipeline.PipelineIncubationException;
-import org.polymap.core.model.event.IModelHandleable;
-import org.polymap.core.model.event.IModelStoreListener;
-import org.polymap.core.model.event.ModelStoreEvent;
-import org.polymap.core.model.event.ModelStoreEvent.EventType;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.project.ProjectRepository;
+import org.polymap.core.runtime.entity.IEntityHandleable;
+import org.polymap.core.runtime.entity.IEntityStateListener;
+import org.polymap.core.runtime.entity.EntityStateEvent;
+import org.polymap.core.runtime.entity.EntityStateEvent.EventType;
 import org.polymap.core.workbench.PolymapWorkbench;
 
 import org.polymap.geocoder.Address;
@@ -145,7 +145,7 @@ public class AddressIndexer {
 
     private boolean           index2file = false;
 
-    private IModelStoreListener modelListener;
+    private IEntityStateListener modelListener;
 
 
     /**
@@ -182,24 +182,22 @@ public class AddressIndexer {
         searcher = new IndexSearcher( indexReader );
 
         // listen to model changes
-        modelListener = new IModelStoreListener() {
-            public void modelChanged( ModelStoreEvent ev ) {
+        modelListener = new IEntityStateListener() {
+            public void modelChanged( EntityStateEvent ev ) {
                 if (ev.getEventType() == EventType.COMMIT) {
                     try {
                         Set<IMap> maps = new HashSet();
                         for (ILayer layer : AddressIndexer.this.provider.findLayers()) {
-                            if (ev.hasChanged( (IModelHandleable)layer )) {
+                            if (ev.hasChanged( (IEntityHandleable)layer )) {
                                 LKAPlugin.getDefault().dropServiceContext();
-                                ProjectRepository.instance().addModelStoreListener( modelListener );
                                 reindex();
                                 return;
                             }
                             maps.add( layer.getMap() );
                         }
                         for (IMap map : maps) {
-                            if (ev.hasChanged( (IModelHandleable)map )) {
+                            if (ev.hasChanged( (IEntityHandleable)map )) {
                                 LKAPlugin.getDefault().dropServiceContext();
-                                ProjectRepository.instance().addModelStoreListener( modelListener );
                                 reindex();
                                 return;
                             }
@@ -214,7 +212,7 @@ public class AddressIndexer {
                 return true;
             }
         };
-        ProjectRepository.instance().addModelStoreListener( modelListener );
+        ProjectRepository.instance().addEntityListener( modelListener );
     }
 
     /**
