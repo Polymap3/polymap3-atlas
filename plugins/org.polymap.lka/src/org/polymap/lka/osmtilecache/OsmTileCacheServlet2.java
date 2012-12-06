@@ -78,9 +78,9 @@ public class OsmTileCacheServlet2
         
         baseDir = new File( Polymap.getWorkspacePath().toFile(), "osmcache" );
         baseDir.mkdirs();
-        log.info( "CACHE: " + baseDir.getAbsolutePath() + 
-                "\n        disk: " + FileUtils.byteCountToDisplaySize( FileUtils.sizeOfDirectory( baseDir ) ) +
-                "\n        tiles: " + FileUtils.listFiles( baseDir, null, true ).size() );
+        log.info( "CACHE: " + baseDir.getAbsolutePath() ); 
+//                "\n        disk: " + FileUtils.byteCountToDisplaySize( FileUtils.sizeOfDirectory( baseDir ) ) +
+//                "\n        tiles: " + FileUtils.listFiles( baseDir, null, true ).size() );
     }
 
 

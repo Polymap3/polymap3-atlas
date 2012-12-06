@@ -170,8 +170,9 @@ public class SearchServlet
 
                 ObjectOutput out = null;
                 if ("KML".equalsIgnoreCase( outputType )) {
-                    out = new KMLEncoder( bout, CRS.decode( "EPSG:900913" ) );
+                    out = new KMLEncoder( bout );
                     response.setContentType( "application/vnd.google-earth.kml+xml" );
+                    response.setCharacterEncoding( "UTF-8" );
                 }
                 else if ("JSON".equalsIgnoreCase( outputType )) {
                     response.setContentType( "application/json; charset=UTF-8" );

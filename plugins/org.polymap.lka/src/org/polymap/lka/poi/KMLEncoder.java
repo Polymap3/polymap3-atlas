@@ -22,35 +22,21 @@
  */
 package org.polymap.lka.poi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.kml.KML;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.referencing.CRS;
 import org.geotools.xml.Encoder;
-import org.json.JSONException;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
@@ -59,6 +45,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 import org.polymap.core.data.pipeline.PipelineProcessor;
+import org.polymap.core.data.util.Geometries;
 
 /**
  * This stream encodes {@link SimpleFeature} and {@link Document} objects into
@@ -78,33 +65,33 @@ public class KMLEncoder
 
     private String                      typeName = "Orte";
     
-    private boolean                     streamStarted;
-    
-    /** The CRS used for encoding document. */
-    private CoordinateReferenceSystem   dataCRS;
-    
+    /** The CRS used for encoding KML. */
     private CoordinateReferenceSystem   worldCRS = CRS.decode( "EPSG:4326" );  //DefaultGeographicCRS.WGS84;
-    
-    private MathTransform               transform;
-
-    private List<SimpleFeature>         features = new ArrayList( 128 );
-    
-    private SimpleFeatureType           featuresType;
 
 
-    public KMLEncoder( OutputStream out, CoordinateReferenceSystem dataCRS )
-            throws Exception {
+    public KMLEncoder( OutputStream out ) throws Exception {
         super( out );
-        this.dataCRS = dataCRS;
-        //worldCRS = CRS.decode( "EPSG:4326" );
+
+        OutputStreamWriter writer = new OutputStreamWriter( this, "UTF-8" );
+        writer.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
+        writer.append( "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" );
+        writer.append( "<Document>\n" );
+        writer.flush();
     }
 
     
+    @Override
+    public void close() throws IOException {
+        OutputStreamWriter writer = new OutputStreamWriter( this, "UTF-8" );
+        writer.append( "</Document>\n" );
+        writer.append( "</kml>\n" );
+        writer.flush();
+        super.close();
+    }
+
+
     public void writeObject( Object obj )
             throws IOException {
-        if (!streamStarted) {
-            startStream();
-        }
         try {
             if (obj instanceof SimpleFeature) {
                 encodeFeature( (SimpleFeature)obj );
@@ -125,100 +112,50 @@ public class KMLEncoder
     }
 
     
-    protected void startStream() {
-        assert !streamStarted;
-        streamStarted = true;
-    }
-    
-    
-    private boolean aboutToFlush = false;
-    
-    public synchronized void flush()
-            throws IOException {
-        if (aboutToFlush) {
-            return;
-        }
-        aboutToFlush = true;
-        log.info( "flush(): ..." );
-
-        //
-//        CoordinateReferenceSystem featureCRS = featuresType.getCoordinateReferenceSystem();
-//        if (!featureCRS.equals( dataCRS )) {
-//            boolean lenient = true; // allow for some error due to different datums
-//            transform = CRS.findMathTransform( dataCRS, worldCRS, lenient );
-//        }
-
-        FeatureCollection<SimpleFeatureType, SimpleFeature> fc = FeatureCollections.newCollection();
-        for (SimpleFeature feature : features) {
-            fc.add( feature );
-        }
-
-        Encoder encoder = new Encoder( new KMLConfiguration() );
-        encoder.setIndenting( true );
-        encoder.setEncoding( Charset.forName( "UTF-8" ) );
-        encoder.setNamespaceAware( false );
-        encoder.encode( fc, KML.kml, this );
-
-        aboutToFlush = false;
+    public synchronized void flush() throws IOException {
         super.flush();
-        features = null;
     }
 
 
     protected void encodeFeature( SimpleFeature feature ) 
     throws FactoryException {
-        if (featuresType == null) {
-            featuresType = feature.getFeatureType();
-        }
-        else {
-            assert featuresType.equals( feature.getFeatureType() );
-        }
-        features.add( feature );
-        log.debug( "Feature added: " + feature );
+        throw new RuntimeException( "not yet..." );
     }
 
     
     protected void encodeSearchResult( SearchResult obj ) 
-    throws FactoryException, JSONException, MismatchedDimensionException, TransformException {
-
-        Geometry geom = obj.getGeom();
-        log.debug( "    src coords: " + geom );
-        dataCRS = CRS.decode( obj.getSRS() );
-        boolean lenient = true; // allow for some error due to different datums
-        transform = CRS.findMathTransform( dataCRS, worldCRS, lenient );
-        //log.info( "Transform: " + transform );
-        geom = transform != null ? JTS.transform( geom, transform ) : geom;
+    throws Exception {
+        // transform geometry
+        Geometry geom = Geometries.transform( obj.getGeom(), Geometries.crs( obj.getSRS() ), worldCRS );
         
-        // type
-        SimpleFeatureTypeBuilder ftb = new SimpleFeatureTypeBuilder();
-        ftb.setName( typeName );
-        ftb.add( "geometry", obj.getGeom().getClass(), worldCRS );
+        // Placemark
+        OutputStreamWriter writer = new OutputStreamWriter( this, "UTF-8" );
+        writer.append( "<Placemark>\n" );
+        writer.append( "   <name>" ).append( obj.getTitle() ).append( "</name>\n" );
 
-        ftb.add( "title", String.class );
-        for (String field : obj.getFieldNames()) {
-            log.debug( "    field: " + field );
-            
-            String value = obj.getField( field );
-            if (value != null && value.length() > 0) {
-                ftb.add( StringUtils.capitalize( field ), String.class );
-            }
-        }
-        featuresType = ftb.buildFeatureType();
+//        // fields
+//        for (String field : obj.getFieldNames()) {
+//            String value = obj.getField( field );
+//            if (value != null && value.length() > 0) {
+//                String fieldName = StringUtils.capitalize( field );
+//                writer.append( "   <" ).append( fieldName ).append( ">" )
+//                        .append( value )
+//                        .append( "</" ).append( fieldName ).append( ">\n" );
+//            }
+//        }
+        writer.flush();
 
-        // feature
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder( featuresType );
-
-        fb.set( "geometry", geom );
+        // encode geometry
+        Encoder kmlEncoder = new Encoder( new KMLConfiguration() );
+        kmlEncoder.setIndenting( true );
+        kmlEncoder.setEncoding( Charset.forName( "UTF-8" ) );
+        kmlEncoder.setNamespaceAware( false );
+        kmlEncoder.setOmitXMLDeclaration( true );
+        kmlEncoder.encode( geom, KML.Geometry, this );
         
-        fb.set( "title", obj.getTitle() );
-        for (String field : obj.getFieldNames()) {
-            String value = obj.getField( field );
-            if (value != null && value.length() > 0) {
-                fb.set( StringUtils.capitalize( field ), value );
-            }
-        }
-
-        encodeFeature( fb.buildFeature( null ) );
+        writer = new OutputStreamWriter( this, "UTF-8" );
+        writer.write( "</Placemark>\n" );
+        writer.flush();
     }
     
 }
