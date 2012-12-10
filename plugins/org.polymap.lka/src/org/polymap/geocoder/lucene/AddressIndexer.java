@@ -74,14 +74,19 @@ import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
+
 import org.polymap.core.data.pipeline.PipelineIncubationException;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
-import org.polymap.core.project.ProjectRepository;
+import org.polymap.core.runtime.UIJob;
+import org.polymap.core.runtime.entity.EntityStateTracker;
 import org.polymap.core.runtime.entity.IEntityHandleable;
-import org.polymap.core.runtime.entity.IEntityStateListener;
 import org.polymap.core.runtime.entity.EntityStateEvent;
 import org.polymap.core.runtime.entity.EntityStateEvent.EventType;
+import org.polymap.core.runtime.event.EventHandler;
+import org.polymap.core.runtime.event.Event;
 import org.polymap.core.workbench.PolymapWorkbench;
 
 import org.polymap.geocoder.Address;
@@ -145,8 +150,6 @@ public class AddressIndexer {
 
     private boolean           index2file = false;
 
-    private IEntityStateListener modelListener;
-
 
     /**
      * 
@@ -182,37 +185,41 @@ public class AddressIndexer {
         searcher = new IndexSearcher( indexReader );
 
         // listen to model changes
-        modelListener = new IEntityStateListener() {
-            public void modelChanged( EntityStateEvent ev ) {
-                if (ev.getEventType() == EventType.COMMIT) {
-                    try {
-                        Set<IMap> maps = new HashSet();
-                        for (ILayer layer : AddressIndexer.this.provider.findLayers()) {
-                            if (ev.hasChanged( (IEntityHandleable)layer )) {
-                                LKAPlugin.getDefault().dropServiceContext();
-                                reindex();
-                                return;
-                            }
-                            maps.add( layer.getMap() );
-                        }
-                        for (IMap map : maps) {
-                            if (ev.hasChanged( (IEntityHandleable)map )) {
-                                LKAPlugin.getDefault().dropServiceContext();
-                                reindex();
-                                return;
-                            }
-                        }
+        EntityStateTracker.instance().addListener( this );
+    }
+    
+    
+    @EventHandler(scope=Event.Scope.JVM)
+    protected void modelChanged( EntityStateEvent ev ) {
+        if (ev.getEventType() == EventType.COMMIT) {
+            try {
+                Set<IMap> maps = new HashSet();
+                for (ILayer layer : AddressIndexer.this.provider.findLayers()) {
+                    if (ev.hasChanged( (IEntityHandleable)layer )) {
+                        EntityStateTracker.instance().removeListener( this );
+                        LKAPlugin.getDefault().dropServiceContext();
+                        EntityStateTracker.instance().addListener( this );
+
+                        reindex();
+                        return;
                     }
-                    catch (Exception e) {
-                        PolymapWorkbench.handleError( LKAPlugin.PLUGIN_ID, this, "Fehler beim Re-Indizieren der Adressen.", e );
+                    maps.add( layer.getMap() );
+                }
+                for (IMap map : maps) {
+                    if (ev.hasChanged( (IEntityHandleable)map )) {
+                        EntityStateTracker.instance().removeListener( this );
+                        LKAPlugin.getDefault().dropServiceContext();
+                        EntityStateTracker.instance().addListener( this );
+
+                        reindex();
+                        return;
                     }
                 }
             }
-            public boolean isValid() {
-                return true;
+            catch (Exception e) {
+                PolymapWorkbench.handleError( LKAPlugin.PLUGIN_ID, this, "Fehler beim Re-Indizieren der Adressen.", e );
             }
-        };
-        ProjectRepository.instance().addEntityListener( modelListener );
+        }
     }
 
     /**
@@ -475,134 +482,143 @@ public class AddressIndexer {
     
     public void reindex()
     throws CorruptIndexException, IOException, PipelineIncubationException {
-        log.info( "Re-indexing addresses..." );
+        UIJob job = new UIJob( "Re-Indexing Addresses" ) {
+            protected void runWithException( IProgressMonitor monitor ) throws Exception {
+                log.info( "Re-indexing addresses..." );
 
-        log.info( "    creating index writer for directory: " + directory + " ..." );
-        
-        IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
-        config.setOpenMode( OpenMode.CREATE );
-        IndexWriter iwriter = new IndexWriter( directory, config );
+                log.info( "    creating index writer for directory: " + directory + " ..." );
 
-        for (FeatureSource fs : provider.findFeatureSources()) {
-            // SRS
-            CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
-            String dataSRS = SearchServlet.toSRS( dataCRS );
+                IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
+                config.setOpenMode( OpenMode.CREATE );
+                IndexWriter iwriter = new IndexWriter( directory, config );
 
-            log.info( "    found FeatureSource: " + fs + ", SRS: " + dataSRS );
-            FeatureCollection fc = fs.getFeatures();
-            Iterator it = fc.iterator();
-            
-            try {
-                int size = 0;
-                while (it.hasNext()) {
-                    SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
+                for (FeatureSource fs : provider.findFeatureSources()) {
+                    // SRS
+                    CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
+                    String dataSRS = SearchServlet.toSRS( dataCRS );
 
-                    Document doc = new Document();
-                    StringBuilder keywords = new StringBuilder( 1024 );
+                    log.info( "    found FeatureSource: " + fs + ", SRS: " + dataSRS );
+                    FeatureCollection fc = fs.getFeatures();
+                    Iterator it = fc.iterator();
 
-                    String city = null;
-                    String cityExt = null;
-                    String cityDistrict = null;
+                    try {
+                        int size = 0;
+                        while (it.hasNext()) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
+                            SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
 
-                    String number = null;
-                    String numberExt = null;
-                    
-                    Property prop = findProp( feature, PROP_CITY );
-                    if (prop != null && prop.getValue() != null) {
-                        city = prop.getValue().toString();
-                        keywords.append( prop.getValue().toString() ).append( ' ' );
-                    }
-                    else {
-                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_CITY ) );
-                    }
-                    prop = findProp( feature, PROP_CITY_X );
-                    if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
-                        cityExt = prop.getValue().toString();
-                        keywords.append( prop.getValue().toString() ).append( ' ' );
-                    }
-                    prop = findProp( feature, PROP_CITY_DISTRICT );
-                    if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
-                        cityDistrict = prop.getValue().toString();
-                        keywords.append( prop.getValue().toString() ).append( ' ' );
-                    }
-                    prop = findProp( feature, PROP_STREET );
-                    if (prop != null && prop.getValue() != null) {
-                        String propValue = prop.getValue().toString();
-                        doc.add( new Field( FIELD_STREET, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
-                        keywords.append( prop.getValue().toString() ).append( ' ' );
-                    }
-                    else {
-                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_STREET ) );
-                    }
-                    prop = findProp( feature, PROP_NUMBER );
-                    if (prop != null && prop.getValue() != null) {
-                        number = prop.getValue().toString();
-                    }
-                    else {
-                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_NUMBER ) );
-                    }
-                    prop = findProp( feature, PROP_NUMBER_X );
-                    if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
-                        numberExt = prop.getValue().toString();
-                    }
-                    prop = findProp( feature, PROP_POSTALCODE );
-                    if (prop != null && prop.getValue() != null) {
-                        String propValue = prop.getValue().toString();
-                        doc.add( new Field( FIELD_POSTALCODE, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
-                        keywords.append( prop.getValue().toString() ).append( ' ' );
-                    }
-                    else {
-                        throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_POSTALCODE ) );
-                    }
+                            Document doc = new Document();
+                            StringBuilder keywords = new StringBuilder( 1024 );
 
-                    // cityFull
-                    String cityFull = cityExt != null ? (city + "/" + cityExt) : city;
-                    cityFull = cityDistrict != null ? (cityFull + " (" + cityDistrict + ")") : cityFull;
-                    doc.add( new Field( FIELD_CITY, cityFull, Field.Store.YES, Field.Index.ANALYZED ) );
+                            String city = null;
+                            String cityExt = null;
+                            String cityDistrict = null;
 
-                    // numberFull
-                    String numberFull = numberExt != null ? (number + numberExt) : number;
-                    doc.add( new Field( FIELD_NUMBER, numberFull, Field.Store.YES, Field.Index.ANALYZED ) );
-                    keywords.append( numberFull ).append( ' ' );
-                    
-                    // point
-                    Point point = (Point)feature.getDefaultGeometry();
-                    StringWriter out = new StringWriter( 128 );
-                    new GeometryJSON().write( point, out );
-                    doc.add( new Field( FIELD_GEOM, out.toString(),
-                            Field.Store.YES, Field.Index.NO ) );
-                    
-                    doc.add( new Field( FIELD_SRS, dataSRS,
-                            Field.Store.YES, Field.Index.NO ) );
+                            String number = null;
+                            String numberExt = null;
 
-                    doc.add( new Field( FIELD_KEYWORDS, keywords.toString(), Field.Store.NO, Field.Index.ANALYZED ) );
-                    
-                    doc.add( new Field( FIELD_CATEGORIES, "address Adresse",
-                            Field.Store.YES, Field.Index.ANALYZED ) );
+                            Property prop = findProp( feature, PROP_CITY );
+                            if (prop != null && prop.getValue() != null) {
+                                city = prop.getValue().toString();
+                                keywords.append( prop.getValue().toString() ).append( ' ' );
+                            }
+                            else {
+                                throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_CITY ) );
+                            }
+                            prop = findProp( feature, PROP_CITY_X );
+                            if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
+                                cityExt = prop.getValue().toString();
+                                keywords.append( prop.getValue().toString() ).append( ' ' );
+                            }
+                            prop = findProp( feature, PROP_CITY_DISTRICT );
+                            if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
+                                cityDistrict = prop.getValue().toString();
+                                keywords.append( prop.getValue().toString() ).append( ' ' );
+                            }
+                            prop = findProp( feature, PROP_STREET );
+                            if (prop != null && prop.getValue() != null) {
+                                String propValue = prop.getValue().toString();
+                                doc.add( new Field( FIELD_STREET, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
+                                keywords.append( prop.getValue().toString() ).append( ' ' );
+                            }
+                            else {
+                                throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_STREET ) );
+                            }
+                            prop = findProp( feature, PROP_NUMBER );
+                            if (prop != null && prop.getValue() != null) {
+                                number = prop.getValue().toString();
+                            }
+                            else {
+                                throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_NUMBER ) );
+                            }
+                            prop = findProp( feature, PROP_NUMBER_X );
+                            if (prop != null && prop.getValue() != null && prop.getValue().toString().length() > 0) {
+                                numberExt = prop.getValue().toString();
+                            }
+                            prop = findProp( feature, PROP_POSTALCODE );
+                            if (prop != null && prop.getValue() != null) {
+                                String propValue = prop.getValue().toString();
+                                doc.add( new Field( FIELD_POSTALCODE, propValue, Field.Store.YES, Field.Index.ANALYZED ) );
+                                keywords.append( prop.getValue().toString() ).append( ' ' );
+                            }
+                            else {
+                                throw new RuntimeException( "Notwendiges Feld für Adresse nicht gefunden: " + Arrays.asList( PROP_POSTALCODE ) );
+                            }
 
-                    iwriter.addDocument( doc );
-                    size++;
+                            // cityFull
+                            String cityFull = cityExt != null ? (city + "/" + cityExt) : city;
+                            cityFull = cityDistrict != null ? (cityFull + " (" + cityDistrict + ")") : cityFull;
+                            doc.add( new Field( FIELD_CITY, cityFull, Field.Store.YES, Field.Index.ANALYZED ) );
+
+                            // numberFull
+                            String numberFull = numberExt != null ? (number + numberExt) : number;
+                            doc.add( new Field( FIELD_NUMBER, numberFull, Field.Store.YES, Field.Index.ANALYZED ) );
+                            keywords.append( numberFull ).append( ' ' );
+
+                            // point
+                            Point point = (Point)feature.getDefaultGeometry();
+                            StringWriter out = new StringWriter( 128 );
+                            new GeometryJSON().write( point, out );
+                            doc.add( new Field( FIELD_GEOM, out.toString(),
+                                    Field.Store.YES, Field.Index.NO ) );
+
+                            doc.add( new Field( FIELD_SRS, dataSRS,
+                                    Field.Store.YES, Field.Index.NO ) );
+
+                            doc.add( new Field( FIELD_KEYWORDS, keywords.toString(), Field.Store.NO, Field.Index.ANALYZED ) );
+
+                            doc.add( new Field( FIELD_CATEGORIES, "address Adresse",
+                                    Field.Store.YES, Field.Index.ANALYZED ) );
+
+                            iwriter.addDocument( doc );
+                            size++;
+                        }
+                        log.info( "    document: count=" + size );
+                    }
+                    catch (Exception e) {
+                        log.error( e.getLocalizedMessage(), e );
+                    }
+                    finally {
+                        fc.close( it );
+                    }
                 }
-                log.info( "    document: count=" + size );
-            }
-            catch (Exception e) {
-                log.error( e.getLocalizedMessage(), e );
-            }
-            finally {
-                fc.close( it );
-            }
-        }
-        iwriter.close();
-        log.info( "...done." );
+                iwriter.close();
+                log.info( "...done." );
 
-        //indexReader.reopen();
+                //indexReader.reopen();
 
-        // XXX hack to get index reloaded
-        log.info( "    creating index reader..." );
-        indexReader = IndexReader.open( directory );
-        log.info( "    creating index searcher..." );
-        searcher = new IndexSearcher( indexReader );
-        log.info( "Index reloaded." );
+                // XXX hack to get index reloaded
+                log.info( "    creating index reader..." );
+                indexReader = IndexReader.open( directory );
+                log.info( "    creating index searcher..." );
+                searcher = new IndexSearcher( indexReader );
+                log.info( "Index reloaded." );
+            }
+        };
+        job.setPriority( Job.LONG );
+        job.schedule();
     }
 
     

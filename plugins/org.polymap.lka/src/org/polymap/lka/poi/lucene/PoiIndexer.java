@@ -62,19 +62,19 @@ import org.apache.lucene.store.RAMDirectory;
 import com.vividsolutions.jts.geom.Geometry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
-import org.polymap.core.project.ProjectRepository;
 import org.polymap.core.runtime.UIJob;
+import org.polymap.core.runtime.entity.EntityStateTracker;
 import org.polymap.core.runtime.entity.IEntityHandleable;
-import org.polymap.core.runtime.entity.IEntityStateListener;
 import org.polymap.core.runtime.entity.EntityStateEvent;
 import org.polymap.core.runtime.entity.EntityStateEvent.EventType;
-import org.polymap.core.workbench.PolymapWorkbench;
-
+import org.polymap.core.runtime.event.EventHandler;
+import org.polymap.core.runtime.event.Event;
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.lka.LKAPlugin;
@@ -118,8 +118,6 @@ class PoiIndexer {
 
     private boolean           index2file = false;
 
-    private IEntityStateListener modelListener;
-
     
     /**
      * 
@@ -155,39 +153,40 @@ class PoiIndexer {
         searcher = new IndexSearcher( indexReader ); // read-only=true
         
         // listen to model changes
-        modelListener = new IEntityStateListener() {
-            public void modelChanged( EntityStateEvent ev ) {
-                if (ev.getEventType() == EventType.COMMIT) {
-                    try {
-                        Set<IMap> maps = new HashSet();
-                        for (ILayer layer : PoiIndexer.this.provider.findLayers()) {
-                            if (ev.hasChanged( (IEntityHandleable)layer )) {
-                                LKAPlugin.getDefault().dropServiceContext();
-                                reindex();
-                                return;
-                            }
-                            maps.add( layer.getMap() );
-                        }
-                        for (IMap map : maps) {
-                            if (ev.hasChanged( (IEntityHandleable)map )) {
-                                LKAPlugin.getDefault().dropServiceContext();
-                                reindex();
-                                return;
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        PolymapWorkbench.handleError( LKAPlugin.PLUGIN_ID, this, "Fehler beim Re-Indizieren der POIs.", e );
-                    }
-                }
-            }
-            public boolean isValid() {
-                return true;
-            }
-        };
-        ProjectRepository.instance().addEntityListener( modelListener );
+        EntityStateTracker.instance().addListener( this );
     }
 
+    
+    @EventHandler(scope=Event.Scope.JVM)
+    protected void modelChanged( EntityStateEvent ev ) {
+        if (ev.getEventType() == EventType.COMMIT) {
+            // check layers for changes
+            Set<IMap> maps = new HashSet();
+            for (ILayer layer : PoiIndexer.this.provider.findLayers()) {
+                if (ev.hasChanged( (IEntityHandleable)layer )) {
+                    EntityStateTracker.instance().removeListener( this );
+                    LKAPlugin.getDefault().dropServiceContext();
+                    EntityStateTracker.instance().addListener( this );
+
+                    reindex();
+                    return;
+                }
+                maps.add( layer.getMap() );
+            }
+            // check parent maps for changes
+            for (IMap map : maps) {
+                if (ev.hasChanged( (IEntityHandleable)map )) {
+                    EntityStateTracker.instance().removeListener( this );
+                    LKAPlugin.getDefault().dropServiceContext();
+                    EntityStateTracker.instance().addListener( this );
+
+                    reindex();
+                    return;
+                }
+            }
+        }
+    }
+    
     
     /**
      * Possible search terms. Useful for autocomplete.
@@ -287,46 +286,50 @@ class PoiIndexer {
     }
     
     
-    public void reindex()
-    throws CorruptIndexException, IOException {
-        log.info( "Re-indexing..." );
-
-        IndexWriter iwriter = null;
-        try {
-            log.debug( "    creating index writer for directory: " + directory + " ..." );
-            IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
-            config.setOpenMode( OpenMode.CREATE );
-            iwriter = new IndexWriter( directory, config );
-
-            // start jobs
-            List<LayerIndexJob> jobs = new ArrayList();
-            for (ILayer layer : provider.findLayers()) {
-                LayerIndexJob job = new LayerIndexJob( iwriter, layer );
-                jobs.add( job );
-                job.schedule();
-            }
-            
-            // wait for jobs to complete
-            for (LayerIndexJob job : jobs) {
+    public void reindex() {
+        UIJob job = new UIJob( "Re-indexing POIs" ) {
+            protected void runWithException( IProgressMonitor monitor ) throws Exception {
+                log.info( "Re-indexing..." );
+                IndexWriter iwriter = null;
                 try {
-                    job.join();
-                }
-                catch (InterruptedException e) {
-                }
-            }
-        }
-        finally {
-            if (iwriter != null) { iwriter.close(); }
-        }
-        log.info( "...done." );
+                    log.debug( "    creating index writer for directory: " + directory + " ..." );
+                    IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
+                    config.setOpenMode( OpenMode.CREATE );
+                    iwriter = new IndexWriter( directory, config );
 
-        log.info( "    creating index reader..." );
-        indexReader.close();
-        indexReader = IndexReader.open( directory ); // read-only=true
-        
-//        log.info( "    creating index searcher..." );
-        searcher = new IndexSearcher( indexReader ); // read-only=true
-        log.info( "Index reloaded." );
+                    // start jobs
+                    List<LayerIndexJob> jobs = new ArrayList();
+                    for (ILayer layer : provider.findLayers()) {
+                        LayerIndexJob layerJob = new LayerIndexJob( iwriter, layer );
+                        jobs.add( layerJob );
+                        layerJob.schedule();
+                    }
+
+                    // wait for jobs to complete
+                    for (LayerIndexJob layerJob : jobs) {
+                        try {
+                            layerJob.join();
+                        }
+                        catch (InterruptedException e) {
+                        }
+                    }
+                }
+                finally {
+                    if (iwriter != null) { iwriter.close(); }
+                }
+                log.info( "...done." );
+
+                log.info( "    creating index reader..." );
+                indexReader.close();
+                indexReader = IndexReader.open( directory ); // read-only=true
+
+                //        log.info( "    creating index searcher..." );
+                searcher = new IndexSearcher( indexReader ); // read-only=true
+                log.info( "Index reloaded." );
+            }
+        };
+        job.setPriority( Job.LONG );
+        job.schedule();
     }
 
     
@@ -345,6 +348,7 @@ class PoiIndexer {
             super( "Indexing: " + layer.getLabel() );
             this.writer = writer;
             this.layer = layer;
+            setPriority( LONG );
         }
 
 
