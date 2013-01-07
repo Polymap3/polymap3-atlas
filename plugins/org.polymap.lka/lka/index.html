@@ -184,10 +184,19 @@ MyAtlasClass = AtlasClass.extend( new function() {
         });
     
         // make all divs in north_pane visible after the HTML is localized
-        window.setTimeout( function() {
+        setTimeout( function() {
             $('#north_pane>div').fadeIn( 1000 );
             $('#search_field').focus();
         }, 1000 );
+
+        // #116: Chrome - Ost-Versatz von POI-Objekten in Karte
+        // http://polymap.org/atlas/ticket/116
+        Atlas.map.updateSize();
+        Atlas.events.bind( "searchPreparing", function (ev) {
+            //atlasLayout.open( 'east' );
+            Atlas.map.updateSize();
+        });
+        
     };
     
 });
@@ -205,7 +214,7 @@ function initLocal() {
 <!-- ******************************************************
   - HTML
   -->
-<body onload="initLocal(); init_layout(); ">        
+<body onload="init_layout(); initLocal();">        
 
 <!-- Layout North -->
 <!--div class="ui-layout-north" onmouseover="myLayout.allowOverflow('north')" onmouseout="myLayout.resetOverflow(this)"-->
@@ -296,6 +305,7 @@ function initLocal() {
     </div-->
     <div id="map" class="ui-widget-content ui-corner-bottom"
             style="position: absolute; left: 0px; right: 0px; top: 34px; bottom: 0px; background: #ECEDF5;">
+        <a href="http://polymap.org/polymap3" style="position:absolute;">POLYMAP3</a>
     </div>
 </div>
 
