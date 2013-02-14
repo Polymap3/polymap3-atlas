@@ -58,7 +58,7 @@ public class TaskRepository
      * Get or create the repository for the current user session.
      */
     public static final TaskRepository instance() {
-        return (TaskRepository)Qi4jPlugin.Session.instance().module( TaskRepository.class );
+        return Qi4jPlugin.Session.instance().module( TaskRepository.class );
     }
 
 
@@ -109,18 +109,5 @@ public class TaskRepository
     public void removeTask( ITask task ) { 
         taskList.removeTask( task );
     }
-    
-    
-    public <T> T newOperation( Class<T> type ) {
-        T result = assembler.getModule().transientBuilderFactory().newTransient( type );
-        return result;
-    }
-
-//    public void fireModelChangedEvent( Object source, String propName, Object oldValue, Object newValue) {
-//        PropertyChangeEvent event = new PropertyChangeEvent( source, propName, oldValue, newValue ); 
-//        for (Object l : propChangeListeners.getListeners()) {
-//            ((PropertyChangeListener)l).propertyChange( event );
-//        }
-//    }
     
 }

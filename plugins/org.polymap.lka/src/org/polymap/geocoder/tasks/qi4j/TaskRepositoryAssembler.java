@@ -41,8 +41,6 @@ import org.polymap.core.qi4j.QiModuleAssembler;
 import org.polymap.core.qi4j.entitystore.json.JsonEntityStoreInfo;
 import org.polymap.core.qi4j.entitystore.json.JsonEntityStoreService;
 import org.polymap.core.runtime.Polymap;
-import org.polymap.geocoder.tasks.qi4j.operations.NewTaskOperation;
-import org.polymap.geocoder.tasks.qi4j.operations.RemoveTaskOperation;
 
 /**
  * 
@@ -91,10 +89,6 @@ public class TaskRepositoryAssembler
         domainModule.addEntities( 
                 TaskListComposite.class,
                 TaskComposite.class
-        );
-        domainModule.addTransients( 
-                NewTaskOperation.class,
-                RemoveTaskOperation.class
         );
 
         // persistence: workspace/JSON

@@ -29,10 +29,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.json.JSONException;
 import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -395,7 +395,7 @@ class PoiIndexer {
             GeometryJSON jsonEncoder = new GeometryJSON( 4 );
 
             while (it.hasNext() && !monitor.isCanceled()) {
-                SimpleFeatureImpl feature = (SimpleFeatureImpl)it.next();
+                SimpleFeature feature = (SimpleFeature)it.next();
 
                 Document doc = new Document();
                 StringBuffer keywords = new StringBuffer( 1024 );

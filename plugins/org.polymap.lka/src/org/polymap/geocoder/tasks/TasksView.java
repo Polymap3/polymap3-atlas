@@ -291,7 +291,7 @@ public class TasksView
         removeAction = new Action() {
             public void run() {
                 try {
-                    RemoveTaskOperation op = TaskRepository.instance().newOperation( RemoveTaskOperation.class );
+                    RemoveTaskOperation op = new RemoveTaskOperation();
                     op.init( selectedTask() );
                     OperationSupport.instance().execute( op, false, false );
                 }
@@ -311,7 +311,7 @@ public class TasksView
         addAction = new Action() {
             public void run() {
                 try {
-                    NewTaskOperation op = TaskRepository.instance().newOperation( NewTaskOperation.class );
+                    NewTaskOperation op = new NewTaskOperation();
                     op.init( "Test", "Ist nur zum Testen..." );
                     OperationSupport.instance().execute( op, false, false );
                 }

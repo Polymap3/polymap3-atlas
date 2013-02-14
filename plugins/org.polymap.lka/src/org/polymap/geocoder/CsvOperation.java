@@ -54,7 +54,6 @@ import org.polymap.core.operation.OperationSupport;
 import org.polymap.core.runtime.Polymap;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.geocoder.tasks.TasksView;
-import org.polymap.geocoder.tasks.qi4j.TaskRepository;
 import org.polymap.geocoder.tasks.qi4j.operations.NewTaskOperation;
 
 /**
@@ -143,7 +142,7 @@ public class CsvOperation
                 values[yField] = importer.getNumberFormat().format( point.getY() );
             }
             else {
-                NewTaskOperation op = TaskRepository.instance().newOperation( NewTaskOperation.class );
+                NewTaskOperation op = new NewTaskOperation();
                 StringBuffer desc = new StringBuffer( 256 );
                 for (String value : values) {
                     desc.append( value ).append( " | " );
