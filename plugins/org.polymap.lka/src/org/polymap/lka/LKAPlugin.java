@@ -181,7 +181,7 @@ public class LKAPlugin
                 // delayed starting services in separate thread
                 new Job( "ServiceStarter" ) {
                     protected IStatus run( IProgressMonitor monitor ) {
-                        log.info( "starting services..." );
+                        log.info( "Starting services..." );
                         try {
                             httpService.registerServlet( "/lka/search", new SearchServlet(), null, null );
                             httpService.registerServlet( "/lka/data", new DataServlet(), null, null );
@@ -193,7 +193,7 @@ public class LKAPlugin
                         }
                         return Status.OK_STATUS;
                     }
-                }.schedule( 5000 );
+                }.schedule( 3000 );
             }
 	        return httpService;
 	    }

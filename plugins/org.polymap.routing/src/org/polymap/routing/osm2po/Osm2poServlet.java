@@ -91,7 +91,8 @@ public class Osm2poServlet
             fileName = System.getProperty( "org.polymap.routing.osm2po.graphFile" );
         }
         if (fileName == null) {
-            throw new IllegalStateException( "No graphFile specified (-Dorg.polymap.routing.osm2po.graphFile). See");
+            log.warn( "No graphFile specified (-Dorg.polymap.routing.osm2po.graphFile). See http://polymap.org/atlas/wiki/Server%20Configuration" );
+            return;
         }
         
         final File graphFile = new File( fileName );

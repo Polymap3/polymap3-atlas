@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Atlas
+Bundle-Name: Atlas System
 Bundle-SymbolicName: org.polymap.lka;singleton:=true
 Bundle-Version: 2.0.0.qualifier
 Bundle-Activator: org.polymap.lka.LKAPlugin
@@ -16,10 +16,10 @@ Require-Bundle: javax.servlet;bundle-version="2.5.0",
  org.polymap.core.model;bundle-version="3.1.0",
  org.polymap.core;bundle-version="3.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib-static/georss-rome-0.9.8.jar,
  lib-static/jdom-1.0.jar,
  lib-static/qdparser-1.1.0.jar,
  lib-static/rome-0.9.jar
 Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
