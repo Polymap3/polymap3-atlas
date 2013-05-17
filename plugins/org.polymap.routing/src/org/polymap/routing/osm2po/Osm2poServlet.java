@@ -174,6 +174,7 @@ public class Osm2poServlet
             }
         }
         catch (IOException e) {
+            log.warn( "", e );
             throw e;
         }
         catch (Exception e) {

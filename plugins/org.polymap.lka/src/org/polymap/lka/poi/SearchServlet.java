@@ -195,7 +195,12 @@ public class SearchServlet
                 // make sure that empty searchStr *always* results in empty reponse 
                 if (searchStr != null && searchStr.length() > 0) {
                     for (SearchResult record : dispatcher.search( searchStr, maxResults, worldCRS )) {
-                        out.writeObject( record );
+                        try {
+                            out.writeObject( record );
+                        }
+                        catch (Exception e) {
+                            log.warn( "Error during encode: " + e, e );
+                        }
                     }
                 }
 

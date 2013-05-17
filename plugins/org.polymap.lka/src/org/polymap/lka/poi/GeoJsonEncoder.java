@@ -86,8 +86,7 @@ public class GeoJsonEncoder
     }
 
     
-    public void writeObject( Object obj )
-            throws IOException {
+    public void writeObject( Object obj ) throws IOException {
         if (!streamStarted) {
             startStream();
         }
@@ -121,8 +120,7 @@ public class GeoJsonEncoder
     
     private boolean aboutToFlush = false;
     
-    public synchronized void flush()
-            throws IOException {
+    public synchronized void flush() throws IOException {
         if (aboutToFlush) {
             return;
         }
@@ -150,7 +148,6 @@ public class GeoJsonEncoder
             aboutToFlush = false;
             super.flush();
         }
-
     }
 
 
