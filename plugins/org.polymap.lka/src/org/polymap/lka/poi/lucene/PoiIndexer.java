@@ -64,11 +64,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 
+import org.polymap.core.data.FeatureStateTracker;
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
 import org.polymap.core.runtime.UIJob;
+import org.polymap.core.runtime.entity.EntityHandle;
 import org.polymap.core.runtime.entity.EntityStateTracker;
 import org.polymap.core.runtime.entity.IEntityHandleable;
 import org.polymap.core.runtime.entity.EntityStateEvent;
@@ -163,7 +165,11 @@ class PoiIndexer {
             // check layers for changes
             Set<IMap> maps = new HashSet();
             for (ILayer layer : PoiIndexer.this.provider.findLayers()) {
-                if (ev.hasChanged( (IEntityHandleable)layer )) {
+                // any feature of the layer changed?
+                EntityHandle layerHandle = FeatureStateTracker.layerHandle( layer );
+
+                if (ev.hasChanged( (IEntityHandleable)layer )
+                        || ev.hasChanged( layerHandle )) {
                     EntityStateTracker.instance().removeListener( this );
                     LKAPlugin.getDefault().dropServiceContext();
                     EntityStateTracker.instance().addListener( this );
@@ -390,7 +396,6 @@ class PoiIndexer {
         throws IOException, JSONException {
             int size = 0;        
             int indexed = 0;
-            String layerKeywords = layer.getKeywords() != null ? StringUtils.join( layer.getKeywords(), " " ) : "";
 
             GeometryJSON jsonEncoder = new GeometryJSON( 4 );
 
@@ -398,7 +403,7 @@ class PoiIndexer {
                 SimpleFeature feature = (SimpleFeature)it.next();
 
                 Document doc = new Document();
-                StringBuffer keywords = new StringBuffer( 1024 );
+                StringBuilder keywords = new StringBuilder( 1024 );
                 Address address = new Address();
                 for (Property prop : feature.getProperties()) {
                     String propName = prop.getName().getLocalPart();
@@ -454,7 +459,12 @@ class PoiIndexer {
                     indexed++;
                 }
 
-                keywords.append( layerKeywords );
+                if (layer.getLabel() != null) {
+                    keywords.append( layer.getLabel() ).append( ' ' );
+                }
+                if (layer.getKeywords() != null) {
+                    keywords.append( StringUtils.join( layer.getKeywords(), ' ' ) ).append( ' ' );
+                }
                 doc.add( new Field( FIELD_KEYWORDS, keywords.toString(),
                         Field.Store.NO, Field.Index.ANALYZED ) );
 
