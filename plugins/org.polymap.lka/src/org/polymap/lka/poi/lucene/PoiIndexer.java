@@ -370,6 +370,9 @@ class PoiIndexer {
                 // SRS
                 CoordinateReferenceSystem dataCRS = fs.getSchema().getCoordinateReferenceSystem();
                 String dataSRS = layer.getCRSCode();
+                if (dataSRS == null) {
+                    dataSRS = layer.getMap().getCRSCode();
+                }
                 log.debug( "    " + layer.getLabel() + ": found FeatureSource: " + fs + ", SRS=" + dataSRS );
                 
                 // start indexing
@@ -379,8 +382,8 @@ class PoiIndexer {
                 reindex( it, dataSRS, monitor );
             }
             catch (Exception e) {
-                log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage() );
-                log.debug( e.getLocalizedMessage(), e );
+                log.warn( "Fehler beim Indizieren:" + e.getLocalizedMessage(), e );
+                //log.debug( e.getLocalizedMessage(), e );
                 throw e;
             }
             finally {
