@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
+   <!--extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="org.polymap.routing.pgrouting.ui.PgRoutingPreferencePage"
             id="org.polymap.routing.PgRoutingPreferencePage"
             name="pgRouting">
       </page>
-   </extension>
+   </extension-->
    <extension
          point="org.polymap.core.data.featureOperations">
       <featureOperation

@@ -1,6 +1,6 @@
 /* 
  * polymap.org
- * Copyright 2011, Polymap GmbH. All rights reserved.
+ * Copyright (C) 2011-2013, Polymap GmbH. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -47,6 +47,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 
 import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.operation.DefaultFeatureOperation;
+import org.polymap.core.data.operation.IFeatureOperationContext;
 import org.polymap.core.data.util.ProgressListenerAdaptor;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.ProjectRepository;
@@ -59,15 +60,21 @@ import org.polymap.core.runtime.Timer;
  * 
  * @author <a href="http://www.polymap.de">Falko Bräutigam</a>
  */
-@SuppressWarnings("restriction")
 public class TestGraphOperation
         extends DefaultFeatureOperation {
 
     private static Log log = LogFactory.getLog( TestGraphOperation.class );
 
     
-    public Status execute( final IProgressMonitor monitor )
-    throws Exception {
+    @Override
+    public boolean init( IFeatureOperationContext _context ) {
+        // test only
+        return false;
+        //return SecurityUtils.isAdmin( Polymap.instance().getUser() );
+    }
+
+
+    public Status execute( final IProgressMonitor monitor ) throws Exception {
         monitor.beginTask( "Building graph", 15 );
         final RoadsGraphGenerator generator = new RoadsGraphGenerator();
 
