@@ -171,7 +171,7 @@ public class SearchServlet
                 ObjectOutput out = null;
                 if ("KML".equalsIgnoreCase( outputType )) {
                     out = new KMLEncoder( bout );
-                    response.setContentType( "application/vnd.google-earth.kml+xml" );
+                    response.setContentType( "application/vnd.google-earth.kml+xml; charset=UTF-8" );
                     response.setCharacterEncoding( "UTF-8" );
                 }
                 else if ("JSON".equalsIgnoreCase( outputType )) {

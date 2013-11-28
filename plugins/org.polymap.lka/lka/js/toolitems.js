@@ -1,6 +1,6 @@
 /*
  * polymap.org
- * Copyright 2011, Falko Bräutigam. All rights reserved.
+ * Copyright (C) 2011-2013, Falko BrÃ¤utigam. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -104,7 +104,7 @@ var HtmlDialogToolItem = ToolItem.extend( new function HtmlDialogToolItemProto()
 
 
 /**
- * 
+ * FIX: CSS, remove
  */
 var ToggleLayerItem = ToolItem.extend( {
     
@@ -240,15 +240,14 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
         for (var i=0; i<Atlas.contexts.length; i++) {
             var context = Atlas.contexts[i];
             if (context.searchStr != null && context.searchStr.length > 0) {
-                searchParams = searchParams == null 
-                        ? "?" : searchParams + "&";
-                searchParams += "search" + (i+1) + "=" 
-                        + encodeURIComponent( context.searchStr );
+                searchParams = searchParams == null ? "?" : searchParams + "&";
+                searchParams += "search" + (i+1) + "=" + encodeURIComponent( context.searchStr );
             }
         }
         this.url = location.protocol + "//" 
             + location.host + location.pathname + searchParams;
 
+        //this.url = ev.pageURL;  //pageUrl()
         this.elm.removeAttr( 'disabled' );
     };
     
@@ -268,11 +267,10 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
                 divElm.html( data );
                 
                 $("#link_input")
-                        .focus( function( ev ) { $(this).select(); } )
-                        .attr( "value", url );
-                $("#html_link_input")
-                        .focus( function( ev ) { $(this).select(); } )
-                        .attr( "value", htmlCode );
+                    .attr( "value", url )
+                    .focus( function( ev ) { $(this).select(); } )
+
+                $("#html_link_input").attr( "value", htmlCode );
                 
                 divElm.dialog({ modal:true, width:450, height:200, title:'Link speichern' });
             }
@@ -284,27 +282,25 @@ var LinkItem = ToolItem.extend( new function LinkItemProto() {
 /**
  *
  */
-var BookmarkItem = LinkItem.extend( {
+var BookmarkItem = ToolItem.extend( {
     
     init: function( id ) {
-        this._super( id );
-        this.label = $.i18n.prop( "tb_bookmark_label" );
-        this.tooltip = $.i18n.prop( "tb_bookmark_tip" );
+        this._super( id, $.i18n.prop( "tb_bookmark_label" ), $.i18n.prop( "tb_bookmark_tip" ) );
         this.icon = $.i18n.prop( "tb_bookmark_icon" );
         
-//        var self = this;
-//        Atlas.events.bind( "searchCompleted", function( ev ) {
-//            self.url = ev.pageURL;
-//            self.elm.removeAttr( 'disabled' );
-//        });
+        var self = this;
+        Atlas.events.bind( "searchCompleted", function( ev ) {
+            self.url = ev.searchURL;
+            self.elm.removeAttr( 'disabled' );
+        });
     },
-    
+        
     onClick: function() {
-        if (!this.url) {
+        if (this.url == null) {
             alert( $.i18n.prop( "tb_bookmark_disabled" ) );
             return;
         }        
-        if (window.sidebar) {
+        if (window.sidebar.addPanel) {
             // firefox
             window.sidebar.addPanel( 'tb_bookmark_title'.i18n(), this.url, 'tb_bookmark_comment'.i18n() );
         } 
@@ -321,11 +317,10 @@ var BookmarkItem = LinkItem.extend( {
             window.external.AddFavorite( this.url, 'tb_bookmark_title'.i18n() );
         }
         else {
-            alert( 'Ihr Browser unterstützt leider nicht das automatische Anlegen eines Bookmarks. :(' );
+            alert( 'Ihr Browser unterstÃ¼tzt leider nicht das automatische Anlegen eines Bookmarks.' );
         }
     }
 });
-
 
 /**
  *

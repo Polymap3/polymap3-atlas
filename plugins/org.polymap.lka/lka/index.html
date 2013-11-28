@@ -32,10 +32,12 @@
 <script language="javascript" src="lib/jquery.combobox.js" type="text/javascript"></script>
 
 <!-- OpenLayers -->
+
 <!--script src="openlayers/full/OpenLayers.js" type="text/javascript"></script-->
 <script src="openlayers/2.11/OpenLayers.js" type="text/javascript"></script>
 <script src="openlayers/popup.js" type="text/javascript"></script>
 <script src="openlayers/proj4js-1.1.0.min.js" type="text/javascript"></script>
+
 <!-- Add projections from spatialreference.org/ -->
 <script type="text/javascript">
     //Proj4js.defs["EPSG:4326"] = "+title=WGS 84 +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
@@ -46,7 +48,7 @@
     Proj4js.defs["EPSG:25831"] = "+title=ETRS89 / UTM zone 31N +proj=utm +zone=31 +ellps=GRS80 +units=m +no_defs";
     Proj4js.defs["EPSG:25832"] = "+title=ETRS89 / UTM zone 32N +proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs";
     Proj4js.defs["EPSG:25833"] = "+title=ETRS89 / UTM zone 33N +proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs";
-    Proj4js.defs["EPSG:2065"] = "+title=S-JTSK (Ferro) / Krovak +proj=krovak +lat_0=49.5 +lon_0=42.5 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=ferro +units=m +no_defs";
+    //Proj4js.defs["EPSG:2065"] = "+title=S-JTSK (Ferro) / Krovak +proj=krovak +lat_0=49.5 +lon_0=42.5 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=ferro +units=m +no_defs";
 </script>
 
 <!-- Atlas CSS -->
@@ -160,7 +162,7 @@ MyAtlasClass = AtlasClass.extend( new function() {
             Atlas.toolbar = new Toolbar( $('#toolbar2') )
                 .addLeft( new ToggleLayerItem( "tb_dop", $.i18n.prop( "tb_dop_label" ), 
                         $.i18n.prop( "tb_dop_label" ), $.i18n.prop( "tb_dop_icon" ), Atlas.map, "DOP" ) )
-                .addRight( new SubmitNewItem( "tb_new" ) )
+                //.addRight( new SubmitNewItem( "tb_new" ) )
                 .addRight( new CoordinateItem( "tb_coord" ) )
                 .addRight( new ToggleMeasureItem( "tb_measure", Atlas.measure ) )
                 .addRight( new LinkItem( "tb_link" ) )

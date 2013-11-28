@@ -79,7 +79,9 @@ var CoordinateItem = ToolItem.extend( new function CoordinateItemProto() {
         if (Proj4js.defs) {
             $.each( Proj4js.defs, function( key, value ) {
                 var proj = new OpenLayers.Projection( key );
-                projOptions += '<option value="{0}">{1} ({0})</option>'.format( key, proj.proj.title );
+                if (proj.proj.title) {
+                    projOptions += '<option value="{0}">{1} ({0})</option>'.format( key, proj.proj.title );
+                }
             });
         }
         else {

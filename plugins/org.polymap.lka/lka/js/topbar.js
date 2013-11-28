@@ -40,11 +40,6 @@ var Topbar = Class.extend( {
     create: function() {
         this.elm.addClass( 'ui-widget' )  // ui-widget-header
                 .addClass( 'ui-widget-content' );
-        this.elm.css( "border", "none" )
-                .css( "margin", "3px" )
-                .css( 'display', 'block' )
-                .css( 'height', '16px' )
-                .css( "background", "none" );
         
         // left items
         for (var i=0; i<this.leftItems.length; i++) {
@@ -75,8 +70,6 @@ var Topbar = Class.extend( {
         }
         
         button.addClass( "ui-widget-content" );
-        button.css( "margin", "3px" );
-        button.css( "border", "none" );
         button.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
 
         item.elementCreated( button );
@@ -102,9 +95,6 @@ var Toolbar = Topbar.extend( {
                 .addClass( 'ui-widget-content' )
                 .addClass( 'ui-widget-header' )
                 .addClass( 'ui-corner-top' );
-        this.elm.css( 'height', '32px' )
-                .css( 'padding', '0px 1px 0px 1px' )
-                .css( 'display', 'block' );
         
         // left
         for (var i=0; i<this.leftItems.length; i++) {
@@ -134,14 +124,11 @@ var Toolbar = Topbar.extend( {
         var button = $( '#'+item.getId() );
         button.button({ label: item.getLabel() });
         button.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
-        button.css( 'margin', '2px 1px 2px 1px' );
         
         if (item.icon != null) {
             button.css( 'display', 'inline' );
             $('#'+item.getId()+'>span')
-                    .css( 'padding', '5px 9px 4px 26px' )
                     .css( 'background', 'url(' + item.icon + ') no-repeat scroll 5px 50%' );
-            //button.prepend( '<img src="' + item.icon + '" style="float:left; margin:5px;">' );
         }
         return button;
     },
@@ -154,26 +141,14 @@ var Toolbar = Topbar.extend( {
         checkbox.click( callback( item.onClick, {scope:item, suppressArgs:false} ) );
 
         var label = $( '#'+item.getId()+"~label" );
-        label.css( 'margin', '2px 1px 2px 1px' );
-        label.css( 'height', '26px' );
         
         if (item.icon != null) {
             // space for the icon (span is the label text)
             $('#'+item.getId()+"~label>span")
-                    .css( 'background', 'url(' + item.icon + ') no-repeat scroll 5px 50%' )
-                    .css( 'padding-left', '26px' )
-                    .css( 'display', 'block' );
-            //label.prepend( '<img src="' + item.icon + '" style="float:left; margin:5px;">' );
+                    .css( 'display', 'block' )
+                    .css( 'background', 'url(' + item.icon + ') no-repeat scroll 5px 50%' );
         }
         return label;
-
-//    
-//    <span id="repeat">
-//        <input type="radio" id="repeat0" name="repeat" checked="checked" /><label for="repeat0">No Repeat</label>
-//        <input type="radio" id="repeat1" name="repeat" /><label for="repeat1">Once</label>
-//        <input type="radio" id="repeatall" name="repeat" /><label for="repeatall">All</label>
-//    </span>
-//</span>
     }
   
 });
