@@ -1,7 +1,6 @@
 /* 
  * polymap.org
- * Copyright 2009-2012, Polymap GmbH, and individual contributors as
- * indicated by the @authors tag.
+ * Copyright (C) 2009-2014, Polymap GmbH. All rights reserved.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -61,6 +60,8 @@ import org.apache.lucene.store.RAMDirectory;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.eclipse.swt.widgets.Display;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 
@@ -69,6 +70,8 @@ import org.polymap.core.data.PipelineFeatureSource;
 import org.polymap.core.data.pipeline.PipelineIncubationException;
 import org.polymap.core.project.ILayer;
 import org.polymap.core.project.IMap;
+import org.polymap.core.runtime.RapSessionContextProvider.RapSessionContext;
+import org.polymap.core.runtime.SessionContext;
 import org.polymap.core.runtime.UIJob;
 import org.polymap.core.runtime.entity.EntityHandle;
 import org.polymap.core.runtime.entity.EntityStateTracker;
@@ -77,6 +80,8 @@ import org.polymap.core.runtime.entity.EntityStateEvent;
 import org.polymap.core.runtime.entity.EntityStateEvent.EventType;
 import org.polymap.core.runtime.event.EventHandler;
 import org.polymap.core.runtime.event.Event;
+import org.polymap.core.runtime.event.EventManager;
+
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
 import org.polymap.lka.LKAPlugin;
@@ -85,8 +90,7 @@ import org.polymap.lka.poi.SearchSPI;
 /**
  * Lucene based search and index methods.
  *
- * @author <a href="http://www.polymap.de">Falko Braeutigam</a>
- * @since 3.0
+ * @author <a href="http://www.polymap.de">Falko Bräutigam</a>
  */
 class PoiIndexer {
     
@@ -106,6 +110,8 @@ class PoiIndexer {
 
     public static final String FIELD_CATEGORIES = SearchSPI.FIELD_CATEGORIES;
 
+    static PoiIndexer         instance;
+    
     private PoiProvider       provider;
     
     private File              indexDir;
@@ -128,8 +134,8 @@ class PoiIndexer {
      * @throws IOException 
      * @throws PipelineIncubationException 
      */
-    public PoiIndexer( PoiProvider provider, File indexDir ) 
-    throws Exception {
+    public PoiIndexer( PoiProvider provider, File indexDir ) throws Exception {
+        instance = this;
         this.indexDir = indexDir;
         this.provider = provider;
 
@@ -160,8 +166,10 @@ class PoiIndexer {
 
     
     @EventHandler(scope=Event.Scope.JVM)
-    protected void modelChanged( EntityStateEvent ev ) {
+    protected void modelChanged( final EntityStateEvent ev ) {
         if (ev.getEventType() == EventType.COMMIT) {
+            boolean needsReindex = false;
+            
             // check layers for changes
             Set<IMap> maps = new HashSet();
             for (ILayer layer : PoiIndexer.this.provider.findLayers()) {
@@ -174,8 +182,8 @@ class PoiIndexer {
                     LKAPlugin.getDefault().dropServiceContext();
                     EntityStateTracker.instance().addListener( this );
 
-                    reindex();
-                    return;
+                    needsReindex = true;
+                    break;
                 }
                 maps.add( layer.getMap() );
             }
@@ -186,8 +194,23 @@ class PoiIndexer {
                     LKAPlugin.getDefault().dropServiceContext();
                     EntityStateTracker.instance().addListener( this );
 
+                    needsReindex = true;
+                    break;
+                }
+            }
+
+            // execute in Display thread of the session that originated the modification
+            // this way the user gets informed about the update and when it finishes
+            if (needsReindex) {
+                SessionContext publishSession = EventManager.publishSession();
+                if (publishSession != null && publishSession instanceof RapSessionContext) {
+                    Display display = ((RapSessionContext)publishSession).getDisplay();
+                    display.asyncExec( new Runnable() {
+                        public void run() { reindex(); }
+                    });
+                }
+                else {
                     reindex();
-                    return;
                 }
             }
         }
@@ -201,8 +224,7 @@ class PoiIndexer {
      * @param maxResults
      * @throws IOException
      */
-    public String[] searchTerms( String term, int maxResults ) 
-    throws IOException {
+    public String[] searchTerms( String term, int maxResults ) throws IOException {
         // search for the last term in the search
         String searchStr = term.toLowerCase();
         String prefix = "";
@@ -293,7 +315,7 @@ class PoiIndexer {
     
     
     public void reindex() {
-        UIJob job = new UIJob( "Re-indexing POIs" ) {
+        UIJob job = new UIJob( "Re-Indexing POIs" ) {
             protected void runWithException( IProgressMonitor monitor ) throws Exception {
                 log.info( "Re-indexing..." );
                 IndexWriter iwriter = null;
@@ -359,8 +381,7 @@ class PoiIndexer {
 
 
         @Override
-        protected void runWithException( IProgressMonitor monitor )
-        throws Exception {
+        protected void runWithException( IProgressMonitor monitor ) throws Exception {
             PipelineFeatureSource fs = PipelineFeatureSource.forLayer( layer, false );
             FeatureCollection fc = null;
             Iterator it = null;
@@ -378,7 +399,7 @@ class PoiIndexer {
                 // start indexing
                 fc = fs.getFeatures();
                 it = fc.iterator();
-                monitor.beginTask( getName(), IProgressMonitor.UNKNOWN );
+                monitor.beginTask( getName(), fc.size() /*IProgressMonitor.UNKNOWN*/ );
                 reindex( it, dataSRS, monitor );
             }
             catch (Exception e) {
@@ -395,8 +416,7 @@ class PoiIndexer {
         }
 
 
-        protected void reindex( Iterator it, String dataSRS, IProgressMonitor monitor )
-        throws IOException, JSONException {
+        protected void reindex( Iterator it, String dataSRS, IProgressMonitor monitor ) throws IOException, JSONException {
             int size = 0;        
             int indexed = 0;
 

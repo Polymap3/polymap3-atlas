@@ -57,4 +57,32 @@
          </action>
       </actionSet>
    </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="org.polymap.lka.layerContribution"
+            objectClass="org.polymap.core.project.ILayer">
+         <action
+               class="org.polymap.lka.poi.lucene.ReindexAction"
+               icon="icons/refresh.gif"
+               id="org.polymap.lka.reindexAction"
+               label="Atlas-Index neu erstellen"
+               style="push">
+         </action>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="org.polymap.lka.mapContribution"
+            objectClass="org.polymap.core.project.IMap">
+         <action
+               class="org.polymap.lka.poi.lucene.ReindexAction"
+               icon="icons/refresh.gif"
+               id="org.polymap.lka.reindexAction"
+               label="Atlas-Index neu erstellen"
+               state="false"
+               style="push">
+         </action>
+      </objectContribution>
+   </extension>
 </plugin>
