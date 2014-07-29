@@ -81,6 +81,7 @@ import org.polymap.core.runtime.entity.EntityStateEvent.EventType;
 import org.polymap.core.runtime.event.EventHandler;
 import org.polymap.core.runtime.event.Event;
 import org.polymap.core.runtime.event.EventManager;
+import org.polymap.core.workbench.PolymapWorkbench;
 
 import org.polymap.geocoder.Address;
 import org.polymap.geocoder.lucene.AddressIndexer;
@@ -147,6 +148,13 @@ class PoiIndexer {
             if (directory.listAll().length == 0) {
                 reindex();
             }
+            else {
+                log.debug( "    creating index reader..." );
+                indexReader = IndexReader.open( directory ); // read-only=true
+
+                log.debug( "    creating index searcher..." );
+                searcher = new IndexSearcher( indexReader ); // read-only=true
+            }
         }
         else {
             log.info( "    creating RAM directory..." );
@@ -154,18 +162,13 @@ class PoiIndexer {
             reindex();
         }
         
-        log.debug( "    creating index reader..." );
-        indexReader = IndexReader.open( directory ); // read-only=true
-        
-        log.debug( "    creating index searcher..." );
-        searcher = new IndexSearcher( indexReader ); // read-only=true
         
         // listen to model changes
         EntityStateTracker.instance().addListener( this );
     }
 
     
-    @EventHandler(scope=Event.Scope.JVM)
+    @EventHandler(scope=Event.Scope.JVM )
     protected void modelChanged( final EntityStateEvent ev ) {
         if (ev.getEventType() == EventType.COMMIT) {
             boolean needsReindex = false;
@@ -176,12 +179,7 @@ class PoiIndexer {
                 // any feature of the layer changed?
                 EntityHandle layerHandle = FeatureStateTracker.layerHandle( layer );
 
-                if (ev.hasChanged( (IEntityHandleable)layer )
-                        || ev.hasChanged( layerHandle )) {
-                    EntityStateTracker.instance().removeListener( this );
-                    LKAPlugin.getDefault().dropServiceContext();
-                    EntityStateTracker.instance().addListener( this );
-
+                if (ev.hasChanged( (IEntityHandleable)layer ) || ev.hasChanged( layerHandle )) {
                     needsReindex = true;
                     break;
                 }
@@ -190,18 +188,19 @@ class PoiIndexer {
             // check parent maps for changes
             for (IMap map : maps) {
                 if (ev.hasChanged( (IEntityHandleable)map )) {
-                    EntityStateTracker.instance().removeListener( this );
-                    LKAPlugin.getDefault().dropServiceContext();
-                    EntityStateTracker.instance().addListener( this );
-
                     needsReindex = true;
                     break;
                 }
             }
 
-            // execute in Display thread of the session that originated the modification
-            // this way the user gets informed about the update and when it finishes
             if (needsReindex) {
+                // make new session context and register as listener again
+                EntityStateTracker.instance().removeListener( this );
+                LKAPlugin.getDefault().dropServiceContext();
+                EntityStateTracker.instance().addListener( this );
+
+                // execute in Display thread of the session that originated the modification;
+                // this way the user gets informed about the update and when it finishes
                 SessionContext publishSession = EventManager.publishSession();
                 if (publishSession != null && publishSession instanceof RapSessionContext) {
                     Display display = ((RapSessionContext)publishSession).getDisplay();
@@ -317,8 +316,9 @@ class PoiIndexer {
     public void reindex() {
         UIJob job = new UIJob( "Re-Indexing POIs" ) {
             protected void runWithException( IProgressMonitor monitor ) throws Exception {
-                log.info( "Re-indexing..." );
+                log.info( "Re-Indexing ..." );
                 IndexWriter iwriter = null;
+                Exception oneException = null;
                 try {
                     log.debug( "    creating index writer for directory: " + directory + " ..." );
                     IndexWriterConfig config = new IndexWriterConfig( LKAPlugin.LUCENE_VERSION, analyzer );
@@ -328,19 +328,22 @@ class PoiIndexer {
                     // start jobs
                     List<LayerIndexJob> jobs = new ArrayList();
                     for (ILayer layer : provider.findLayers()) {
-                        LayerIndexJob layerJob = new LayerIndexJob( iwriter, layer );
-                        jobs.add( layerJob );
-                        layerJob.schedule();
+                        try {
+                            LayerIndexJob layerJob = new LayerIndexJob( iwriter, layer );
+                            jobs.add( layerJob );
+                            // do synchronously for testing as async causes layers to not find their resources?
+//                          layerJob.schedule();
+                            layerJob.runWithException( monitor );
+                        }
+                        catch (Exception e) {
+                            oneException = e;
+                        }
                     }
 
-                    // wait for jobs to complete
-                    for (LayerIndexJob layerJob : jobs) {
-                        try {
-                            layerJob.join();
-                        }
-                        catch (InterruptedException e) {
-                        }
-                    }
+//                    // wait for jobs to complete
+//                    for (LayerIndexJob layerJob : jobs) {
+//                        try { layerJob.join(); } catch (InterruptedException e) {}
+//                    }
                 }
                 finally {
                     if (iwriter != null) { iwriter.close(); }
@@ -354,6 +357,10 @@ class PoiIndexer {
                 //        log.info( "    creating index searcher..." );
                 searcher = new IndexSearcher( indexReader ); // read-only=true
                 log.info( "Index reloaded." );
+                
+                if (oneException != null) {
+                    PolymapWorkbench.handleError( LKAPlugin.PLUGIN_ID, this, "Der Index konnte nicht vollständig aktualisiert werden.", oneException );
+                }
             }
         };
         job.setPriority( Job.LONG );
